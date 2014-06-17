@@ -68,8 +68,6 @@ MODULE ProfilerF
    INTEGER(kind=c_int), parameter :: maxResult=102400
    CHARACTER (len=maxResult) :: buffer
    CHARACTER (len=1, kind=c_char), DIMENSION(maxResult) :: result
-   byte, POINTER, DIMENSION(:) :: bytearray
-   CHARACTER :: c
    INTEGER :: i,length
    CALL ProfilerStrC(this%handle,result,maxResult)
    DO length=1,maxResult
