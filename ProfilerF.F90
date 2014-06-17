@@ -37,7 +37,7 @@ MODULE ProfilerF
   END SUBROUTINE ProfilerStrC
 
  END INTERFACE
-   
+
  CONTAINS
   FUNCTION ProfilerNewF(name)
    USE iso_c_binding
