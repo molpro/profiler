@@ -126,11 +126,16 @@ std::string Profiler::str(const int verbosity, const int precision)
       totalTimes += (*s).second;
   }
   totalTimes.calls=1;
+#if defined(__SUNPRO_C) || defined(__SUNPRO_CC)
+#else
   q.push(data_t("* TOTAL",totalTimes));
+#endif
   ss << "Profiler "<<Name<<std::endl;
   std::vector<std::string> prefixes;
   prefixes.push_back(""); prefixes.push_back("k"); prefixes.push_back("M"); prefixes.push_back("G");
   prefixes.push_back("T"); prefixes.push_back("P"); prefixes.push_back("E"); prefixes.push_back("Z"); prefixes.push_back("Y");
+#if defined(__SUNPRO_C) || defined(__SUNPRO_CC)
+#else
   while (! q.empty()) {
     ss.precision(precision);
     ss <<std::right <<std::setw(maxWidth) << q.top().first <<": calls="<<q.top().second.calls<<", cpu="<<std::fixed<<q.top().second.cpu<<", wall="<<q.top().second.wall;
@@ -144,6 +149,7 @@ std::string Profiler::str(const int verbosity, const int precision)
       ss <<std::endl;
     q.pop();
   }
+#endif
   return ss.str();
 }
 
