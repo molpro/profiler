@@ -115,7 +115,14 @@ std::string Profiler::str(const int verbosity, const int precision)
 #endif
   }
   typedef std::pair<std::string,Profiler::times> data_t;
+<<<<<<< e727180a79a2c9bf453ce066c82ccf9559ace358
   std::priority_queue<data_t, std::deque<data_t>, compareTimes<data_t>  > q(localResults.begin(),localResults.end());
+=======
+#if defined(__SUNPRO_C) || defined(__SUNPRO_CC)
+#else
+  std::priority_queue<data_t, std::deque<data_t>, compareTimes<data_t>  > q(localResults.begin(),localResults.end());
+#endif
+>>>>>>> sidestep compiler warning shadow variable bug 4523
   std::stringstream ss;
   size_t maxWidth=0;
   long maxOperations=0;
