@@ -1,7 +1,6 @@
 MODULE ProfilerF
  USE iso_c_binding
  IMPLICIT NONE
-#if defined(MOLPRO_F2003_GCC_4_8) && defined(MOLPRO_F2003_TYPE_BOUND) && defined(MOLPRO_F2003_C_1_6)
  TYPE :: Profiler
   TYPE(c_ptr) :: handle
  CONTAINS
@@ -80,5 +79,4 @@ MODULE ProfilerF
    END DO
    WRITE (unit,'(A)') buffer
   END SUBROUTINE ProfilerPrintF
-#endif
  END MODULE ProfilerF
