@@ -36,37 +36,44 @@ MODULE ProfilerF
   PRIVATE
   TYPE(c_ptr) :: handle !< C pointer to the corresponding C++ object
  CONTAINS
-  PROCEDURE :: start => ProfilerStartF
+  PROCEDURE :: start => ProfilerStartF !< Begin timing a code segment
+!> \public Ensure that a code segment is entered into the result table. This must be called for
+!! any code segments for which start/stop is non-collective and therefore might not be called on some processes.
   PROCEDURE :: declare => ProfilerDeclareF
-  PROCEDURE :: stop => ProfilerStopF
-  PROCEDURE :: print => ProfilerPrintF
+  PROCEDURE :: stop => ProfilerStopF !< End timing a code segment
+  PROCEDURE :: print => ProfilerPrintF !< \public Print a representation of the object.
  END TYPE Profiler
  INTERFACE Profiler
   MODULE PROCEDURE ProfilerNewF
  END INTERFACE Profiler
 
  INTERFACE
+ !> \private
   FUNCTION ProfilerNewC(name) BIND (C, name='profilerNew')
    USE iso_c_binding
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
    TYPE(c_ptr) :: ProfilerNewC
   END FUNCTION ProfilerNewC
+ !> \private
   SUBROUTINE ProfilerStartC(handle, name) BIND (C, name='profilerStart')
    USE iso_c_binding
    TYPE(c_ptr), INTENT(in), VALUE :: handle
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
   END SUBROUTINE ProfilerStartC
+ !> \private
   SUBROUTINE ProfilerDeclareC(handle, name) BIND (C, name='profilerDeclare')
    USE iso_c_binding
    TYPE(c_ptr), INTENT(in), VALUE :: handle
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
   END SUBROUTINE ProfilerDeclareC
+ !> \private
   SUBROUTINE ProfilerStopC(handle, name, operations) BIND (C, name='profilerStop')
    USE iso_c_binding
    TYPE(c_ptr), INTENT(in), VALUE :: handle
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
    INTEGER (kind=c_long), INTENT(in), VALUE :: operations
   END SUBROUTINE ProfilerStopC
+ !> \private
   SUBROUTINE ProfilerStrC(handle, result, maxResult) BIND (C, name='profilerStrSubroutine')
    USE iso_c_binding
    TYPE(c_ptr), INTENT(in), VALUE :: handle
