@@ -7,6 +7,7 @@
 #include <string.h>
 #include <iomanip>
 #include "Profiler.h"
+#include "memory.h"
 
 Profiler::Profiler()
 {
@@ -26,41 +27,52 @@ void Profiler::reset(const std::string name)
 
 void Profiler::start(const std::string name)
 {
-  struct times now=getTimes();
-  if (! stack.empty())
-    stack.top()+=now;
-  struct times minusNow; minusNow.cpu=-now.cpu; minusNow.wall=-now.wall; minusNow.name=name; minusNow.operations=0;
-  stack.push(minusNow);
+  struct resources now=getResources();
+  if (! resourcesStack.empty())
+    resourcesStack.top()+=now;
+  struct resources minusNow; minusNow.cpu=-now.cpu; minusNow.wall=-now.wall; minusNow.name=name; minusNow.operations=0; minusNow.stack = -now.stack;
+  resourcesStack.push(minusNow);
+  //std::cout << "Profiler::start \""<<name<<"\" stack="<<minusNow.stack<<std::endl;
+  //std::cout << "Stack depth="<<stack.size()<<std::endl;
+#ifdef MEMORY_H
+  memory_reset_maximum_stack(-1);
+#endif
 }
 
 #include <assert.h>
 void Profiler::stop(const std::string name, long operations)
 {
-//  if (operations>0) std::cout << "Profiler::stop "<<stack.top().name<<":"<<name<<" operations="<<operations<<std::endl;
-  assert(name=="" || name == stack.top().name);
-  struct times now=getTimes();now.operations=operations;
-//  std::cout << "stack.top().operations="<<stack.top().operations<<std::endl;
-  stack.top()+=now;
-//  if (operations>0) std::cout << "stack.top().operations="<<stack.top().operations<<std::endl;
-  results[stack.top().name] += stack.top();
-  results[stack.top().name].calls++;
-  stack.pop();
+  //if (operations>0) std::cout << "Profiler::stop "<<resourcesStack.top().name<<":"<<name<<" operations="<<operations<<std::endl;
+  assert(name=="" || name == resourcesStack.top().name);
+  struct resources now=getResources();now.operations=operations;
+//  std::cout << "resourcesStack.top().operations="<<resourcesStack.top().operations<<std::endl;
+  //std::cout << "Profiler::stop \""<<name<<"\" stack="<<now.stack<<std::endl;
+  //std::cout << "Profiler::stop \""<<name<<"\" stack="<<resourcesStack.top().stack<<std::endl;
+  resourcesStack.top()+=now;
+  //std::cout << "Profiler::stop \""<<name<<"\" stack="<<resourcesStack.top().stack<<std::endl;
+//  if (operations>0) std::cout << "resourcesStack.top().operations="<<resourcesStack.top().operations<<std::endl;
+  results[resourcesStack.top().name] += resourcesStack.top();
+  results[resourcesStack.top().name].calls++;
+#ifdef MEMORY_H
+  memory_reset_maximum_stack(resourcesStack.top().stack);
+#endif
+  resourcesStack.pop();
 //  std::cout <<"now="<<now.operations<<std::endl;
-//  if (stack.size()>=1) std::cout<<"stop before subtracting from top of stack " << stack.top().name << " " <<stack.top().operations <<std::endl;
-  if (! stack.empty()) stack.top()-=now;
+//  if (resourcesStack.size()>=1) std::cout<<"stop before subtracting from top of stack " << resourcesStack.top().name << " " <<resourcesStack.top().operations <<std::endl;
+  if (! resourcesStack.empty()) resourcesStack.top()-=now;
 }
 
 void Profiler::declare(const std::string name)
 {
   if (results.count(name)==0) {
-  struct times tt; tt.cpu=0; tt.wall=0; tt.name=name; tt.operations=0; tt.calls=0;
+  struct resources tt; tt.cpu=0; tt.wall=0; tt.name=name; tt.operations=0; tt.calls=0;
   results[name] = tt;
   }
 }
 
 void Profiler::stopall()
 {
-  while (! stack.empty()) stop();
+  while (! resourcesStack.empty()) stop();
 }
 
 #include <cmath>
@@ -99,6 +111,10 @@ std::string Profiler::str(const int verbosity, const int precision)
     value=(int64_t)(*s).second.operations; type=0;
     PPIDD_Gsum(&type,&value,&len,op);
     (*s).second.operations=(long)value;
+    char* opm=strdup("max");
+    int64_t stack=(fortint)(*s).second.stack; type=0;
+    PPIDD_Gsum(&type,&stack,&len,opm);
+    (*s).second.stack=(int64_t)stack;
 #else
 #ifdef MOLPRO
     // only '+' works in Molpro runtime
@@ -111,38 +127,31 @@ std::string Profiler::str(const int verbosity, const int precision)
     value=(double)(*s).second.operations;
     interface.GlobalSum(&value,(std::size_t)1);
     (*s).second.operations=(long)value;
+    // global max of (*s).second.stack
+    value=(double)(*s).second.stack;
+    interface.GlobalSum(&value,(std::size_t)1, (uint)0, "max");
+    (*s).second.stack=(int64_t)value;
 #endif
 #endif
   }
-  typedef std::pair<std::string,Profiler::times> data_t;
-<<<<<<< e727180a79a2c9bf453ce066c82ccf9559ace358
-  std::priority_queue<data_t, std::deque<data_t>, compareTimes<data_t>  > q(localResults.begin(),localResults.end());
-=======
-#if defined(__SUNPRO_C) || defined(__SUNPRO_CC)
-#else
-  std::priority_queue<data_t, std::deque<data_t>, compareTimes<data_t>  > q(localResults.begin(),localResults.end());
-#endif
->>>>>>> sidestep compiler warning shadow variable bug 4523
+  typedef std::pair<std::string,Profiler::resources> data_t;
+  std::priority_queue<data_t, std::deque<data_t>, compareResources<data_t>  > q(localResults.begin(),localResults.end());
   std::stringstream ss;
   size_t maxWidth=0;
   long maxOperations=0;
-  Profiler::times totalTimes;totalTimes.operations=0;
+  Profiler::resources totalResources=getResources();totalResources-=totalResources;
   for (resultMap::const_iterator s=localResults.begin(); s!=localResults.end(); ++s) {
       if ((*s).second.operations > maxOperations) maxOperations=(*s).second.operations;
       if ((*s).first.size() > maxWidth) maxWidth=(*s).first.size();
-      totalTimes += (*s).second;
+      //std::cout << "totalResources contributor name=" << (*s).second.name <<", cpu="<< (*s).second.cpu <<", stack="<< (*s).second.stack << std::endl;
+      totalResources += (*s).second;
   }
-  totalTimes.calls=1;
-#if defined(__SUNPRO_C) || defined(__SUNPRO_CC)
-#else
-  q.push(data_t("* TOTAL",totalTimes));
-#endif
+  totalResources.calls=1;
+  q.push(data_t("* TOTAL",totalResources));
   ss << "Profiler "<<Name<<std::endl;
   std::vector<std::string> prefixes;
   prefixes.push_back(""); prefixes.push_back("k"); prefixes.push_back("M"); prefixes.push_back("G");
   prefixes.push_back("T"); prefixes.push_back("P"); prefixes.push_back("E"); prefixes.push_back("Z"); prefixes.push_back("Y");
-#if defined(__SUNPRO_C) || defined(__SUNPRO_CC)
-#else
   while (! q.empty()) {
     ss.precision(precision);
     ss <<std::right <<std::setw(maxWidth) << q.top().first <<": calls="<<q.top().second.calls<<", cpu="<<std::fixed<<q.top().second.cpu<<", wall="<<q.top().second.wall;
@@ -153,10 +162,13 @@ std::string Profiler::str(const int verbosity, const int precision)
       int shifter = ops > 1 ? (int)(log10(ops)/3) : 0 ; shifter = shifter >= (int) prefixes.size() ? (int) prefixes.size()-1 : shifter;  ops *= pow((double)10, -shifter*3);
       ss<<", "<<ops<<" "<<prefixes[shifter]<<"op/s";
     }
+    size_t stack=q.top().second.stack;
+    if (stack > (size_t)0) {
+      ss<<", stack="<<stack;
+    }
       ss <<std::endl;
     q.pop();
   }
-#endif
   return ss.str();
 }
 
@@ -167,39 +179,45 @@ std::ostream& operator<<(std::ostream& os, Profiler & obj)
 
 #include <time.h>
 #include <sys/time.h>
-struct Profiler::times Profiler::getTimes()
+struct Profiler::resources Profiler::getResources()
 {
-  struct Profiler::times result;
+  struct Profiler::resources result;
   result.operations=0;
   result.cpu=(double)clock()/CLOCKS_PER_SEC;
   struct timeval time;
   result.wall=(double)0;
   if (!gettimeofday(&time,NULL))
     result.wall = (double)time.tv_sec + (double)time.tv_usec * .000001;
+#ifdef MEMORY_H
+  result.stack=(size_t) memory_used('S',(size_t)1);
+#else
+  result.stack=0;
+#endif
   return result;
 }
 
 /*!
- * \brief Profiler::times::operator += add another object to this one
+ * \brief Profiler::resources::operator += add another object to this one
  * \param w2 object to add
  * \return a copy of the object
  */
-struct Profiler::times& Profiler::times::operator+=( const struct Profiler::times &w2)
+struct Profiler::resources& Profiler::resources::operator+=( const struct Profiler::resources &w2)
 {
   cpu += w2.cpu;
   wall += w2.wall;
   operations += w2.operations;
+  if (w2.stack > stack) stack = w2.stack; // choose maximum stack of the two objects
   return *this;
 }
 
-struct Profiler::times Profiler::times::operator+(const struct Profiler::times &w2)
+struct Profiler::resources Profiler::resources::operator+(const struct Profiler::resources &w2)
 {
-  struct Profiler::times result=*this;
+  struct Profiler::resources result=*this;
   result += w2;
   return result;
 }
 
-struct Profiler::times& Profiler::times::operator-=( const struct Profiler::times &w2)
+struct Profiler::resources& Profiler::resources::operator-=( const struct Profiler::resources &w2)
 {
   cpu -= w2.cpu;
   wall -= w2.wall;
@@ -207,16 +225,15 @@ struct Profiler::times& Profiler::times::operator-=( const struct Profiler::time
   return *this;
 }
 
-struct Profiler::times Profiler::times::operator-(const struct Profiler::times &w2)
+struct Profiler::resources Profiler::resources::operator-(const struct Profiler::resources &w2)
 {
-  struct Profiler::times result=*this;
+  struct Profiler::resources result=*this;
   result -= w2;
   return result;
 }
 
 // C binding
 extern "C" {
-#include "ProfilerC.h"
 #include <stdlib.h>
 #include <string.h>
 void* profilerNew(char* name) { return new Profiler(name); }

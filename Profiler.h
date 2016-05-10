@@ -1,9 +1,11 @@
 #ifndef PROFILER_H
 #define PROFILER_H
+#ifdef __cplusplus
 #include <iostream>
 #include <string>
 #include <map>
 #include <stack>
+#include <stdint.h>
 
 /*!
  * \brief The Profiler class: framework for timing code sections
@@ -47,15 +49,16 @@ public:
    */
   std::string str(const int verbosity=0, const int precision=3);
 
-private:
-  struct times {double cpu; double wall; int calls; long operations; std::string name;
-                struct Profiler::times& operator+=(const struct Profiler::times &other);
-                struct Profiler::times& operator-=(const struct Profiler::times &other);
-                struct Profiler::times operator+(const struct Profiler::times &w2);
-                struct Profiler::times operator-(const struct Profiler::times &w2);
+ public:
+  struct resources {double cpu; double wall; int calls; long operations; std::string name; int64_t stack;
+                struct Profiler::resources& operator+=(const struct Profiler::resources &other);
+                struct Profiler::resources& operator-=(const struct Profiler::resources &other);
+                struct Profiler::resources operator+(const struct Profiler::resources &w2);
+                struct Profiler::resources operator-(const struct Profiler::resources &w2);
                };
-  typedef std::map<std::string,struct Profiler::times> resultMap;
-  template<class T> struct compareTimes : std::binary_function<T,T,bool>
+ private:
+  typedef std::map<std::string,struct Profiler::resources> resultMap;
+  template<class T> struct compareResources : std::binary_function<T,T,bool>
   { inline bool operator () (const T& _left, const T& _right)
     {
       return _left.second.wall < _right.second.wall;
@@ -63,12 +66,25 @@ private:
   };
 
   std::string Name;
-  std::stack<struct times> stack;
-  struct times startTimes;
-  struct times getTimes();
+  std::stack<struct resources> resourcesStack;
+  struct resources startResources;
+  struct resources getResources();
   resultMap results;
   void stopall();
 };
   std::ostream& operator<<(std::ostream& os, Profiler & obj);
+
+extern "C" {
+#endif
+void* profilerNew(char* name);
+void profilerReset(void* profiler, char* name);
+void profilerStart(void* profiler, char* name);
+void profilerDeclare(void* profiler, char* name);
+void profilerStop(void* profiler, char* name, long operations=0);
+char* profilerStr(void* profiler);
+void profilerStrSubroutine(void*profiler, char* result, int maxResult);
+#ifdef __cplusplus
+}
+#endif
 
 #endif // PROFILER_H

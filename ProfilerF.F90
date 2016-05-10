@@ -88,7 +88,7 @@ MODULE ProfilerF
 !> \public Begin timing a code segment.
 !! Should be called through type-bound interface \c start.
   SUBROUTINE ProfilerStartF(this,name)
-   CLASS(Profiler), INTENT(in) :: this
+   CLASS(Profiler), INTENT(in) :: this !< Profiler object
    CHARACTER(len=*), INTENT(in) :: name !< name of the code segment
    CHARACTER(kind=c_char,len=1024) :: namecopy
    namecopy=TRIM(name)//C_NULL_CHAR
@@ -98,7 +98,7 @@ MODULE ProfilerF
 !! any code segments for which start/stop is non-collective and therefore might not be called on some processes.
 !! Should be called through type-bound interface \c declare.
   SUBROUTINE ProfilerDeclareF(this,name)
-   CLASS(Profiler), INTENT(in) :: this
+   CLASS(Profiler), INTENT(in) :: this !< Profiler object
    CHARACTER(len=*), INTENT(in) :: name !< name of the code segment
    CHARACTER(kind=c_char,len=1024) :: namecopy
    namecopy=TRIM(name)//C_NULL_CHAR
@@ -107,7 +107,7 @@ MODULE ProfilerF
 !> \public End timing a code segment.
 !! Should be called through type-bound interface \c stop.
   SUBROUTINE ProfilerStopF(this,name,operations)
-   CLASS(Profiler), INTENT(in) :: this
+   CLASS(Profiler), INTENT(in) :: this !< Profiler object
    CHARACTER(len=*), INTENT(in) :: name !< name of the code segment
    INTEGER, INTENT(in) :: operations !< nominal number of operations (or whatever you like) carried out
    CHARACTER(kind=c_char,len=1024) :: namecopy
@@ -119,7 +119,7 @@ MODULE ProfilerF
 !> \public Print a representation of the object.
 !! Should be called through type-bound interface \c print
   SUBROUTINE ProfilerPrintF(this, unit)
-   CLASS(Profiler), INTENT(in) :: this
+   CLASS(Profiler), INTENT(in) :: this !< Profiler object
    INTEGER, INTENT(in) :: unit !< Fortran file number; must already be open
    INTEGER(kind=c_int), parameter :: maxResult=102400
    CHARACTER (len=maxResult) :: buffer
@@ -129,10 +129,46 @@ MODULE ProfilerF
    DO length=1,maxResult
     IF (result(length).EQ.C_NULL_CHAR) EXIT
    END DO
-   length=length-1
+   length=MIN(length-1,LEN(buffer))
    DO i=1,length
     buffer(i:i)=result(i)
    END DO
-   WRITE (unit,'(A)') buffer
+   WRITE (unit,'(A)') buffer(:length)
   END SUBROUTINE ProfilerPrintF
  END MODULE ProfilerF
+
+#ifdef MOLPRO
+! outside module to avoid false positives from private module elements
+SUBROUTINE profiler_module_test(printlevel)
+ USE memory
+ USE ProfilerF
+ IMPLICIT NONE
+ INTEGER, INTENT(in) :: printlevel
+ TYPE(Profiler) :: p
+ INTEGER, PARAMETER :: repeat=20000000
+ DOUBLE PRECISION :: a
+ DOUBLE PRECISION, POINTER, DIMENSION(:) :: x
+ INTEGER :: i
+ p = Profiler('Fortran')
+ CALL p%start('sqrt')
+ x => memory_allocate(123456)
+ a=1d0
+ DO i=1,repeat
+  a=a*SQRT(a+i)/SQRT(a+i+1)
+ END DO
+ call memory_release(x)
+ CALL p%stop('sqrt',2*repeat)
+ IF (printlevel.GT.1) PRINT *,a
+ CALL p%start('exp')
+ x => memory_allocate(56789)
+ call memory_release(x)
+ a=1d0
+ DO i=1,repeat
+  a=a*EXP(a+1d0/i)/EXP(a+1d0/i+1)
+ END DO
+ IF (printlevel.GT.1) PRINT *,a
+ CALL p%stop('exp',2*repeat)
+ if (printlevel.gt.0) CALL p%print(6)
+ if (printlevel.gt.9) PRINT *, 'done',memory_used('STACK',.TRUE.),memory_used('STACK',.FALSE.)
+END SUBROUTINE profiler_module_test
+#endif

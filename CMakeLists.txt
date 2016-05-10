@@ -4,8 +4,8 @@ project(Profiler)
 ENABLE_LANGUAGE(Fortran)
 
 file (GLOB SRCS *.cpp *.h)
-add_executable(Profiler.exe main.cpp Profiler.cpp Profiler.h ProfilerC.h)
-add_executable(ProfilerF.exe mainF.F90 Profiler.cpp Profiler.h ProfilerC.h ProfilerF.F90)
+add_executable(Profiler.exe main.cpp Profiler.cpp Profiler.h)
+add_executable(ProfilerF.exe mainF.F90 Profiler.cpp Profiler.h ProfilerF.F90)
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
