@@ -32,8 +32,6 @@ void Profiler::start(const std::string name)
     resourcesStack.top()+=now;
   struct resources minusNow; minusNow.cpu=-now.cpu; minusNow.wall=-now.wall; minusNow.name=name; minusNow.operations=0; minusNow.stack = -now.stack;
   resourcesStack.push(minusNow);
-  //std::cout << "Profiler::start \""<<name<<"\" stack="<<minusNow.stack<<std::endl;
-  //std::cout << "Stack depth="<<stack.size()<<std::endl;
 #ifdef MEMORY_H
   memory_reset_maximum_stack(-1);
 #endif
@@ -42,23 +40,16 @@ void Profiler::start(const std::string name)
 #include <assert.h>
 void Profiler::stop(const std::string name, long operations)
 {
-  //if (operations>0) std::cout << "Profiler::stop "<<resourcesStack.top().name<<":"<<name<<" operations="<<operations<<std::endl;
   assert(name=="" || name == resourcesStack.top().name);
   struct resources now=getResources();now.operations=operations;
-//  std::cout << "resourcesStack.top().operations="<<resourcesStack.top().operations<<std::endl;
-  //std::cout << "Profiler::stop \""<<name<<"\" stack="<<now.stack<<std::endl;
-  //std::cout << "Profiler::stop \""<<name<<"\" stack="<<resourcesStack.top().stack<<std::endl;
-  resourcesStack.top()+=now;
-  //std::cout << "Profiler::stop \""<<name<<"\" stack="<<resourcesStack.top().stack<<std::endl;
-//  if (operations>0) std::cout << "resourcesStack.top().operations="<<resourcesStack.top().operations<<std::endl;
-  results[resourcesStack.top().name] += resourcesStack.top();
-  results[resourcesStack.top().name].calls++;
+  struct resources* tt = &resourcesStack.top();
+  (*tt)+=now;
+  results[tt->name] += resourcesStack.top();
+  results[tt->name].calls++;
 #ifdef MEMORY_H
-  memory_reset_maximum_stack(resourcesStack.top().stack);
+  memory_reset_maximum_stack(tt->stack);
 #endif
   resourcesStack.pop();
-//  std::cout <<"now="<<now.operations<<std::endl;
-//  if (resourcesStack.size()>=1) std::cout<<"stop before subtracting from top of stack " << resourcesStack.top().name << " " <<resourcesStack.top().operations <<std::endl;
   if (! resourcesStack.empty()) resourcesStack.top()-=now;
 }
 
