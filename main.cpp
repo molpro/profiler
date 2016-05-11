@@ -3,7 +3,7 @@
 #include <cmath>
 int main(int argc, char *argv[])
 {
-  const size_t repeat=20000000;
+  const size_t repeat=20000000, repeatr=1000000;
   {
     Profiler profiler("C++");
     profiler.start("sqrt");
@@ -13,6 +13,13 @@ int main(int argc, char *argv[])
     profiler.start("exp");
     for (int i=0; i<repeat; i++) a*=std::exp(a+(double)1/i)/std::exp(a+(double)1/i+1);
     profiler.stop("exp",2*repeat);
+    profiler.start("getResources");
+    for (int i=0; i<repeatr; i++) struct Profiler::resources r = profiler.getResources();
+    profiler.stop("getResources",2*repeatr);
+    for (int i=0; i<repeatr ; i++){
+      profiler.start("profiler");
+    profiler.stop("profiler",1);
+    }
     std::cout << profiler << std::endl;
   }
 
@@ -25,6 +32,10 @@ int main(int argc, char *argv[])
     profilerStart(profilerC,(char*)"exp");
     for (int i=0; i<repeat; i++) a*=std::exp(a+(double)1/i)/std::exp(a+(double)1/i+1);
     profilerStop(profilerC,(char*)"exp",2*repeat);
+    for (int i=0; i<1000000; i++) {
+      profilerStart(profilerC,(char*)"profiler");
+      profilerStop(profilerC,(char*)"profiler",1);
+    }
     std::cout << profilerStr(profilerC) << std::endl;
   }
 

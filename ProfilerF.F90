@@ -116,11 +116,15 @@ MODULE ProfilerF
   SUBROUTINE ProfilerStopF(this,name,operations)
    CLASS(Profiler), INTENT(in) :: this !< Profiler object
    CHARACTER(len=*), INTENT(in) :: name !< name of the code segment
-   INTEGER, INTENT(in) :: operations !< nominal number of operations (or whatever you like) carried out
+   INTEGER, INTENT(in), OPTIONAL :: operations !< nominal number of operations (or whatever you like) carried out
    CHARACTER(kind=c_char,len=1024) :: namecopy
    INTEGER (kind=c_long) :: operationsC
    namecopy=TRIM(name)//C_NULL_CHAR
-   operationsC=INT(operations,kind=C_LONG)
+   IF (PRESENT(operations)) THEN
+    operationsC=INT(operations,kind=C_LONG)
+   ELSE
+    operationsC=INT(0,kind=C_LONG)
+   END IF
    CALL ProfilerStopC(this%handle,namecopy,operationsC)
   END SUBROUTINE ProfilerStopF
 !> \public Print a representation of the object.
@@ -128,19 +132,13 @@ MODULE ProfilerF
   SUBROUTINE ProfilerPrintF(this, unit)
    CLASS(Profiler), INTENT(in) :: this !< Profiler object
    INTEGER, INTENT(in) :: unit !< Fortran file number; must already be open
-   INTEGER(kind=c_int), parameter :: maxResult=102400
-   CHARACTER (len=maxResult) :: buffer
-   CHARACTER (len=1, kind=c_char), DIMENSION(maxResult) :: result
-   INTEGER :: i,length
-   CALL ProfilerStrC(this%handle,result,maxResult)
-   DO length=1,maxResult
+   CHARACTER (len=1, kind=c_char), DIMENSION(65536) :: result
+   INTEGER :: length
+   CALL ProfilerStrC(this%handle,result,int(size(result),kind=c_int))
+   DO length=1,SIZE(result)
     IF (result(length).EQ.C_NULL_CHAR) EXIT
    END DO
-   length=MIN(length-1,LEN(buffer))
-   DO i=1,length
-    buffer(i:i)=result(i)
-   END DO
-   WRITE (unit,'(A)') buffer(:length)
+   WRITE (unit,'(65535A)') result(:MIN(length,SIZE(result))-1)
   END SUBROUTINE ProfilerPrintF
  END MODULE ProfilerF
 

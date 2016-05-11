@@ -56,6 +56,7 @@ public:
                 struct Profiler::resources operator+(const struct Profiler::resources &w2);
                 struct Profiler::resources operator-(const struct Profiler::resources &w2);
                };
+  struct resources getResources();
  private:
   typedef std::map<std::string,struct Profiler::resources> resultMap;
   template<class T> struct compareResources : std::binary_function<T,T,bool>
@@ -68,7 +69,6 @@ public:
   std::string Name;
   std::stack<struct resources> resourcesStack;
   struct resources startResources;
-  struct resources getResources();
   resultMap results;
   void stopall();
 };

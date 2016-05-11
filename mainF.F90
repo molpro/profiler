@@ -20,5 +20,9 @@ PROGRAM mainf
  END DO
  PRINT *,a
  CALL p%stop('exp',2*repeat)
+ do i=1,1000000
+ call p%start('profiler')
+  call p%stop('profiler',1)
+  end do
  CALL p%print(6)
 END PROGRAM mainf
