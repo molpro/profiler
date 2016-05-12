@@ -143,9 +143,13 @@ MODULE ProfilerF
  END MODULE ProfilerF
 
 #ifdef MOLPRO
+#define MEMORY
+#endif
 ! outside module to avoid false positives from private module elements
 SUBROUTINE profiler_module_test(printlevel)
+#ifdef MEMORY
  USE memory
+#endif
  USE ProfilerF
  IMPLICIT NONE
  INTEGER, INTENT(in) :: printlevel
@@ -156,17 +160,23 @@ SUBROUTINE profiler_module_test(printlevel)
  INTEGER :: i
  p = Profiler('Fortran')
  CALL p%start('sqrt')
+#ifdef MEMORY
  x => memory_allocate(123456)
+#endif
  a=1d0
  DO i=1,repeat
   a=a*SQRT(a+i)/SQRT(a+i+1)
  END DO
+#ifdef MEMORY
  call memory_release(x)
+#endif
  CALL p%stop('sqrt',2*repeat)
  IF (printlevel.GT.1) PRINT *,a
  CALL p%start('exp')
+#ifdef MEMORY
  x => memory_allocate(56789)
  call memory_release(x)
+#endif
  a=1d0
  DO i=1,repeat
   a=a*EXP(a+1d0/i)/EXP(a+1d0/i+1)
@@ -174,6 +184,13 @@ SUBROUTINE profiler_module_test(printlevel)
  IF (printlevel.GT.1) PRINT *,a
  CALL p%stop('exp',2*repeat)
  if (printlevel.gt.0) CALL p%print(6)
+#ifdef MEMORY
  if (printlevel.gt.9) PRINT *, 'done',memory_used('STACK',.TRUE.),memory_used('STACK',.FALSE.)
+#endif
 END SUBROUTINE profiler_module_test
+
+#ifdef MAIN
+PROGRAM mainf
+ CALL profiler_module_test(1)
+END PROGRAM mainf
 #endif

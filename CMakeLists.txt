@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 2.8)
 project(Profiler)
 ENABLE_LANGUAGE(Fortran)
 
-file (GLOB SRCS *.cpp *.h)
+add_definitions(-DMAIN)
 add_executable(Profiler.exe main.cpp Profiler.cpp Profiler.h)
-add_executable(ProfilerF.exe mainF.F90 Profiler.cpp Profiler.h ProfilerF.F90)
+add_executable(ProfilerF.exe Profiler.cpp Profiler.h ProfilerF.F90)
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
