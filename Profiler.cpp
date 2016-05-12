@@ -12,9 +12,10 @@
 Profiler::Profiler()
 {
 }
-Profiler::Profiler(std::string name)
+Profiler::Profiler(std::string name, const int level)
 {
   reset(name);
+  active(level);
 }
 
 void Profiler::reset(const std::string name)
@@ -22,11 +23,18 @@ void Profiler::reset(const std::string name)
   Name=name;
   stopall();
   results.clear();
+  active();
   start("* Other");
+}
+
+void Profiler::active(const int level)
+{
+    activeLevel=level;
 }
 
 void Profiler::start(const std::string name)
 {
+  if (resourcesStack.size()>=activeLevel) return;
   struct resources now=getResources();
   if (! resourcesStack.empty())
     resourcesStack.top()+=now;
@@ -40,6 +48,7 @@ void Profiler::start(const std::string name)
 #include <assert.h>
 void Profiler::stop(const std::string name, long operations)
 {
+  if (resourcesStack.size()>activeLevel) return;
   assert(name=="" || name == resourcesStack.top().name);
   struct resources now=getResources();now.operations=operations;
   struct resources* tt = &resourcesStack.top();
@@ -229,6 +238,7 @@ extern "C" {
 #include <string.h>
 void* profilerNew(char* name) { return new Profiler(name); }
 void profilerReset(void* profiler, char* name) { Profiler* obj=(Profiler*)profiler; obj->reset(std::string(name)); }
+void profilerActive(void* profiler, int level) { Profiler* obj=(Profiler*)profiler; obj->active(level); }
 void profilerStart(void* profiler, char* name) { Profiler* obj=(Profiler*)profiler; obj->start(std::string(name)); }
 void profilerDeclare(void* profiler, char* name) { Profiler* obj=(Profiler*)profiler; obj->declare(std::string(name)); }
 void profilerStop(void* profiler, char* name, long operations) { Profiler* obj=(Profiler*)profiler; obj->stop(std::string(name),operations); }

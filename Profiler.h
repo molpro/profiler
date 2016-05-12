@@ -17,8 +17,10 @@ public:
   /*!
    * \brief Profiler construct a named instance
    * \param name the title of this object
+   * \param level
+   * A large value means that data will always be accumulated; zero means that calls to start and stop do nothing.
    */
-  Profiler(std::string name);
+  Profiler(std::string name, const int level=INT_MAX);
   /*!
    * \brief reset the object
    * \param name the title of this object
@@ -41,6 +43,12 @@ public:
    * \param name name of the code segment
    */
   void declare(const std::string name="");
+  /*!
+   * \brief active set the maximum stack depth at which data collection is done.
+   * \param level
+   * A large value means that data will always be accumulated; zero means that calls to start and stop do nothing.
+   */
+  void active(const int level=INT_MAX);
   /*!
    * \brief Generate a printable representation of the object
    * \param verbosity how much to print
@@ -70,6 +78,7 @@ public:
   std::stack<struct resources> resourcesStack;
   struct resources startResources;
   resultMap results;
+  int activeLevel;
   void stopall();
 };
   std::ostream& operator<<(std::ostream& os, Profiler & obj);
@@ -78,6 +87,7 @@ extern "C" {
 #endif
 void* profilerNew(char* name);
 void profilerReset(void* profiler, char* name);
+void profilerActive(void* profiler, int level);
 void profilerStart(void* profiler, char* name);
 void profilerDeclare(void* profiler, char* name);
 void profilerStop(void* profiler, char* name, long operations=0);

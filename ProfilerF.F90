@@ -41,6 +41,7 @@ MODULE ProfilerF
 !! any code segments for which start/stop is non-collective and therefore might not be called on some processes.
   PROCEDURE :: declare => ProfilerDeclareF
   PROCEDURE :: stop => ProfilerStopF !< End timing a code segment
+  PROCEDURE :: active => ProfilerActiveF !< Set the maximum depth at which recording is done
   PROCEDURE :: print => ProfilerPrintF !< \public Print a representation of the object.
  END TYPE Profiler
  INTERFACE Profiler
@@ -54,6 +55,12 @@ MODULE ProfilerF
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
    TYPE(c_ptr) :: ProfilerNewC
   END FUNCTION ProfilerNewC
+ !> \private
+  SUBROUTINE ProfilerActiveC(handle, level) BIND (C, name='profilerActive')
+   USE iso_c_binding
+   TYPE(c_ptr), INTENT(in), VALUE :: handle
+   INTEGER(kind=c_int), INTENT(in), VALUE ::  level
+  END SUBROUTINE ProfilerActiveC
  !> \private
   SUBROUTINE ProfilerStartC(handle, name) BIND (C, name='profilerStart')
    USE iso_c_binding
@@ -101,6 +108,12 @@ MODULE ProfilerF
    namecopy=TRIM(name)//C_NULL_CHAR
    CALL ProfilerStartC(this%handle,namecopy)
   END SUBROUTINE ProfilerStartF
+!> \public Set the maximum stack depth for which recording will be done
+  SUBROUTINE ProfilerActiveF(this,level)
+   CLASS(Profiler), INTENT(in) :: this !< Profiler object
+   INTEGER, INTENT(in) :: level !< maximum depth at which recording will be done
+   CALL ProfilerActiveC(this%handle,INT(level,kind=c_int))
+  END SUBROUTINE ProfilerActiveF
 !> \public Ensure that a code segment is entered into the result table. This must be called for
 !! any code segments for which start/stop is non-collective and therefore might not be called on some processes.
 !! Should be called through type-bound interface \c declare.
