@@ -191,6 +191,10 @@ END SUBROUTINE profiler_module_test
 
 #ifdef MAIN
 PROGRAM mainf
- CALL profiler_module_test(1)
+ INTEGER :: level
+ CHARACTER(len=8) :: buff='1'
+ IF (command_argument_count().gt.0) CALL get_command_argument(1,buff)
+ READ(buff,'(I)') level
+ CALL profiler_module_test(level)
 END PROGRAM mainf
 #endif
