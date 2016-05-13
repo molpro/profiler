@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 project(Profiler)
 ENABLE_LANGUAGE(Fortran)
 
+add_definitions(-g)
 add_definitions(-DMAIN)
 add_executable(Profiler.exe main.cpp Profiler.cpp Profiler.h)
 add_executable(ProfilerF.exe Profiler.cpp Profiler.h ProfilerF.F90)

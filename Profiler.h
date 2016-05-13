@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 #include <map>
-#include <stack>
+#include <vector>
 #include <stdint.h>
 
 /*!
@@ -52,34 +52,52 @@ public:
   /*!
    * \brief Generate a printable representation of the object
    * \param verbosity how much to print
+   * \param cumulative whether to print cumulative (ie including all children) resources
    * \param precision how many decimal places for seconds
    * \return
    */
-  std::string str(const int verbosity=0, const int precision=3);
+  std::string str(const int verbosity=0, const bool cumulative=false, const int precision=3);
 
  public:
   struct resources {double cpu; double wall; int calls; long operations; std::string name; int64_t stack;
+                    struct resources * cumulative;
                 struct Profiler::resources& operator+=(const struct Profiler::resources &other);
                 struct Profiler::resources& operator-=(const struct Profiler::resources &other);
                 struct Profiler::resources operator+(const struct Profiler::resources &w2);
                 struct Profiler::resources operator-(const struct Profiler::resources &w2);
                };
   struct resources getResources();
- private:
+  static const std::string rootNode; //!< the tag on the top level node
+
   typedef std::map<std::string,struct Profiler::resources> resultMap;
+
+  /*!
+   * \brief totals
+   * \return std::map of \ref resources
+   */
+  resultMap totals();
+
+ private:
+  void totalise(const struct resources now, const long operations, const int calls=1);
   template<class T> struct compareResources : std::binary_function<T,T,bool>
   { inline bool operator () (const T& _left, const T& _right)
     {
+//      std::cout<<"Compare "<<_left.first<<" and "<<_right.first<<std::endl;
+//      std::cout<<"compare "<<_left.second.wall<<" and "<<_right.second.wall<<std::endl;
+//      std::cout<<"compare "<<_left.second.cumulative->wall<<" and "<<_right.second.cumulative->wall<<std::endl;
+      if (_left.second.cumulative==NULL)
       return _left.second.wall < _right.second.wall;
+      return _left.second.cumulative->wall < _right.second.cumulative->wall;
     }
   };
 
   std::string Name;
-  std::stack<struct resources> resourcesStack;
+  std::vector<struct resources> resourcesStack;
   struct resources startResources;
   resultMap results;
-  int activeLevel;
+  int activeLevel; int level;
   void stopall();
+  void accumulate(resultMap &results);
 };
   std::ostream& operator<<(std::ostream& os, Profiler & obj);
 
@@ -91,8 +109,8 @@ void profilerActive(void* profiler, int level);
 void profilerStart(void* profiler, char* name);
 void profilerDeclare(void* profiler, char* name);
 void profilerStop(void* profiler, char* name, long operations=0);
-char* profilerStr(void* profiler);
-void profilerStrSubroutine(void*profiler, char* result, int maxResult);
+char* profilerStr(void* profiler, int verbosity, int cumulative, int precision);
+void profilerStrSubroutine(void*profiler, char* result, int maxResult, int verbosity, int cumulative, int precision);
 #ifdef __cplusplus
 }
 #endif

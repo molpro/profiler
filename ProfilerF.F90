@@ -81,11 +81,11 @@ MODULE ProfilerF
    INTEGER (kind=c_long), INTENT(in), VALUE :: operations
   END SUBROUTINE ProfilerStopC
  !> \private
-  SUBROUTINE ProfilerStrC(handle, result, maxResult) BIND (C, name='profilerStrSubroutine')
+  SUBROUTINE ProfilerStrC(handle, result, maxResult, verbosity, cumulative, precision) BIND (C, name='profilerStrSubroutine')
    USE iso_c_binding
    TYPE(c_ptr), INTENT(in), VALUE :: handle
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(inout) ::  result
-   INTEGER (kind=c_int), INTENT(in), value :: maxResult
+   INTEGER (kind=c_int), INTENT(in), value :: maxResult, verbosity, cumulative, precision
   END SUBROUTINE ProfilerStrC
 
  END INTERFACE
@@ -142,12 +142,19 @@ MODULE ProfilerF
   END SUBROUTINE ProfilerStopF
 !> \public Print a representation of the object.
 !! Should be called through type-bound interface \c print
-  SUBROUTINE ProfilerPrintF(this, unit)
+  SUBROUTINE ProfilerPrintF(this, unit, verbosity, cumulative, precision)
    CLASS(Profiler), INTENT(in) :: this !< Profiler object
    INTEGER, INTENT(in) :: unit !< Fortran file number; must already be open
+   INTEGER, INTENT(in), OPTIONAL :: verbosity !< How much to print
+   LOGICAL, INTENT(in), OPTIONAL :: cumulative !< Whether local or cumulative resources are printed
+   INTEGER, INTENT(in), OPTIONAL :: precision !< Decimal precision
    CHARACTER (len=1, kind=c_char), DIMENSION(65536) :: result
    INTEGER :: length
-   CALL ProfilerStrC(this%handle,result,int(size(result),kind=c_int))
+   INTEGER(kind=c_int) :: verbosity_, cumulative_, precision_
+   verbosity_=0; if (present(verbosity)) verbosity_=verbosity
+   cumulative_=0; if (present(cumulative)) then; if (cumulative) cumulative_=1; endif
+   precision_=3; if (present(precision)) precision_=precision
+   CALL ProfilerStrC(this%handle,result,int(size(result),kind=c_int),verbosity_,cumulative_,precision_)
    DO length=1,SIZE(result)
     IF (result(length).EQ.C_NULL_CHAR) EXIT
    END DO
@@ -167,11 +174,30 @@ SUBROUTINE profiler_module_test(printlevel)
  IMPLICIT NONE
  INTEGER, INTENT(in) :: printlevel
  TYPE(Profiler) :: p
- INTEGER, PARAMETER :: repeat=20000000
+ INTEGER, PARAMETER :: repeat=2000000
  DOUBLE PRECISION :: a
  DOUBLE PRECISION, POINTER, DIMENSION(:) :: x
- INTEGER :: i
+ INTEGER :: i,kk
  p = Profiler('Fortran')
+ !call p%active(2)
+ call worker
+ call p%start('subtask')
+ call worker
+ a=2d0
+ do kk=1,3
+ call p%start('subsubtask')
+ a=a+sqrt(1/a) ! stop the compiler optimising away
+ call worker
+ call p%stop('subsubtask')
+ end do
+ call p%stop('subtask')
+ if (printlevel.gt.0) CALL p%print(6)
+ if (printlevel.gt.0) CALL p%print(6,cumulative=.TRUE.)
+#ifdef MEMORY
+ if (printlevel.gt.9) PRINT *, 'done',memory_used('STACK',.TRUE.),memory_used('STACK',.FALSE.)
+#endif
+ CONTAINS
+ SUBROUTINE worker
  CALL p%start('sqrt')
 #ifdef MEMORY
  x => memory_allocate(123456)
@@ -184,7 +210,15 @@ SUBROUTINE profiler_module_test(printlevel)
  call memory_release(x)
 #endif
  CALL p%stop('sqrt',2*repeat)
- IF (printlevel.GT.1) PRINT *,a
+ IF (printlevel.GT.99) PRINT *,a ! to avoid compiler optimisation
+
+! not explicitly accounted - should appear in total
+ a=1d0
+ DO i=1,repeat
+  a=a*EXP(a+1d0/i)/EXP(a+3d0/i+1)
+ END DO
+ IF (printlevel.GT.99) PRINT *,a ! to avoid compiler optimisation
+
  CALL p%start('exp')
 #ifdef MEMORY
  x => memory_allocate(56789)
@@ -194,12 +228,9 @@ SUBROUTINE profiler_module_test(printlevel)
  DO i=1,repeat
   a=a*EXP(a+1d0/i)/EXP(a+1d0/i+1)
  END DO
- IF (printlevel.GT.1) PRINT *,a
+ IF (printlevel.GT.99) PRINT *,a ! to avoid compiler optimisation
  CALL p%stop('exp',2*repeat)
- if (printlevel.gt.0) CALL p%print(6)
-#ifdef MEMORY
- if (printlevel.gt.9) PRINT *, 'done',memory_used('STACK',.TRUE.),memory_used('STACK',.FALSE.)
-#endif
+ END SUBROUTINE worker
 END SUBROUTINE profiler_module_test
 
 #ifdef MAIN

@@ -9,6 +9,8 @@
 #include "Profiler.h"
 #include "memory.h"
 
+//#define DEBUG
+
 Profiler::Profiler()
 {
 }
@@ -18,13 +20,15 @@ Profiler::Profiler(std::string name, const int level)
   active(level);
 }
 
+const std::string Profiler::rootNode="!:!:!:TOP";
 void Profiler::reset(const std::string name)
 {
   Name=name;
   stopall();
   results.clear();
   active();
-  start("* Other");
+  level=0;
+  start(rootNode);
 }
 
 void Profiler::active(const int level)
@@ -32,34 +36,69 @@ void Profiler::active(const int level)
     activeLevel=level;
 }
 
+#include <assert.h>
 void Profiler::start(const std::string name)
 {
-  if (resourcesStack.size()>=activeLevel) return;
-  struct resources now=getResources();
+  level++;
+#ifdef DEBUG
+  std::cout << "start "<<name<<", stack size="<<resourcesStack.size()<<std::endl;
+#endif
+  if (level>activeLevel) return;
+#ifdef DEBUG
+  std::cout << "start continuing"<<level<<resourcesStack.size()<<std::endl;
+#endif
+  assert(level==resourcesStack.size()+1);
+  struct resources now=getResources();now.name=name;
   if (! resourcesStack.empty())
-    resourcesStack.top()+=now;
-  struct resources minusNow; minusNow.cpu=-now.cpu; minusNow.wall=-now.wall; minusNow.name=name; minusNow.operations=0; minusNow.stack = -now.stack;
-  resourcesStack.push(minusNow);
+    totalise(now,0,0);
+  resourcesStack.push_back(now);
+#ifdef DEBUG
+    std::cout << "end of start "<<name<<", stack size="<<resourcesStack.size()<<" top name="<<resourcesStack.back().name<<std::endl;
+#endif
 #ifdef MEMORY_H
   memory_reset_maximum_stack(-1);
 #endif
 }
 
-#include <assert.h>
+void Profiler::totalise(const struct resources now, const long operations, const int calls)
+{
+  resources diff=now;
+  diff-=resourcesStack.back();
+  diff.name=resourcesStack.back().name;
+  diff.operations=operations;
+  std::string key;
+  for(std::vector<resources>::const_reverse_iterator r=resourcesStack.rbegin(); r!= resourcesStack.rend(); r++) key=r->name+":"+key; key.pop_back();
+  diff.name=key;
+  results[key] += diff;
+  results[key].calls += calls;
+#ifdef DEBUG
+  std::cout << "totalise base.wall="<<resourcesStack.back().wall<<", now.wall="<<now.wall<<", wall increment="<<diff.wall<<", updated results["<<key<<"].wall="<<results[key].wall<<std::endl;
+#endif
+}
+
 void Profiler::stop(const std::string name, long operations)
 {
-  if (resourcesStack.size()>activeLevel) return;
-  assert(name=="" || name == resourcesStack.top().name);
-  struct resources now=getResources();now.operations=operations;
-  struct resources* tt = &resourcesStack.top();
-  (*tt)+=now;
-  results[tt->name] += resourcesStack.top();
-  results[tt->name].calls++;
-#ifdef MEMORY_H
-  memory_reset_maximum_stack(tt->stack);
+  level--;
+#ifdef DEBUG
+  std::cout << "stop "<<name<<", stack size="<<resourcesStack.size()<<level<<" top name="<<resourcesStack.back().name<<std::endl;
 #endif
-  resourcesStack.pop();
-  if (! resourcesStack.empty()) resourcesStack.top()-=now;
+  if (level > 0 && level>=activeLevel) return;
+#ifdef DEBUG
+  std::cout << "stop continuing"<<std::endl;
+#endif
+  assert(level==resourcesStack.size()-1);
+  assert(name=="" || name == resourcesStack.back().name);
+  struct resources now=getResources();now.operations=operations;
+  totalise(now,operations,1);
+#ifdef MEMORY_H
+  memory_reset_maximum_stack(resourcesStack.back().stack);
+#endif
+  resourcesStack.pop_back();
+  if (! resourcesStack.empty()) {now.name=resourcesStack.back().name; resourcesStack.back()=now;}
+#ifdef DEBUG
+  if (! resourcesStack.empty())
+    std::cout << "end of stop "<<name<<", stack size="<<resourcesStack.size()<<" top name="<<resourcesStack.back().name<<std::endl;
+#endif
 }
 
 void Profiler::declare(const std::string name)
@@ -92,9 +131,8 @@ itf::FMppInt interface(itf::FMppInt::MPP_NeedSharedFs|itf::FMppInt::MPP_GlobalDe
 //int64_t get_iprocs_cxx_();
 //}
 #endif
-std::string Profiler::str(const int verbosity, const int precision)
+Profiler::resultMap Profiler::totals()
 {
-  if (verbosity<0) return "";
   stopall();
   resultMap localResults=this->results; // local copy that we can sum globally
   while(localResults.erase(""));
@@ -134,35 +172,42 @@ std::string Profiler::str(const int verbosity, const int precision)
 #endif
 #endif
   }
+  accumulate(localResults);
+  return localResults;
+}
+
+std::string Profiler::str(const int verbosity, const bool cumulative, const int precision)
+{
+  if (verbosity<0) return "";
+  resultMap localResults=totals();
   typedef std::pair<std::string,Profiler::resources> data_t;
   std::priority_queue<data_t, std::deque<data_t>, compareResources<data_t>  > q(localResults.begin(),localResults.end());
   std::stringstream ss;
   size_t maxWidth=0;
-  long maxOperations=0;
-  Profiler::resources totalResources=getResources();totalResources-=totalResources;
   for (resultMap::const_iterator s=localResults.begin(); s!=localResults.end(); ++s) {
-      if ((*s).second.operations > maxOperations) maxOperations=(*s).second.operations;
       if ((*s).first.size() > maxWidth) maxWidth=(*s).first.size();
-      //std::cout << "totalResources contributor name=" << (*s).second.name <<", cpu="<< (*s).second.cpu <<", stack="<< (*s).second.stack << std::endl;
-      totalResources += (*s).second;
   }
-  totalResources.calls=1;
-  q.push(data_t("* TOTAL",totalResources));
-  ss << "Profiler "<<Name<<std::endl;
+  maxWidth-=rootNode.size()+1;
+  ss << "Profiler "<<Name; if(cumulative) ss<<" (cumulative)"; if (activeLevel < INT_MAX) ss <<" to depth "<<activeLevel; ss <<std::endl;
+//  ss << "Precision="<<precision<<std::endl;
   std::vector<std::string> prefixes;
   prefixes.push_back(""); prefixes.push_back("k"); prefixes.push_back("M"); prefixes.push_back("G");
   prefixes.push_back("T"); prefixes.push_back("P"); prefixes.push_back("E"); prefixes.push_back("Z"); prefixes.push_back("Y");
   while (! q.empty()) {
+    Profiler::resources r=q.top().second;
+    if (!r.name.empty() && cumulative) r=*(r.cumulative);
     ss.precision(precision);
-    ss <<std::right <<std::setw(maxWidth) << q.top().first <<": calls="<<q.top().second.calls<<", cpu="<<std::fixed<<q.top().second.cpu<<", wall="<<q.top().second.wall;
-    double ops=q.top().second.operations;
-    double wall=q.top().second.wall;
+    std::string name=q.top().first;
+    name.replace(0,rootNode.size()+1,""); if (name == "") name = cumulative ? "All" : "(other)";
+    ss <<std::right <<std::setw(maxWidth) << name <<": calls="<<r.calls<<", cpu="<<std::fixed<<r.cpu<<", wall="<<r.wall;
+    double ops=r.operations;
+    double wall=r.wall;
     if (ops>(double)0 && wall>(double)0) {
       ops /= wall;
       int shifter = ops > 1 ? (int)(log10(ops)/3) : 0 ; shifter = shifter >= (int) prefixes.size() ? (int) prefixes.size()-1 : shifter;  ops *= pow((double)10, -shifter*3);
       ss<<", "<<ops<<" "<<prefixes[shifter]<<"op/s";
     }
-    size_t stack=q.top().second.stack;
+    size_t stack=r.stack;
     if (stack > (size_t)0) {
       ss<<", stack="<<stack;
     }
@@ -172,6 +217,27 @@ std::string Profiler::str(const int verbosity, const int precision)
   return ss.str();
 }
 
+void Profiler::accumulate(resultMap& results)
+{
+//  std::cout << "accumulate all"<<std::endl;
+  for (resultMap::iterator r=results.begin(); r!=results.end(); ++r) r->second.name=r->first;
+  for (resultMap::iterator r=results.begin(); r!=results.end(); ++r) {
+    //std::cout << "accumulate "<<r->first<<" : "<<r->second.name<<std::endl;
+//    accumulate(r->second, results);
+      r->second.cumulative = new Profiler::resources;
+      *r->second.cumulative-=*r->second.cumulative;
+    for (resultMap::iterator s=results.begin(); s!=results.end(); ++s) {
+      if (r->first.size() <= s->first.size() && r->first == s->first.substr(0,r->first.size())) {
+        int64_t memo=r->second.cumulative->stack;
+        *r->second.cumulative += s->second;
+        r->second.cumulative->stack=std::max(memo,r->second.stack+s->second.stack);
+        r->second.cumulative->calls = r->second.calls;
+//        std::cout << "accumulate "<<r->first<<" with " <<s->second.name<<s->second.wall<<":"<<r->second.cumulative->wall<<std::endl;
+      }
+    }
+  }
+}
+
 std::ostream& operator<<(std::ostream& os, Profiler & obj)
 {
   return os << obj.str();
@@ -179,6 +245,8 @@ std::ostream& operator<<(std::ostream& os, Profiler & obj)
 
 #include <time.h>
 #include <sys/time.h>
+static int init=1;
+static double wallbase;
 struct Profiler::resources Profiler::getResources()
 {
   struct Profiler::resources result;
@@ -186,12 +254,17 @@ struct Profiler::resources Profiler::getResources()
   result.cpu=(double)clock()/CLOCKS_PER_SEC;
   struct timeval time;
   result.wall=(double)0;
-  if (!gettimeofday(&time,NULL))
+  if (!gettimeofday(&time,NULL)) {
     result.wall = (double)time.tv_sec + (double)time.tv_usec * .000001;
+    if (init) wallbase=result.wall;
+    init=0;
+    result.wall-=wallbase;
+  }
 #ifdef MEMORY_H
   result.stack=(size_t) memory_used('S',(size_t)1);
 #else
   result.stack=0;
+  result.cumulative=NULL;
 #endif
   return result;
 }
@@ -222,6 +295,7 @@ struct Profiler::resources& Profiler::resources::operator-=( const struct Profil
   cpu -= w2.cpu;
   wall -= w2.wall;
   operations -= w2.operations;
+  stack -= w2.stack;
   return *this;
 }
 
@@ -242,6 +316,6 @@ void profilerActive(void* profiler, int level) { Profiler* obj=(Profiler*)profil
 void profilerStart(void* profiler, char* name) { Profiler* obj=(Profiler*)profiler; obj->start(std::string(name)); }
 void profilerDeclare(void* profiler, char* name) { Profiler* obj=(Profiler*)profiler; obj->declare(std::string(name)); }
 void profilerStop(void* profiler, char* name, long operations) { Profiler* obj=(Profiler*)profiler; obj->stop(std::string(name),operations); }
-char* profilerStr(void* profiler) { Profiler* obj=(Profiler*)profiler; char* result = (char*)malloc(obj->str().size()+1); strcpy(result, obj->str().c_str()); return result; }
-  void profilerStrSubroutine(void*profiler, char* result, int maxResult) { strncpy(result, profilerStr(profiler),maxResult-1);}
+char* profilerStr(void* profiler, int verbosity, int cumulative, int precision) { Profiler* obj=(Profiler*)profiler; std::string res = obj->str(verbosity,bool(cumulative), precision); char* result = (char*)malloc(res.size()+1); strcpy(result, res.c_str()); return result; }
+void profilerStrSubroutine(void*profiler, char* result, int maxResult, int verbosity, int cumulative, int precision) { strncpy(result, profilerStr(profiler, verbosity, cumulative, precision),maxResult-1);}
 }

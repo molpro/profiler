@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
       profilerStart(profilerC,(char*)"profiler");
       profilerStop(profilerC,(char*)"profiler",1);
     }
-    std::cout << profilerStr(profilerC) << std::endl;
+    std::cout << profilerStr(profilerC,0,0,3) << std::endl;
   }
 
 }
