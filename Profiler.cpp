@@ -1,3 +1,4 @@
+#include "common/molpro_config.h"
 #include <algorithm>
 #include <sstream>
 #include <iostream>
@@ -9,9 +10,8 @@
 #include "Profiler.h"
 #include "memory.h"
 
-//#define DEBUG
-
 Profiler::Profiler()
+   : rootNode("!:!:!:TOP")
 {
 }
 Profiler::Profiler(std::string name, const int level)
@@ -20,7 +20,6 @@ Profiler::Profiler(std::string name, const int level)
   active(level);
 }
 
-const std::string Profiler::rootNode="!:!:!:TOP";
 void Profiler::reset(const std::string name)
 {
   Name=name;
@@ -40,24 +39,30 @@ void Profiler::active(const int level)
 void Profiler::start(const std::string name)
 {
   level++;
-#ifdef DEBUG
-  std::cout << "start "<<name<<", stack size="<<resourcesStack.size()<<std::endl;
-#endif
   if (level>activeLevel) return;
-#ifdef DEBUG
-  std::cout << "start continuing"<<level<<resourcesStack.size()<<std::endl;
-#endif
   assert(level==resourcesStack.size()+1);
   struct resources now=getResources();now.name=name;
   if (! resourcesStack.empty())
     totalise(now,0,0);
-  resourcesStack.push_back(now);
-#ifdef DEBUG
-    std::cout << "end of start "<<name<<", stack size="<<resourcesStack.size()<<" top name="<<resourcesStack.back().name<<std::endl;
-#endif
 #ifdef MEMORY_H
-  memory_reset_maximum_stack(-1);
+  // memory accounting:
+  // the statistic for a segment is the maximum used, ie memory_used('S',1) minus the actual start memory, ie memory_used('S',0)
+  // memory_reset_maximum_stack()  is used to reset the memory manager's notion of high water
+  // memoryStack[01] are used to store the values from memory_used in start()
+  // in start(),
+  //  (a) remember current memory in memoryStack[01]
+  // in totalise(),
+  //  (a) set the my maximum memory to max(existing,maximum memory used - memoryStack0[me]);
+  // in stop(),
+  //  (a) reset maximum stack to memoryStack1[me]
+  // in accumulate(), add max(children) to parent
+  //if (! memoryStack0.empty()) {
+    //resourcesStack.back().stack = std::max((int64_t)memory_used('S',(size_t)1)-memoryStack0.back(),resourcesStack.back().stack);
+  //}
+  memoryStack0.push_back(memory_used('S',(size_t)0));
+  memoryStack1.push_back(memory_used('S',(size_t)1));
 #endif
+  resourcesStack.push_back(now);
 }
 
 void Profiler::totalise(const struct resources now, const long operations, const int calls)
@@ -66,39 +71,30 @@ void Profiler::totalise(const struct resources now, const long operations, const
   diff-=resourcesStack.back();
   diff.name=resourcesStack.back().name;
   diff.operations=operations;
+  diff.stack=memory_used('S',(size_t)1)-memoryStack0.back();
   std::string key;
-  for(std::vector<resources>::const_reverse_iterator r=resourcesStack.rbegin(); r!= resourcesStack.rend(); r++) key=r->name+":"+key; key.pop_back();
+  for(std::vector<resources>::const_reverse_iterator r=resourcesStack.rbegin(); r!= resourcesStack.rend(); r++) key=r->name+":"+key;
+  key.erase(key.end()-1,key.end());
   diff.name=key;
   results[key] += diff;
   results[key].calls += calls;
-#ifdef DEBUG
-  std::cout << "totalise base.wall="<<resourcesStack.back().wall<<", now.wall="<<now.wall<<", wall increment="<<diff.wall<<", updated results["<<key<<"].wall="<<results[key].wall<<std::endl;
-#endif
 }
 
 void Profiler::stop(const std::string name, long operations)
 {
   level--;
-#ifdef DEBUG
-  std::cout << "stop "<<name<<", stack size="<<resourcesStack.size()<<level<<" top name="<<resourcesStack.back().name<<std::endl;
-#endif
   if (level > 0 && level>=activeLevel) return;
-#ifdef DEBUG
-  std::cout << "stop continuing"<<std::endl;
-#endif
   assert(level==resourcesStack.size()-1);
   assert(name=="" || name == resourcesStack.back().name);
   struct resources now=getResources();now.operations=operations;
   totalise(now,operations,1);
 #ifdef MEMORY_H
-  memory_reset_maximum_stack(resourcesStack.back().stack);
+  memoryStack0.pop_back();
+  memoryStack1.pop_back();
+  memory_reset_maximum_stack(memoryStack1.back());
 #endif
   resourcesStack.pop_back();
   if (! resourcesStack.empty()) {now.name=resourcesStack.back().name; resourcesStack.back()=now;}
-#ifdef DEBUG
-  if (! resourcesStack.empty())
-    std::cout << "end of stop "<<name<<", stack size="<<resourcesStack.size()<<" top name="<<resourcesStack.back().name<<std::endl;
-#endif
 }
 
 void Profiler::declare(const std::string name)
@@ -219,20 +215,17 @@ std::string Profiler::str(const int verbosity, const bool cumulative, const int 
 
 void Profiler::accumulate(resultMap& results)
 {
-//  std::cout << "accumulate all"<<std::endl;
   for (resultMap::iterator r=results.begin(); r!=results.end(); ++r) r->second.name=r->first;
-  for (resultMap::iterator r=results.begin(); r!=results.end(); ++r) {
-    //std::cout << "accumulate "<<r->first<<" : "<<r->second.name<<std::endl;
-//    accumulate(r->second, results);
-      r->second.cumulative = new Profiler::resources;
-      *r->second.cumulative-=*r->second.cumulative;
-    for (resultMap::iterator s=results.begin(); s!=results.end(); ++s) {
-      if (r->first.size() <= s->first.size() && r->first == s->first.substr(0,r->first.size())) {
-        int64_t memo=r->second.cumulative->stack;
-        *r->second.cumulative += s->second;
-        r->second.cumulative->stack=std::max(memo,r->second.stack+s->second.stack);
-        r->second.cumulative->calls = r->second.calls;
-//        std::cout << "accumulate "<<r->first<<" with " <<s->second.name<<s->second.wall<<":"<<r->second.cumulative->wall<<std::endl;
+  for (resultMap::iterator parent=results.begin(); parent!=results.end(); ++parent) {
+      parent->second.cumulative = new Profiler::resources;
+      *parent->second.cumulative-=*parent->second.cumulative;
+      // nb 'child' includes the parent itself
+    for (resultMap::iterator child=results.begin(); child!=results.end(); ++child) {
+      if (parent->first.size() <= child->first.size() && parent->first == child->first.substr(0,parent->first.size())) {
+        *parent->second.cumulative += child->second;
+	if (parent->first != child->first)
+	  parent->second.cumulative->stack=std::max(parent->second.cumulative->stack,parent->second.stack+child->second.stack);
+        parent->second.cumulative->calls = parent->second.calls;
       }
     }
   }

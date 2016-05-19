@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <climits>
 #include <stdint.h>
 
 /*!
@@ -67,7 +68,7 @@ public:
                 struct Profiler::resources operator-(const struct Profiler::resources &w2);
                };
   struct resources getResources();
-  static const std::string rootNode; //!< the tag on the top level node
+  const std::string rootNode; //!< the tag on the top level node
 
   typedef std::map<std::string,struct Profiler::resources> resultMap;
 
@@ -93,6 +94,8 @@ public:
 
   std::string Name;
   std::vector<struct resources> resourcesStack;
+  std::vector<int64_t>memoryStack0;
+  std::vector<int64_t>memoryStack1;
   struct resources startResources;
   resultMap results;
   int activeLevel; int level;
