@@ -1,4 +1,8 @@
+#ifdef MOLPRO
 #include "common/molpro_config.h"
+#else
+#define _GNU_SOURCE
+#endif
 #include <algorithm>
 #include <sstream>
 #include <iostream>
@@ -71,7 +75,9 @@ void Profiler::totalise(const struct resources now, const long operations, const
   diff-=resourcesStack.back();
   diff.name=resourcesStack.back().name;
   diff.operations=operations;
+#ifdef MEMORY_H
   diff.stack=memory_used('S',(size_t)1)-memoryStack0.back();
+#endif
   std::string key;
   for(std::vector<resources>::const_reverse_iterator r=resourcesStack.rbegin(); r!= resourcesStack.rend(); r++) key=r->name+":"+key;
   key.erase(key.end()-1,key.end());
