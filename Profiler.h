@@ -48,8 +48,9 @@ public:
    * \brief active set the maximum stack depth at which data collection is done.
    * \param level
    * A large value means that data will always be accumulated; zero means that calls to start and stop do nothing.
+   * \param stopPrint if non-negative, \ref stop() prints the statistics since the corresponding \ref start()
    */
-  void active(const int level=INT_MAX);
+  void active(const int level=INT_MAX, const int stopPrint=-1);
   /*!
    * \brief Generate a printable representation of the object
    * \param verbosity how much to print
@@ -62,13 +63,13 @@ public:
  public:
   struct resources {double cpu; double wall; int calls; long operations; std::string name; int64_t stack;
                     struct resources * cumulative;
+                std::string str(const int width=0, const int verbosity=0, const bool cumulative=false, const int precision=3) const;
                 struct Profiler::resources& operator+=(const struct Profiler::resources &other);
                 struct Profiler::resources& operator-=(const struct Profiler::resources &other);
                 struct Profiler::resources operator+(const struct Profiler::resources &w2);
                 struct Profiler::resources operator-(const struct Profiler::resources &w2);
                };
   struct resources getResources();
-  const std::string rootNode; //!< the tag on the top level node
 
   typedef std::map<std::string,struct Profiler::resources> resultMap;
 
@@ -99,6 +100,7 @@ public:
   struct resources startResources;
   resultMap results;
   int activeLevel; int level;
+  int stopPrint_;
   void stopall();
   void accumulate(resultMap &results);
 };
@@ -108,7 +110,7 @@ extern "C" {
 #endif
 void* profilerNew(char* name);
 void profilerReset(void* profiler, char* name);
-void profilerActive(void* profiler, int level);
+void profilerActive(void* profiler, int level, int stopPrint);
 void profilerStart(void* profiler, char* name);
 void profilerDeclare(void* profiler, char* name);
 void profilerStop(void* profiler, char* name, long operations=0);

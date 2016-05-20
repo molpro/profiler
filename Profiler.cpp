@@ -15,9 +15,9 @@
 #include "memory.h"
 
 Profiler::Profiler()
-   : rootNode("!:!:!:TOP")
 {
 }
+
 Profiler::Profiler(std::string name, const int level)
 {
   reset(name);
@@ -31,12 +31,13 @@ void Profiler::reset(const std::string name)
   results.clear();
   active();
   level=0;
-  start(rootNode);
+  start("TOP");
 }
 
-void Profiler::active(const int level)
+void Profiler::active(const int level, const int stopPrint)
 {
     activeLevel=level;
+    stopPrint_=stopPrint;
 }
 
 #include <assert.h>
@@ -178,6 +179,35 @@ Profiler::resultMap Profiler::totals()
   return localResults;
 }
 
+std::string Profiler::resources::str(const int width, const int verbosity, const bool cumulative, const int precision) const
+{
+  std::stringstream ss;
+  std::vector<std::string> prefixes;
+  prefixes.push_back(""); prefixes.push_back("k"); prefixes.push_back("M"); prefixes.push_back("G"); prefixes.push_back("T"); prefixes.push_back("P"); prefixes.push_back("E"); prefixes.push_back("Z"); prefixes.push_back("Y");
+  const struct resources * r=this;
+  std::string name=r->name;
+  if (cumulative) r=(r->cumulative);
+  if (name.find(":") == std::string::npos)
+    name = cumulative ? "All" : "(other)";
+  else
+    name.replace(0,name.find(":")+1,"");
+  size_t wid = width > 0 ?  width : name.size();
+  ss.precision(precision);
+  ss <<std::right <<std::setw(wid) << name <<": calls="<<r->calls<<", cpu="<<std::fixed<<r->cpu<<", wall="<<r->wall;
+  double ops=r->operations;
+  double wall=r->wall;
+  if (ops>(double)0 && wall>(double)0) {
+    ops /= wall;
+    int shifter = ops > 1 ? (int)(log10(ops)/3) : 0 ; shifter = shifter >= (int) prefixes.size() ? (int) prefixes.size()-1 : shifter;  ops *= pow((double)10, -shifter*3);
+    ss<<", "<<ops<<" "<<prefixes[shifter]<<"op/s";
+  }
+  size_t stack=r->stack;
+  if (stack > (size_t)0) {
+    ss<<", stack="<<stack;
+  }
+  return ss.str();
+}
+
 std::string Profiler::str(const int verbosity, const bool cumulative, const int precision)
 {
   if (verbosity<0) return "";
@@ -186,36 +216,13 @@ std::string Profiler::str(const int verbosity, const bool cumulative, const int 
   std::priority_queue<data_t, std::deque<data_t>, compareResources<data_t>  > q(localResults.begin(),localResults.end());
   std::stringstream ss;
   size_t maxWidth=0;
-  for (resultMap::const_iterator s=localResults.begin(); s!=localResults.end(); ++s) {
-      if ((*s).first.size() > maxWidth) maxWidth=(*s).first.size();
-  }
-  maxWidth-=rootNode.size()+1;
+  for (resultMap::const_iterator s=localResults.begin(); s!=localResults.end(); ++s)
+    if ((*s).first.size() > maxWidth) maxWidth=(*s).first.size();
+  maxWidth-=localResults.begin()->first.size()+1; // assumes the first node is the top level
+  if (maxWidth < 7) maxWidth=7;
   ss << "Profiler "<<Name; if(cumulative) ss<<" (cumulative)"; if (activeLevel < INT_MAX) ss <<" to depth "<<activeLevel; ss <<std::endl;
-//  ss << "Precision="<<precision<<std::endl;
-  std::vector<std::string> prefixes;
-  prefixes.push_back(""); prefixes.push_back("k"); prefixes.push_back("M"); prefixes.push_back("G");
-  prefixes.push_back("T"); prefixes.push_back("P"); prefixes.push_back("E"); prefixes.push_back("Z"); prefixes.push_back("Y");
-  while (! q.empty()) {
-    Profiler::resources r=q.top().second;
-    if (!r.name.empty() && cumulative) r=*(r.cumulative);
-    ss.precision(precision);
-    std::string name=q.top().first;
-    name.replace(0,rootNode.size()+1,""); if (name == "") name = cumulative ? "All" : "(other)";
-    ss <<std::right <<std::setw(maxWidth) << name <<": calls="<<r.calls<<", cpu="<<std::fixed<<r.cpu<<", wall="<<r.wall;
-    double ops=r.operations;
-    double wall=r.wall;
-    if (ops>(double)0 && wall>(double)0) {
-      ops /= wall;
-      int shifter = ops > 1 ? (int)(log10(ops)/3) : 0 ; shifter = shifter >= (int) prefixes.size() ? (int) prefixes.size()-1 : shifter;  ops *= pow((double)10, -shifter*3);
-      ss<<", "<<ops<<" "<<prefixes[shifter]<<"op/s";
-    }
-    size_t stack=r.stack;
-    if (stack > (size_t)0) {
-      ss<<", stack="<<stack;
-    }
-      ss <<std::endl;
-    q.pop();
-  }
+  for ( ; ! q.empty(); q.pop())
+      ss << q.top().second.str(maxWidth,verbosity,cumulative,precision) <<std::endl;
   return ss.str();
 }
 
@@ -311,7 +318,7 @@ extern "C" {
 #include <string.h>
 void* profilerNew(char* name) { return new Profiler(name); }
 void profilerReset(void* profiler, char* name) { Profiler* obj=(Profiler*)profiler; obj->reset(std::string(name)); }
-void profilerActive(void* profiler, int level) { Profiler* obj=(Profiler*)profiler; obj->active(level); }
+void profilerActive(void* profiler, int level, int stopPrint) { Profiler* obj=(Profiler*)profiler; obj->active(level,stopPrint); }
 void profilerStart(void* profiler, char* name) { Profiler* obj=(Profiler*)profiler; obj->start(std::string(name)); }
 void profilerDeclare(void* profiler, char* name) { Profiler* obj=(Profiler*)profiler; obj->declare(std::string(name)); }
 void profilerStop(void* profiler, char* name, long operations) { Profiler* obj=(Profiler*)profiler; obj->stop(std::string(name),operations); }

@@ -56,10 +56,11 @@ MODULE ProfilerF
    TYPE(c_ptr) :: ProfilerNewC
   END FUNCTION ProfilerNewC
  !> \private
-  SUBROUTINE ProfilerActiveC(handle, level) BIND (C, name='profilerActive')
+  SUBROUTINE ProfilerActiveC(handle, level, stopPrint) BIND (C, name='profilerActive')
    USE iso_c_binding
    TYPE(c_ptr), INTENT(in), VALUE :: handle
    INTEGER(kind=c_int), INTENT(in), VALUE ::  level
+   INTEGER(kind=c_int), INTENT(in), VALUE ::  stopPrint
   END SUBROUTINE ProfilerActiveC
  !> \private
   SUBROUTINE ProfilerStartC(handle, name) BIND (C, name='profilerStart')
@@ -109,10 +110,13 @@ MODULE ProfilerF
    CALL ProfilerStartC(this%handle,namecopy)
   END SUBROUTINE ProfilerStartF
 !> \public Set the maximum stack depth for which recording will be done
-  SUBROUTINE ProfilerActiveF(this,level)
+  SUBROUTINE ProfilerActiveF(this,level,stopPrint)
    CLASS(Profiler), INTENT(in) :: this !< Profiler object
    INTEGER, INTENT(in) :: level !< maximum depth at which recording will be done
-   CALL ProfilerActiveC(this%handle,INT(level,kind=c_int))
+   INTEGER, INTENT(in), OPTIONAL :: stopPrint !< if non-negative, \ref stop prints the statistics since the corresponding \ref start
+   INTEGER :: stopPrint_
+   stopPrint_=-1; if (present(stopPrint)) stopPrint_=stopPrint
+   CALL ProfilerActiveC(this%handle,INT(level,kind=c_int),INT(stopPrint_,kind=c_int))
   END SUBROUTINE ProfilerActiveF
 !> \public Ensure that a code segment is entered into the result table. This must be called for
 !! any code segments for which start/stop is non-collective and therefore might not be called on some processes.
@@ -235,10 +239,25 @@ END SUBROUTINE profiler_module_test
 
 #ifdef MAIN
 PROGRAM mainf
+ use profilerf
  INTEGER :: level
  CHARACTER(len=8) :: buff='1'
+ type(profiler) :: p
  IF (command_argument_count().gt.0) CALL get_command_argument(1,buff)
  READ(buff,'(I)') level
  CALL profiler_module_test(level)
+
+ p = Profiler('testing')
+ call execute_command_line('sleep 1')
+ call p%start('a')
+ call execute_command_line('sleep 1')
+ call p%start('b')
+ call execute_command_line('sleep 1')
+ call p%stop('b',1)
+ call execute_command_line('sleep 1')
+ call p%stop('a',100)
+ call p%print(6)
+ call p%print(6,cumulative=.true.)
+
 END PROGRAM mainf
 #endif
