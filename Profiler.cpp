@@ -134,12 +134,12 @@ itf::FMppInt interface(itf::FMppInt::MPP_NeedSharedFs|itf::FMppInt::MPP_GlobalDe
 //int64_t get_iprocs_cxx_();
 //}
 #endif
-Profiler::resultMap Profiler::totals()
+Profiler::resultMap Profiler::totals() const
 {
-  stopall();
-  resultMap localResults=this->results; // local copy that we can sum globally
-  while(localResults.erase(""));
-  for (resultMap::iterator s=localResults.begin(); s!=localResults.end(); ++s) {
+  Profiler thiscopy=*this; // take a copy so that we can run stopall yet be const, and so that we can sum globally
+  thiscopy.stopall();
+  while(thiscopy.results.erase(""));
+  for (resultMap::iterator s=thiscopy.results.begin(); s!=thiscopy.results.end(); ++s) {
 #ifdef GCI_PARALLEL
     int64_t type=1, len=1;
     char* opm=strdup("max");
@@ -175,8 +175,8 @@ Profiler::resultMap Profiler::totals()
 #endif
 #endif
   }
-  accumulate(localResults);
-  return localResults;
+  thiscopy.accumulate(thiscopy.results);
+  return thiscopy.results;
 }
 
 std::string Profiler::resources::str(const int width, const int verbosity, const bool cumulative, const int precision) const
@@ -208,7 +208,7 @@ std::string Profiler::resources::str(const int width, const int verbosity, const
   return ss.str();
 }
 
-std::string Profiler::str(const int verbosity, const bool cumulative, const int precision)
+std::string Profiler::str(const int verbosity, const bool cumulative, const int precision) const
 {
   if (verbosity<0) return "";
   resultMap localResults=totals();

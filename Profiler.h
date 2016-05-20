@@ -58,7 +58,7 @@ public:
    * \param precision how many decimal places for seconds
    * \return
    */
-  std::string str(const int verbosity=0, const bool cumulative=false, const int precision=3);
+  std::string str(const int verbosity=0, const bool cumulative=false, const int precision=3) const;
 
  public:
   struct resources {double cpu; double wall; int calls; long operations; std::string name; int64_t stack;
@@ -77,7 +77,7 @@ public:
    * \brief totals
    * \return std::map of \ref resources
    */
-  resultMap totals();
+  resultMap totals() const;
 
  private:
   void totalise(const struct resources now, const long operations, const int calls=1);
