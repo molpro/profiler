@@ -46,7 +46,7 @@ void Profiler::start(const std::string name)
   level++;
   if (level>activeLevel) return;
   assert(level==resourcesStack.size()+1);
-  struct resources now=getResources();now.name=name;
+  struct resources now=getResources();now.name=name;now.calls=1;
   if (! resourcesStack.empty())
     totalise(now,0,0);
 #ifdef MEMORY_H
@@ -68,6 +68,8 @@ void Profiler::start(const std::string name)
   memoryStack1.push_back(memory_used('S',(size_t)1));
 #endif
   resourcesStack.push_back(now);
+  startResources.push_back(now);
+//    std::cout <<std::endl<< "start now.wall="<<now.wall<<std::endl;
 }
 
 void Profiler::totalise(const struct resources now, const long operations, const int calls)
@@ -95,12 +97,25 @@ void Profiler::stop(const std::string name, long operations)
   assert(name=="" || name == resourcesStack.back().name);
   struct resources now=getResources();now.operations=operations;
   totalise(now,operations,1);
+
+  if (stopPrint_>-1) {
+    struct resources diff=now;
+//    std::cout <<std::endl<< "now.wall="<<now.wall<<std::endl;
+//    std::cout << "then.wall="<<startResources.back().wall<<std::endl;
+    diff-=startResources.back();
+    diff.name="";
+    for(std::vector<resources>::const_reverse_iterator r=resourcesStack.rbegin(); r!= resourcesStack.rend(); r++) diff.name=r->name+":"+diff.name;
+    diff.name.erase(diff.name.end()-1,diff.name.end());
+    std::cout <<"Profiler \""<<Name<<"\" stop: "<< diff.str(0,stopPrint_,false,3,"All") <<std::endl;
+  }
+
 #ifdef MEMORY_H
   memoryStack0.pop_back();
   memoryStack1.pop_back();
   memory_reset_maximum_stack(memoryStack1.back());
 #endif
   resourcesStack.pop_back();
+  startResources.pop_back();
   if (! resourcesStack.empty()) {now.name=resourcesStack.back().name; resourcesStack.back()=now;}
 }
 
@@ -179,7 +194,7 @@ Profiler::resultMap Profiler::totals() const
   return thiscopy.results;
 }
 
-std::string Profiler::resources::str(const int width, const int verbosity, const bool cumulative, const int precision) const
+std::string Profiler::resources::str(const int width, const int verbosity, const bool cumulative, const int precision, const std::string defaultName) const
 {
   std::stringstream ss;
   std::vector<std::string> prefixes;
@@ -188,12 +203,17 @@ std::string Profiler::resources::str(const int width, const int verbosity, const
   std::string name=r->name;
   if (cumulative) r=(r->cumulative);
   if (name.find(":") == std::string::npos)
-    name = cumulative ? "All" : "(other)";
+    if (defaultName!="")
+      name=defaultName;
+    else
+      name = cumulative ? "All" : "(other)";
   else
     name.replace(0,name.find(":")+1,"");
   size_t wid = width > 0 ?  width : name.size();
   ss.precision(precision);
-  ss <<std::right <<std::setw(wid) << name <<": calls="<<r->calls<<", cpu="<<std::fixed<<r->cpu<<", wall="<<r->wall;
+  ss <<std::right <<std::setw(wid) << name <<":";
+  if (r->calls > 0) ss<<" calls="<<r->calls<<",";
+  ss<<" cpu="<<std::fixed<<r->cpu<<","<<" wall="<<r->wall;
   double ops=r->operations;
   double wall=r->wall;
   if (ops>(double)0 && wall>(double)0) {
@@ -220,7 +240,7 @@ std::string Profiler::str(const int verbosity, const bool cumulative, const int 
     if ((*s).first.size() > maxWidth) maxWidth=(*s).first.size();
   maxWidth-=localResults.begin()->first.size()+1; // assumes the first node is the top level
   if (maxWidth < 7) maxWidth=7;
-  ss << "Profiler "<<Name; if(cumulative) ss<<" (cumulative)"; if (activeLevel < INT_MAX) ss <<" to depth "<<activeLevel; ss <<std::endl;
+  ss << "Profiler \""<<Name<<"\""; if(cumulative) ss<<" (cumulative)"; if (activeLevel < INT_MAX) ss <<" to depth "<<activeLevel; ss <<std::endl;
   for ( ; ! q.empty(); q.pop())
       ss << q.top().second.str(maxWidth,verbosity,cumulative,precision) <<std::endl;
   return ss.str();
@@ -257,6 +277,7 @@ struct Profiler::resources Profiler::getResources()
 {
   struct Profiler::resources result;
   result.operations=0;
+  result.calls=0;
   result.cpu=(double)clock()/CLOCKS_PER_SEC;
   struct timeval time;
   result.wall=(double)0;

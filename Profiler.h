@@ -63,7 +63,7 @@ public:
  public:
   struct resources {double cpu; double wall; int calls; long operations; std::string name; int64_t stack;
                     struct resources * cumulative;
-                std::string str(const int width=0, const int verbosity=0, const bool cumulative=false, const int precision=3) const;
+                std::string str(const int width=0, const int verbosity=0, const bool cumulative=false, const int precision=3, const std::string defaultName="") const;
                 struct Profiler::resources& operator+=(const struct Profiler::resources &other);
                 struct Profiler::resources& operator-=(const struct Profiler::resources &other);
                 struct Profiler::resources operator+(const struct Profiler::resources &w2);
@@ -94,10 +94,9 @@ public:
   };
 
   std::string Name;
-  std::vector<struct resources> resourcesStack;
+  std::vector<struct resources> resourcesStack, startResources;
   std::vector<int64_t>memoryStack0;
   std::vector<int64_t>memoryStack1;
-  struct resources startResources;
   resultMap results;
   int activeLevel; int level;
   int stopPrint_;

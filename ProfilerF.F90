@@ -248,6 +248,7 @@ PROGRAM mainf
  CALL profiler_module_test(level)
 
  p = Profiler('testing')
+ call p%active(99,stopPrint=0)
  call execute_command_line('sleep 1')
  call p%start('a')
  call execute_command_line('sleep 1')
