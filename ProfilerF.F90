@@ -155,9 +155,9 @@ MODULE ProfilerF
    CHARACTER (len=1, kind=c_char), DIMENSION(65536) :: result
    INTEGER :: length
    INTEGER(kind=c_int) :: verbosity_, cumulative_, precision_
-   verbosity_=0; if (present(verbosity)) verbosity_=verbosity
+   verbosity_=0; if (present(verbosity)) verbosity_=int(verbosity,kind=kind(verbosity_))
    cumulative_=0; if (present(cumulative)) then; if (cumulative) cumulative_=1; endif
-   precision_=3; if (present(precision)) precision_=precision
+   precision_=3; if (present(precision)) precision_=int(precision,kind=kind(precision_))
    CALL ProfilerStrC(this%handle,result,int(size(result),kind=c_int),verbosity_,cumulative_,precision_)
    DO length=1,SIZE(result)
     IF (result(length).EQ.C_NULL_CHAR) EXIT
