@@ -113,7 +113,7 @@ MODULE ProfilerF
   SUBROUTINE ProfilerActiveF(this,level,stopPrint)
    CLASS(Profiler), INTENT(in) :: this !< Profiler object
    INTEGER, INTENT(in) :: level !< maximum depth at which recording will be done
-   INTEGER, INTENT(in), OPTIONAL :: stopPrint !< if non-negative, \ref stop prints the statistics since the corresponding \ref start
+   INTEGER, INTENT(in), OPTIONAL :: stopPrint !< if non-negative, \c stop prints the statistics since the corresponding \c start
    INTEGER :: stopPrint_
    stopPrint_=-1; if (present(stopPrint)) stopPrint_=stopPrint
    CALL ProfilerActiveC(this%handle,INT(level,kind=c_int),INT(stopPrint_,kind=c_int))
