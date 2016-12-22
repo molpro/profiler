@@ -198,6 +198,7 @@ SUBROUTINE profiler_module_test(printlevel)
  if (printlevel.gt.0) CALL p%print(6)
  if (printlevel.gt.0) CALL p%print(6,cumulative=.TRUE.)
 #ifdef MEMORY
+ IF (printlevel.GT.0) CALL time_memory(1000000*printlevel)
  if (printlevel.gt.9) PRINT *, 'done',memory_used('STACK',.TRUE.),memory_used('STACK',.FALSE.)
 #endif
  CONTAINS
@@ -235,6 +236,41 @@ SUBROUTINE profiler_module_test(printlevel)
  IF (printlevel.GT.99) PRINT *,a ! to avoid compiler optimisation
  CALL p%stop('exp',2*repeat)
  END SUBROUTINE worker
+#ifdef MEMORY
+ SUBROUTINE time_memory(nrep)
+  USE profilerF
+  USE memory
+  INTEGER, INTENT(in) :: nrep
+  INTEGER, PARAMETER :: iout=6
+  INTEGER :: base
+  TYPE(profiler) :: p
+  INTEGER, DIMENSION(:),POINTER :: addresses
+  INTEGER :: allocation_length
+  base = memory_save()
+  DO allocation_length=1,0,-1
+  WRITE (iout,*) 'Test memory system performance with ',nrep,' calls and allocation length',allocation_length
+  p = profiler('Memory system performance')
+  addresses => memory_allocate_integer(nrep)
+  CALL p%start('icorr')
+  DO i=1,nrep
+   addresses(i)=icorr(allocation_length)
+  END DO
+  CALL p%stop('icorr',nrep)
+  CALL p%start('print_status')
+  CALL memory_print_status(5,'After allocating')
+  CALL p%stop('print_status')
+  CALL p%start('corlsr')
+  PRINT *,addresses(1:5)
+  DO i=nrep,1,-1
+   CALL corlsr(addresses(i))
+  END DO
+  call memory_release(addresses)
+  CALL p%stop('corlsr',nrep)
+  call p%print(iout)
+ END DO
+  CALL memory_release(base)
+ END SUBROUTINE time_memory
+#endif
 END SUBROUTINE profiler_module_test
 
 #ifdef MAIN
