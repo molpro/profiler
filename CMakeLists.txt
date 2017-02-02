@@ -5,6 +5,7 @@ ENABLE_LANGUAGE(Fortran)
 
 add_definitions(-g)
 add_definitions(-DMAIN)
+add_definitions(-DMPI2) # get rid of this if you want serial
 add_executable(Profiler.exe main.cpp Profiler.cpp Profiler.h)
 add_executable(ProfilerF.exe Profiler.cpp Profiler.h ProfilerF.F90)
 

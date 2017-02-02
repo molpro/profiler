@@ -280,7 +280,7 @@ PROGRAM mainf
  CHARACTER(len=8) :: buff='1'
  type(profiler) :: p
  IF (command_argument_count().gt.0) CALL get_command_argument(1,buff)
- READ(buff,'(I)') level
+ READ(buff,'(I8)') level
  CALL profiler_module_test(level)
 
  p = Profiler('testing')

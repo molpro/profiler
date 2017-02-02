@@ -3,10 +3,16 @@
 #include <cmath>
 #include <time.h>
 #include <sys/time.h>
+#ifdef MPI2
+#include "mpi.h"
+#endif
 int main(int argc, char *argv[])
 {
   const size_t repeat=20000000, repeatr=1000000;
   {
+#ifdef MPI2
+    MPI_Init(&argc,&argv);
+#endif
     Profiler profiler("C++");
 
     profiler.start("sqrt");
@@ -42,5 +48,8 @@ int main(int argc, char *argv[])
     }
     std::cout << profilerStr(profilerC,0,0,3) << std::endl;
   }
+#ifdef MPI2
+  MPI_Finalize();
+#endif
 
 }
