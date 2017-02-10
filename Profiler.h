@@ -7,6 +7,14 @@
 #include <vector>
 #include <climits>
 #include <stdint.h>
+// if you want to force MPI mode, uncomment the next line
+//#define PROFILER_MPI
+#if defined(GA_MPI) || defined(MPI2) || defined(GCI_MPI) || defined(GCI_PARALLEL)
+#define PROFILER_MPI
+#endif
+#ifdef PROFILER_MPI
+#include "mpi.h"
+#endif
 
 /*!
  * \brief The Profiler class: framework for timing code sections
@@ -20,8 +28,13 @@ public:
    * \param name the title of this object
    * \param level
    * A large value means that data will always be accumulated; zero means that calls to start and stop do nothing.
+   * \param communicator The MPI communicator over which statistics should be aggregated.
    */
-  Profiler(std::string name, const int level=INT_MAX);
+  Profiler(std::string name, const int level=INT_MAX
+#ifdef PROFILER_MPI
+	   , const MPI_Comm communicator=MPI_COMM_WORLD
+#endif
+	   );
   /*!
    * \brief reset the object
    * \param name the title of this object
@@ -103,6 +116,9 @@ public:
   int stopPrint_;
   void stopall();
   void accumulate(resultMap &results);
+#ifdef PROFILER_MPI
+const MPI_Comm m_communicator;
+#endif
 };
   std::ostream& operator<<(std::ostream& os, Profiler & obj);
 

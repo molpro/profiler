@@ -1,13 +1,17 @@
-cmake_minimum_required(VERSION 2.8)
-
 project(Profiler)
+cmake_minimum_required(VERSION 3.1)
+
 ENABLE_LANGUAGE(Fortran)
 
-add_definitions(-g)
+find_package(MPI REQUIRED)
+include_directories(${MPI_CXX_INCLUDE_PATH})
+
 add_definitions(-DMAIN)
 add_definitions(-DMPI2) # get rid of this if you want serial
 add_executable(Profiler.exe main.cpp Profiler.cpp Profiler.h)
 add_executable(ProfilerF.exe Profiler.cpp Profiler.h ProfilerF.F90)
+target_link_libraries(Profiler.exe ${MPI_CXX_LIBRARIES})
+target_link_libraries(ProfilerF.exe ${MPI_CXX_LIBRARIES})
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
