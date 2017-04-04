@@ -156,7 +156,7 @@ Profiler::resultMap Profiler::totals() const
       key.resize(l);
       MPI_Bcast(&key[0],l,MPI_CHAR,0,m_communicator);
       struct Profiler::resources ss = thiscopy.results[key];
-      int type=1, len=1;
+      int len=1;
       double val=ss.wall;
       MPI_Allreduce(&val,&(ss.wall),len,MPI_DOUBLE,MPI_MAX,m_communicator);
       val=ss.cpu;
