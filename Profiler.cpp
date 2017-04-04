@@ -148,7 +148,7 @@ Profiler::resultMap Profiler::totals() const
   for (int i=0; i<n; i++) {
       int l;
       if (rank == 0) {
-          resultMap::iterator s=thiscopy.results.begin(); for (int j=1; j<i; j++) s++;
+          resultMap::iterator s=thiscopy.results.begin(); for (int j=0; j<i; j++) s++;
           key = s->first;
           l=key.size();
         }
