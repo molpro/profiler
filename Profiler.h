@@ -9,7 +9,10 @@
 #include <stdint.h>
 // if you want to force MPI mode, uncomment the next line
 //#define PROFILER_MPI
-#if defined(GA_MPI) || defined(MPI2) || defined(GCI_MPI) || defined(GCI_PARALLEL)
+#ifdef MOLPRO
+#include "common/molpro_config.h"
+#endif
+#if defined(GA_MPI) || defined(MPI2) || defined(GCI_MPI) || defined(GCI_PARALLEL) || defined(PPIDD)
 #define PROFILER_MPI
 #endif
 #ifdef PROFILER_MPI
@@ -21,8 +24,8 @@
  */
 class Profiler
 {
-public:
   Profiler();
+public:
   /*!
    * \brief Profiler construct a named instance
    * \param name the title of this object

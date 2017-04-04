@@ -14,11 +14,18 @@
 #include <iomanip>
 #include "Profiler.h"
 #include "memory.h"
+#ifdef MOLPRO
+#include "ppidd/ppidd_c.h"
+#endif
 
 
 Profiler::Profiler(std::string name, const int level
 #ifdef PROFILER_MPI
-		   , const MPI_Comm communicator) : m_communicator(communicator)
+		   , const MPI_Comm communicator) : m_communicator(communicator
+#ifdef MOLPRO
+								   == MPI_COMM_WORLD ? PPIDD_Worker_comm() : communicator
+#endif
+								   )
 #else
 		   )
 #endif
