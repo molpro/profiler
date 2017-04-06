@@ -23,7 +23,7 @@ Profiler::Profiler(std::string name, const int level
 #ifdef PROFILER_MPI
 		   , const MPI_Comm communicator) : m_communicator(communicator
 #ifdef MOLPRO
-								   == MPI_COMM_WORLD ? PPIDD_Worker_comm() : communicator
+								   == MPI_COMM_WORLD ? MPI_Comm_f2c(PPIDD_Worker_comm()) : communicator
 #endif
 								   )
 #else
