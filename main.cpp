@@ -30,6 +30,9 @@ int main(int argc, char *argv[])
 
     profiler.start("gettimeofday"); for (size_t i=0; i<repeatr ; i++){ struct timeval time; gettimeofday(&time,NULL); } profiler.stop("gettimeofday",repeatr);
 
+    {ProfilerStack s(profiler,"gettimeofday-Stack"); for (size_t i=0; i<repeatr ; i++){ struct timeval time; gettimeofday(&time,NULL); } }
+    {ProfilerStack s(profiler,"gettimeofday-Stack"); for (size_t i=0; i<repeatr ; i++){ struct timeval time; gettimeofday(&time,NULL); } }
+
     std::cout << profiler << std::endl;
   }
 

@@ -136,7 +136,19 @@ public:
 const MPI_Comm m_communicator;
 #endif
 };
-  std::ostream& operator<<(std::ostream& os, Profiler & obj);
+std::ostream& operator<<(std::ostream& os, Profiler & obj);
+
+class ProfilerStack{
+public:
+  ProfilerStack(Profiler& profiler, const std::string & name)
+    : m_name(name), m_profiler(profiler) {m_profiler.start(m_name);}
+  ~ProfilerStack() {m_profiler.stop(m_name);}
+private:
+  ProfilerStack();
+  const std::string m_name;
+  Profiler& m_profiler;
+};
+
 
 extern "C" {
 #endif
