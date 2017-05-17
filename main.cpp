@@ -8,7 +8,7 @@
 #endif
 int main(int argc, char *argv[])
 {
-  const size_t repeat=20000000, repeatr=1000000;
+  const size_t repeat=20000000, repeatr=1000000, repeats=10000000;
   {
 #ifdef MPI2
     MPI_Init(&argc,&argv);
@@ -28,10 +28,10 @@ int main(int argc, char *argv[])
 
     for (size_t i=0; i<repeatr ; i++){ profiler.start("profiler"); profiler.stop("profiler",1); }
 
-    profiler.start("gettimeofday"); for (size_t i=0; i<repeatr ; i++){ struct timeval time; gettimeofday(&time,NULL); } profiler.stop("gettimeofday",repeatr);
+    profiler.start("gettimeofday"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); } profiler.stop("gettimeofday",repeats);
 
-    {ProfilerStack s(profiler,"gettimeofday-Stack"); for (size_t i=0; i<repeatr ; i++){ struct timeval time; gettimeofday(&time,NULL); } }
-    {ProfilerStack s(profiler,"gettimeofday-Stack"); for (size_t i=0; i<repeatr ; i++){ struct timeval time; gettimeofday(&time,NULL); } }
+    {ProfilerPush s(profiler,"gettimeofday-Stack-1"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); } s+=repeats; }
+    {ProfilerPush s(profiler,"gettimeofday-Stack-2"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); ++s; } }
 
     std::cout << profiler << std::endl;
   }

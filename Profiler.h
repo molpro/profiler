@@ -138,15 +138,33 @@ const MPI_Comm m_communicator;
 };
 std::ostream& operator<<(std::ostream& os, Profiler & obj);
 
-class ProfilerStack{
+/*!
+ * \brief An object that will execute Profiler::start on construction, and Profiler::stop on destruction.
+ */
+class ProfilerPush{
 public:
-  ProfilerStack(Profiler& profiler, const std::string & name)
-    : m_name(name), m_profiler(profiler) {m_profiler.start(m_name);}
-  ~ProfilerStack() {m_profiler.stop(m_name);}
+  /*!
+   * \brief Push to a new level on the stack of a Profiler object
+   * \param profiler The Profiler object
+   * \param name The name of the code segment to be profiled
+   */
+  ProfilerPush(Profiler& profiler, const std::string & name)
+    : m_name(name), m_profiler(profiler), m_operations(0) {m_profiler.start(m_name);}
+  ~ProfilerPush() {m_profiler.stop(m_name,m_operations);}
+  /*!
+   * \brief Advance the counter holding the notional number of operations executed in the code segment.
+   * \param operations The number of additional operations.
+   */
+  void operator+=(const int operations) { m_operations+=operations;}
+  /*!
+   * \brief Advance the counter holding the notional number of operations executed in the code segment.
+   */
+  void operator++() { m_operations++;}
 private:
-  ProfilerStack();
+  ProfilerPush();
   const std::string m_name;
   Profiler& m_profiler;
+  int m_operations;
 };
 
 
