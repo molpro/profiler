@@ -78,6 +78,15 @@ public:
    * \return
    */
   std::string str(const int verbosity=0, const bool cumulative=false, const int precision=3) const;
+protected:
+class Push;
+public:
+  /*!
+   * \brief Push to a new level on the stack of a Profiler object.
+   * \param name The name of the code segment to be profiled.
+   * \return An object that when destroyed will call the corresponding Profiler::stop.
+   */
+  Push push(std::string name="");
 
  public:
   struct resources {double cpu; double wall; int calls; long operations; std::string name; int64_t stack;
@@ -135,22 +144,20 @@ public:
 #ifdef PROFILER_MPI
 const MPI_Comm m_communicator;
 #endif
-};
-std::ostream& operator<<(std::ostream& os, Profiler & obj);
-
 /*!
  * \brief An object that will execute Profiler::start on construction, and Profiler::stop on destruction.
  */
-class ProfilerPush{
+protected:
+class Push{
 public:
   /*!
    * \brief Push to a new level on the stack of a Profiler object
    * \param profiler The Profiler object
    * \param name The name of the code segment to be profiled
    */
-  ProfilerPush(Profiler& profiler, const std::string & name)
+  Push(Profiler& profiler, const std::string & name)
     : m_name(name), m_profiler(profiler), m_operations(0) {m_profiler.start(m_name);}
-  ~ProfilerPush() {m_profiler.stop(m_name,m_operations);}
+  ~Push() {m_profiler.stop(m_name,m_operations);}
   /*!
    * \brief Advance the counter holding the notional number of operations executed in the code segment.
    * \param operations The number of additional operations.
@@ -161,11 +168,15 @@ public:
    */
   void operator++() { m_operations++;}
 private:
-  ProfilerPush();
+  Push();
   const std::string m_name;
   Profiler& m_profiler;
   int m_operations;
 };
+
+};
+std::ostream& operator<<(std::ostream& os, Profiler & obj);
+
 
 
 extern "C" {

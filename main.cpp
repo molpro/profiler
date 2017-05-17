@@ -30,8 +30,10 @@ int main(int argc, char *argv[])
 
     profiler.start("gettimeofday"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); } profiler.stop("gettimeofday",repeats);
 
-    {ProfilerPush s(profiler,"gettimeofday-Stack-1"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); } s+=repeats; }
-    {ProfilerPush s(profiler,"gettimeofday-Stack-2"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); ++s; } }
+//    {Profiler::Push s(profiler,"gettimeofday-Stack-1"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); } s+=repeats; }
+//    {Profiler::Push s(profiler,"gettimeofday-Stack-2"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); ++s; } }
+    {auto s = profiler.push("gettimeofday-Stack-1"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); } s+=repeats; }
+    {auto s = profiler.push("gettimeofday-Stack-2"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); ++s; } }
 
     std::cout << profiler << std::endl;
   }

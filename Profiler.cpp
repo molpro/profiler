@@ -322,6 +322,8 @@ struct Profiler::resources Profiler::resources::operator-(const struct Profiler:
   return result;
 }
 
+Profiler::Push Profiler::push(std::string name) {return Push(*this,name);}
+
 // C binding
 extern "C" {
 #include <stdlib.h>
