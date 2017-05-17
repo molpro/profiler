@@ -20,7 +20,27 @@
 #endif
 
 /*!
- * \brief The Profiler class: framework for timing code sections
+ * \brief The Profiler class: framework for timing code sections.
+ *
+ * Example of use:
+ * \code
+const size_t repeat=20000000, repeatr=1000000, repeats=10000000;
+{
+  Profiler profiler("A C++ profiling test",Profiler::name);
+
+  // Conventional use with stop/start pairs
+  profiler.start("sqrt");
+  double a=(double)0;
+  for (size_t i=0; i<repeat; i++) a*=std::sqrt(a+i)/std::sqrt(a+i+1);
+  profiler.stop("sqrt",2*repeat);
+
+  // Object approach controlled with scoping
+  {Profiler::Push s(profiler,"gettimeofday-Stack-1"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); } s+=repeats; }
+  {Profiler::Push s(profiler,"gettimeofday-Stack-2"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); ++s; } }
+
+  std::cout << profiler << std::endl; // print the results
+}
+ * \endcode
  */
 class Profiler
 {
@@ -71,7 +91,7 @@ public:
    * \return
    */
   std::string str(const int verbosity=0, const bool cumulative=false, const int precision=3) const;
-private:
+public:
 class Push;
 public:
   /*!
@@ -137,7 +157,7 @@ public:
 #ifdef PROFILER_MPI
 const MPI_Comm m_communicator;
 #endif
-private:
+public:
 /*!
  * \brief An object that will execute Profiler::start on construction, and Profiler::stop on destruction.
  */
