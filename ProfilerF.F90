@@ -37,9 +37,6 @@ MODULE ProfilerF
   TYPE(c_ptr) :: handle !< C pointer to the corresponding C++ object
  CONTAINS
   PROCEDURE :: start => ProfilerStartF !< Begin timing a code segment
-!> \public Ensure that a code segment is entered into the result table. This must be called for
-!! any code segments for which start/stop is non-collective and therefore might not be called on some processes.
-  PROCEDURE :: declare => ProfilerDeclareF
   PROCEDURE :: stop => ProfilerStopF !< End timing a code segment
   PROCEDURE :: active => ProfilerActiveF !< Set the maximum depth at which recording is done
   PROCEDURE :: print => ProfilerPrintF !< \public Print a representation of the object.
@@ -118,16 +115,6 @@ MODULE ProfilerF
    stopPrint_=-1; if (present(stopPrint)) stopPrint_=stopPrint
    CALL ProfilerActiveC(this%handle,INT(level,kind=c_int),INT(stopPrint_,kind=c_int))
   END SUBROUTINE ProfilerActiveF
-!> \public Ensure that a code segment is entered into the result table. This must be called for
-!! any code segments for which start/stop is non-collective and therefore might not be called on some processes.
-!! Should be called through type-bound interface \c declare.
-  SUBROUTINE ProfilerDeclareF(this,name)
-   CLASS(Profiler), INTENT(in) :: this !< Profiler object
-   CHARACTER(len=*), INTENT(in) :: name !< name of the code segment
-   CHARACTER(kind=c_char,len=1024) :: namecopy
-   namecopy=TRIM(name)//C_NULL_CHAR
-   CALL ProfilerDeclareC(this%handle,namecopy)
-  END SUBROUTINE ProfilerDeclareF
 !> \public End timing a code segment.
 !! Should be called through type-bound interface \c stop.
   SUBROUTINE ProfilerStopF(this,name,operations)
