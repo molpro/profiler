@@ -78,7 +78,7 @@ public:
    * \return
    */
   std::string str(const int verbosity=0, const bool cumulative=false, const int precision=3) const;
-protected:
+private:
 class Push;
 public:
   /*!
@@ -144,10 +144,10 @@ public:
 #ifdef PROFILER_MPI
 const MPI_Comm m_communicator;
 #endif
+private:
 /*!
  * \brief An object that will execute Profiler::start on construction, and Profiler::stop on destruction.
  */
-protected:
 class Push{
 public:
   /*!
