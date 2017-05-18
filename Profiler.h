@@ -52,6 +52,8 @@ public:
   enum sortMethod { wall //!< Sort by real time.
                     , cpu//!< Sort by CPU time.
                     , name //!< Sort alphabetically by name.
+                    , calls //!< Sort by number of calls.
+                    , operations //!< Sort by number of operations.
                   };
   /*!
    * \brief Profiler construct a named instance.
@@ -134,9 +136,6 @@ public:
   template<class T> struct compareResources : std::binary_function<T,T,bool>
   { inline bool operator () (const T& _left, const T& _right)
     {
-//      std::cout<<"Compare "<<_left.first<<" and "<<_right.first<<std::endl;
-//      std::cout<<"compare "<<_left.second.wall<<" and "<<_right.second.wall<<std::endl;
-//      std::cout<<"compare "<<_left.second.cumulative->wall<<" and "<<_right.second.cumulative->wall<<std::endl;
         switch (_left.second.parent->m_sortBy) {
           case wall:
             if (_left.second.cumulative==NULL)
@@ -146,6 +145,14 @@ public:
             if (_left.second.cumulative==NULL)
               return _left.second.cpu < _right.second.cpu;
             return _left.second.cumulative->cpu < _right.second.cumulative->cpu;
+          case operations:
+            if (_left.second.cumulative==NULL)
+              return _left.second.operations < _right.second.operations;
+            return _left.second.cumulative->operations < _right.second.cumulative->operations;
+          case calls:
+            if (_left.second.cumulative==NULL)
+              return _left.second.calls < _right.second.calls;
+            return _left.second.cumulative->calls < _right.second.cumulative->calls;
           case name:
             return _left.second.name > _right.second.name;
           }

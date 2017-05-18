@@ -66,12 +66,6 @@ MODULE ProfilerF
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
   END SUBROUTINE ProfilerStartC
  !> \private
-  SUBROUTINE ProfilerDeclareC(handle, name) BIND (C, name='profilerDeclare')
-   USE iso_c_binding
-   TYPE(c_ptr), INTENT(in), VALUE :: handle
-   CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
-  END SUBROUTINE ProfilerDeclareC
- !> \private
   SUBROUTINE ProfilerStopC(handle, name, operations) BIND (C, name='profilerStop')
    USE iso_c_binding
    TYPE(c_ptr), INTENT(in), VALUE :: handle
@@ -132,7 +126,8 @@ MODULE ProfilerF
    CALL ProfilerStopC(this%handle,namecopy,operationsC)
   END SUBROUTINE ProfilerStopF
 !> \public Print a representation of the object.
-!! Should be called through type-bound interface \c print
+!! Should be called through type-bound interface \c print.
+!! Collective across MPI processes.
   SUBROUTINE ProfilerPrintF(this, unit, verbosity, cumulative, precision)
    CLASS(Profiler), INTENT(in) :: this !< Profiler object
    INTEGER, INTENT(in) :: unit !< Fortran file number; must already be open
