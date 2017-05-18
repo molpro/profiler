@@ -46,36 +46,42 @@ class Profiler
 {
   Profiler();
 public:
-  enum sortMethod { wall, cpu, name };
   /*!
-   * \brief Profiler construct a named instance
-   * \param name the title of this object
-   * \param sortBy Criterion for sorting printed result table
+   * \brief Sorting criteria for categories in report.
+   */
+  enum sortMethod { wall //!< Sort by real time.
+                    , cpu//!< Sort by CPU time.
+                    , name //!< Sort alphabetically by name.
+                  };
+  /*!
+   * \brief Profiler construct a named instance.
+   * \param name the title of this object.
+   * \param sortBy Criterion for sorting printed result table.
    * \param level
    * A large value means that data will always be accumulated; zero means that calls to start and stop do nothing.
    * \param communicator The MPI communicator over which statistics should be aggregated.
    */
-  Profiler(std::string name, sortMethod sortBy=wall, const int level=INT_MAX
+  Profiler(const std::string &name, sortMethod sortBy=wall, const int level=INT_MAX
 #ifdef PROFILER_MPI
-	   , const MPI_Comm communicator=MPI_COMM_WORLD
+           , const MPI_Comm communicator=MPI_COMM_WORLD
 #endif
            );
   /*!
-   * \brief reset the object
-   * \param name the title of this object
+   * \brief Reset the object.
+   * \param name The title of this object.
    */
-  void reset(const std::string name);
+  void reset(const std::string& name);
   /*!
-   * \brief start begin timing a code segment
-   * \param name name of the code segment
+   * \brief Begin timing a code segment.
+   * \param name Name of the code segment.
    */
-  void start(const std::string name);
+  void start(const std::string& name);
   /*!
-   * \brief stop finish timing a code segment
-   * \param name if given, must match the argument of the previous start call
-   * \param operations if given, a count of the number of operations (or whatever you like) carried out
+   * \brief Finish timing a code segment.
+   * \param name If given, must match the argument of the previous start call.
+   * \param operations If given, a count of the number of operations (or whatever you like) carried out.
    */
-  void stop(const std::string name="",long operations=0);
+  void stop(const std::string& name="",long operations=0);
   /*!
    * \brief active set the maximum stack depth at which data collection is done.
    * \param level
@@ -84,10 +90,10 @@ public:
    */
   void active(const int level=INT_MAX, const int stopPrint=-1);
   /*!
-   * \brief Generate a printable representation of the object
-   * \param verbosity how much to print
-   * \param cumulative whether to print cumulative (ie including all children) resources
-   * \param precision how many decimal places for seconds
+   * \brief Generate a printable representation of the object.
+   * \param verbosity How much to print.
+   * \param cumulative Whether to print cumulative (ie including all children) resources.
+   * \param precision How many decimal places for seconds.
    * \return
    */
   std::string str(const int verbosity=0, const bool cumulative=false, const int precision=3) const;
@@ -99,7 +105,7 @@ public:
    * \param name The name of the code segment to be profiled.
    * \return An object that when destroyed will call the corresponding Profiler::stop.
    */
-  Push push(std::string name="");
+  Push push(const std::string& name="");
 
  public:
   struct resources {double cpu; double wall; int calls; long operations; std::string name; int64_t stack;
@@ -116,7 +122,7 @@ public:
   typedef std::map<std::string,struct Profiler::resources> resultMap;
 
   /*!
-   * \brief totals
+   * \brief Obtain a summary of the resources used for each category.
    * \return std::map of \ref resources
    */
   resultMap totals() const;

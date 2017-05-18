@@ -19,7 +19,7 @@
 #endif
 
 
-Profiler::Profiler(std::string name, sortMethod sortBy, const int level
+Profiler::Profiler(const std::string& name, sortMethod sortBy, const int level
 #ifdef PROFILER_MPI
 		   , const MPI_Comm communicator) : m_communicator(communicator
 #ifdef MOLPRO
@@ -35,7 +35,7 @@ Profiler::Profiler(std::string name, sortMethod sortBy, const int level
   active(level);
 }
 
-void Profiler::reset(const std::string name)
+void Profiler::reset(const std::string &name)
 {
   Name=name;
   stopall();
@@ -52,7 +52,7 @@ void Profiler::active(const int level, const int stopPrint)
 }
 
 #include <assert.h>
-void Profiler::start(const std::string name)
+void Profiler::start(const std::string& name)
 {
   level++;
   if (level>activeLevel) return;
@@ -101,7 +101,7 @@ void Profiler::totalise(const struct resources now, const long operations, const
   results[key].calls += calls;
 }
 
-void Profiler::stop(const std::string name, long operations)
+void Profiler::stop(const std::string &name, long operations)
 {
   level--;
   if (level > 0 && level>=activeLevel) return;
@@ -317,7 +317,7 @@ struct Profiler::resources Profiler::resources::operator-(const struct Profiler:
   return result;
 }
 
-Profiler::Push Profiler::push(std::string name) {return Push(*this,name);}
+Profiler::Push Profiler::push(const std::string &name) {return Push(*this,name);}
 
 // C binding
 extern "C" {
