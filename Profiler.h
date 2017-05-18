@@ -91,6 +91,7 @@ public:
   void active(const int level=INT_MAX, const int stopPrint=-1);
   /*!
    * \brief Generate a printable representation of the object.
+   * Must be called by all MPI processes collectively.
    * \param verbosity How much to print.
    * \param cumulative Whether to print cumulative (ie including all children) resources.
    * \param precision How many decimal places for seconds.
@@ -123,6 +124,7 @@ public:
 
   /*!
    * \brief Obtain a summary of the resources used for each category.
+   * Must be called by all MPI processes collectively.
    * \return std::map of \ref resources
    */
   resultMap totals() const;
