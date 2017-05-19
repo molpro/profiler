@@ -1,16 +1,16 @@
-project(Profiler)
+project(Profiler Fortran CXX)
 cmake_minimum_required(VERSION 3.1)
 set (CMAKE_CXX_STANDARD 11)
 
-ENABLE_LANGUAGE(Fortran)
+add_definitions(-DMAIN)
+add_executable(Profiler.exe main.cpp Profiler.cpp Profiler.h)
+add_executable(ProfilerF.exe ProfilerF.F90 Profiler.cpp Profiler.h)
+set_property(TARGET ProfilerF.exe PROPERTY LINKER_LANGUAGE Fortran) 
 
+# get rid of the next lines if you want serial
 find_package(MPI REQUIRED)
 include_directories(${MPI_CXX_INCLUDE_PATH})
-
-add_definitions(-DMAIN)
-add_definitions(-DMPI2) # get rid of this if you want serial
-add_executable(Profiler.exe main.cpp Profiler.cpp Profiler.h)
-add_executable(ProfilerF.exe Profiler.cpp Profiler.h ProfilerF.F90)
+add_definitions(-DMPI2)
 target_link_libraries(Profiler.exe ${MPI_CXX_LIBRARIES})
 target_link_libraries(ProfilerF.exe ${MPI_CXX_LIBRARIES})
 
