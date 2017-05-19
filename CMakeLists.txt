@@ -5,7 +5,8 @@ set (CMAKE_CXX_STANDARD 11)
 add_definitions(-DMAIN)
 add_executable(Profiler.exe main.cpp Profiler.cpp Profiler.h)
 add_executable(ProfilerF.exe ProfilerF.F90 Profiler.cpp Profiler.h)
-set_property(TARGET ProfilerF.exe PROPERTY LINKER_LANGUAGE Fortran) 
+#set_property(TARGET ProfilerF.exe PROPERTY LINKER_LANGUAGE Fortran) 
+#target_link_libraries(ProfilerF.exe -lstdc++)
 
 # get rid of the next lines if you want serial
 find_package(MPI REQUIRED)
