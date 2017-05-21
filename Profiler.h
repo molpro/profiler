@@ -136,7 +136,7 @@ public:
   template<class T> struct compareResources : std::binary_function<T,T,bool>
   { inline bool operator () (const T& _left, const T& _right)
     {
-        switch (_left.second.parent->m_sortBy) {
+        switch (_left.second.parent==nullptr ? wall : _left.second.parent->m_sortBy) {
           case wall:
             if (_left.second.cumulative==NULL)
               return _left.second.wall < _right.second.wall;
