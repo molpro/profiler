@@ -156,6 +156,7 @@ public:
           case name:
             return _left.second.name > _right.second.name;
           }
+	return false;
     }
   };
 
