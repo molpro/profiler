@@ -203,6 +203,18 @@ std::string Profiler::resources::str(const int width, const int verbosity, const
       name = cumulative ? "All" : "(other)";
   else
     name.replace(0,name.find(":")+1,"");
+  if (cumulative) {
+      auto pos = name.rfind(":",name.size()-1);
+      if (pos != std::string::npos) {
+          size_t lev=1;
+//          std::cout << "name="<<name<<", pos="<<pos<<std::endl;
+          for (size_t k=0; k<pos; k++) if (name[k]==':') lev++;
+//          name += "@"+std::to_string(pos);
+//          name += "@"+std::to_string(lev);
+          name = std::string(lev,':')+name.substr(pos);
+//          ss << std::string("@")+std::string(":",lev)+name.substr(pos)+std::string("@")<<std::endl;;
+        }
+    }
   size_t wid = width > 0 ?  width : name.size();
   ss.precision(precision);
   ss <<std::right <<std::setw(wid) << name <<":";
@@ -227,21 +239,26 @@ std::string Profiler::str(const int verbosity, const bool cumulative, const int 
   if (verbosity<0) return "";
   resultMap localResults=totals();
   int n=localResults.size();
+  size_t maxWidth=0;
+  if (cumulative)
   for (int i=0; i<n; i++) {
-      int l;
-  std::string key;
-          resultMap::iterator s=localResults.begin(); for (int j=0; j<i; j++) s++;
-          key = s->first;
-          l=key.size();
-//  std::cout << "localResults "<<key<<": "<<localResults[key].cpu<<std::endl;
+      std::string key;
+      resultMap::iterator s=localResults.begin(); for (int j=0; j<i; j++) s++;
+      key = s->first;
+      auto w=key.rfind(':');
+      if (w != std::string::npos) {
+          w = key.size()-w + std::count(key.begin(),key.begin()+w,':');
+          maxWidth = std::max(maxWidth,w);
+        }
     }
   typedef std::pair<std::string,Profiler::resources> data_t;
   std::priority_queue<data_t, std::deque<data_t>, compareResources<data_t>  > q(localResults.begin(),localResults.end());
   std::stringstream ss;
-  size_t maxWidth=0;
+  if (!cumulative) {
   for (resultMap::const_iterator s=localResults.begin(); s!=localResults.end(); ++s)
     if ((*s).first.size() > maxWidth) maxWidth=(*s).first.size();
   maxWidth-=localResults.begin()->first.size()+1; // assumes the first node is the top level
+    }
   if (maxWidth < 7) maxWidth=7;
   ss << "Profiler \""<<Name<<"\""; if(cumulative) ss<<" (cumulative)"; if (activeLevel < INT_MAX) ss <<" to depth "<<activeLevel; ss <<std::endl;
   for ( ; ! q.empty(); q.pop()) {
