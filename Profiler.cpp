@@ -207,17 +207,13 @@ std::string Profiler::resources::str(const int width, const int verbosity, const
       auto pos = name.rfind(":",name.size()-1);
       if (pos != std::string::npos) {
           size_t lev=1;
-//          std::cout << "name="<<name<<", pos="<<pos<<std::endl;
           for (size_t k=0; k<pos; k++) if (name[k]==':') lev++;
-//          name += "@"+std::to_string(pos);
-//          name += "@"+std::to_string(lev);
-          name = std::string(lev,':')+name.substr(pos);
-//          ss << std::string("@")+std::string(":",lev)+name.substr(pos)+std::string("@")<<std::endl;;
+          name = std::string(lev,'.')+name.substr(pos+1);
         }
     }
   size_t wid = width > 0 ?  width : name.size();
   ss.precision(precision);
-  ss <<std::right <<std::setw(wid) << name <<":";
+  ss <<(cumulative ? std::left : std::right) <<std::setw(wid) << name <<":";
   if (r->calls > 0) ss<<" calls="<<r->calls<<",";
   ss<<" cpu="<<std::fixed<<r->cpu<<","<<" wall="<<r->wall;
   double ops=r->operations;

@@ -137,6 +137,14 @@ public:
   template<class T> struct compareResources : std::binary_function<T,T,bool>
   { inline bool operator () (const T& _left, const T& _right)
     {
+      std::cout <<"compareResources left="<<_left.first<<", right="<<_right.first<<std::endl;
+      auto lastcolon_left = _left.first.rfind(':');
+      auto lastcolon_right = _right.first.rfind(':');
+      if (lastcolon_left == std::string::npos) return false;
+      if (lastcolon_right == std::string::npos) return true;
+      std::cout <<"compareResources left="<<_left.first.substr(0,lastcolon_left)<<", right="<<_right.first.substr(0,lastcolon_right)<<std::endl;
+      if (lastcolon_left == lastcolon_right && _left.first.substr(0,lastcolon_left) == _right.first.substr(0,lastcolon_left)) { // brothers
+          std::cout << "compare brothers"<<std::endl;
         switch (_left.second.parent==nullptr ? wall : _left.second.parent->m_sortBy) {
           case wall:
             if (_left.second.cumulative==NULL)
@@ -158,6 +166,10 @@ public:
             return _left.second.name > _right.second.name;
           }
 	return false;
+	}
+      if (lastcolon_left > lastcolon_right && _left.first.substr(0,lastcolon_right) == _right.first.substr(0,lastcolon_right)) return true;
+      if (lastcolon_left < lastcolon_right && _left.first.substr(0,lastcolon_left) == _right.first.substr(0,lastcolon_left)) return false;
+        return false;
     }
   };
 
