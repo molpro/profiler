@@ -113,12 +113,13 @@ public:
  public:
   struct resources {double cpu; double wall; int calls; long operations; std::string name; int64_t stack;
                     struct resources * cumulative;
-                   const Profiler *parent;
-                std::string str(const int width=0, const int verbosity=0, const bool cumulative=false, const int precision=3, const std::string defaultName="") const;
-                struct Profiler::resources& operator+=(const struct Profiler::resources &other);
-                struct Profiler::resources& operator-=(const struct Profiler::resources &other);
-                struct Profiler::resources operator+(const struct Profiler::resources &w2);
-                struct Profiler::resources operator-(const struct Profiler::resources &w2);
+                    const Profiler *parent;
+                    std::string str(const int width=0, const int verbosity=0, const bool cumulative=false, const int precision=3, const std::string defaultName="") const;
+                    struct Profiler::resources& operator+=(const struct Profiler::resources &other);
+                    struct Profiler::resources& operator-=(const struct Profiler::resources &other);
+                    struct Profiler::resources operator+(const struct Profiler::resources &w2);
+                    struct Profiler::resources operator-(const struct Profiler::resources &w2);
+                    resources() {cpu=0;wall=0;calls=0;operations=0;stack=0;cumulative=nullptr;parent=nullptr;}
                };
   struct resources getResources();
 

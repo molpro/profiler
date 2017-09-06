@@ -61,6 +61,7 @@ void Profiler::start(const std::string& name)
   if (level>activeLevel) return;
   assert(level==(int)resourcesStack.size()+1);
   struct resources now=getResources();now.name=name;now.calls=1;now.parent=this;
+//  std::cout << start "<<name<<" cpu="<<now.cpu<<", level="<<level<<std::endl;
   if (! resourcesStack.empty())
     totalise(now,0,0);
 #ifdef MEMORY_H
@@ -100,8 +101,10 @@ void Profiler::totalise(const struct resources now, const long operations, const
   for(std::vector<resources>::const_reverse_iterator r=resourcesStack.rbegin(); r!= resourcesStack.rend(); r++) key=r->name+":"+key;
   key.erase(key.end()-1,key.end());
   diff.name=key;
+//  std::cout <<"diff.cpu "<<diff.cpu<<std::endl;
   results[key] += diff;
   results[key].calls += calls;
+//  std::cout << "totalise key="<<key<<", results.size() "<<results.size()<<std::endl;
 }
 
 void Profiler::stop(const std::string &name, long operations)
@@ -111,6 +114,7 @@ void Profiler::stop(const std::string &name, long operations)
   assert(level==(int)resourcesStack.size()-1);
   assert(name=="" || name == resourcesStack.back().name);
   struct resources now=getResources();now.operations=operations;now.parent=this;
+//  std::cout << "stop "<<name<<" cpu="<<now.cpu<<std::endl;
   totalise(now,operations,1);
 
   if (stopPrint_>-1) {
@@ -121,7 +125,7 @@ void Profiler::stop(const std::string &name, long operations)
     diff.name="";
     for(std::vector<resources>::const_reverse_iterator r=resourcesStack.rbegin(); r!= resourcesStack.rend(); r++) diff.name=r->name+":"+diff.name;
     diff.name.erase(diff.name.end()-1,diff.name.end());
-    std::cout <<"Profiler \""<<Name<<"\" stop: "<< diff.str(0,stopPrint_,false,3,"All") <<std::endl;
+//    std::cout <<"Profiler \""<<Name<<"\" stop: "<< diff.str(0,stopPrint_,false,3,"All") <<std::endl;
   }
 
 #ifdef MEMORY_H
@@ -167,7 +171,9 @@ Profiler::resultMap Profiler::totals() const
       double val=ss.wall;
       MPI_Allreduce(&val,&(ss.wall),len,MPI_DOUBLE,MPI_MAX,m_communicator);
       val=ss.cpu;
+//      std::cout << "cpu local "<<ss.cpu<<std::endl;
       MPI_Allreduce(&val,&(ss.cpu),len,MPI_DOUBLE,MPI_SUM,m_communicator);
+//      std::cout << "cpu summed "<<ss.cpu<<std::endl;
       int calls=ss.calls;
       MPI_Allreduce(&calls,&(ss.calls),len,MPI_INT,MPI_SUM,m_communicator);
       long operations=ss.operations;
@@ -177,6 +183,7 @@ Profiler::resultMap Profiler::totals() const
       thiscopy.results[key]=ss;
   }
 #endif
+//  std::cout << "cpu summed "<<thiscopy.results["TOP:Davidson:Hc:operatorOnWavefunction:ab integrals:StringSet::addByOperators[]:addByOperators"].cpu<<std::endl;
   thiscopy.accumulate(thiscopy.results);
   return thiscopy.results;
 }
@@ -219,6 +226,15 @@ std::string Profiler::str(const int verbosity, const bool cumulative, const int 
 {
   if (verbosity<0) return "";
   resultMap localResults=totals();
+  int n=localResults.size();
+  for (int i=0; i<n; i++) {
+      int l;
+  std::string key;
+          resultMap::iterator s=localResults.begin(); for (int j=0; j<i; j++) s++;
+          key = s->first;
+          l=key.size();
+//  std::cout << "localResults "<<key<<": "<<localResults[key].cpu<<std::endl;
+    }
   typedef std::pair<std::string,Profiler::resources> data_t;
   std::priority_queue<data_t, std::deque<data_t>, compareResources<data_t>  > q(localResults.begin(),localResults.end());
   std::stringstream ss;
@@ -228,8 +244,10 @@ std::string Profiler::str(const int verbosity, const bool cumulative, const int 
   maxWidth-=localResults.begin()->first.size()+1; // assumes the first node is the top level
   if (maxWidth < 7) maxWidth=7;
   ss << "Profiler \""<<Name<<"\""; if(cumulative) ss<<" (cumulative)"; if (activeLevel < INT_MAX) ss <<" to depth "<<activeLevel; ss <<std::endl;
-  for ( ; ! q.empty(); q.pop())
+  for ( ; ! q.empty(); q.pop()) {
+//      std::cout << "queue pop "<<q.top().first<<": "<<q.top().second.cpu<<std::endl;
       ss << q.top().second.str(maxWidth,verbosity,cumulative,precision) <<std::endl;
+    }
   return ss.str();
 }
 
@@ -237,12 +255,17 @@ void Profiler::accumulate(resultMap& results)
 {
   for (resultMap::iterator r=results.begin(); r!=results.end(); ++r) r->second.name=r->first;
   for (resultMap::iterator parent=results.begin(); parent!=results.end(); ++parent) {
+//      std::cout << "accumulate parent="<<parent->first<<std::endl;
       parent->second.cumulative = new Profiler::resources;
+//      std::cout << " parent cpu set to "<<parent->second.cumulative->cpu<<std::endl;
       *parent->second.cumulative-=*parent->second.cumulative;
       // nb 'child' includes the parent itself
     for (resultMap::iterator child=results.begin(); child!=results.end(); ++child) {
       if (parent->first.size() <= child->first.size() && parent->first == child->first.substr(0,parent->first.size())) {
+//          std::cout << " accumulate child="<<child->first<<std::endl;
         *parent->second.cumulative += child->second;
+//          std::cout << " child cpu "<<child->second.cpu<<std::endl;
+//          std::cout << " parent cpu set to "<<parent->second.cumulative->cpu<<std::endl;
 	if (parent->first != child->first)
 	  parent->second.cumulative->stack=std::max(parent->second.cumulative->stack,parent->second.stack+child->second.stack);
         parent->second.cumulative->calls = parent->second.calls;
