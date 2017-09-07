@@ -143,6 +143,14 @@ public:
       if (lastcolon_left == std::string::npos) return false;
       if (lastcolon_right == std::string::npos) return true;
       std::cout <<"compareResources left="<<_left.first.substr(0,lastcolon_left)<<", right="<<_right.first.substr(0,lastcolon_right)<<std::endl;
+      if (lastcolon_left > lastcolon_right && _left.first.substr(0,lastcolon_right) == _right.first.substr(0,lastcolon_right)) {
+          std::cout << "right is a parent of left"<<std::endl;
+          return true;
+        }
+      if (lastcolon_left < lastcolon_right && _left.first.substr(0,lastcolon_left) == _right.first.substr(0,lastcolon_left)) {
+          std::cout << "left is a parent of right"<<std::endl;
+          return false;
+        }
       if (lastcolon_left == lastcolon_right && _left.first.substr(0,lastcolon_left) == _right.first.substr(0,lastcolon_left)) { // brothers
           std::cout << "compare brothers"<<std::endl;
         switch (_left.second.parent==nullptr ? wall : _left.second.parent->m_sortBy) {
@@ -167,9 +175,8 @@ public:
           }
 	return false;
 	}
-      if (lastcolon_left > lastcolon_right && _left.first.substr(0,lastcolon_right) == _right.first.substr(0,lastcolon_right)) return true;
-      if (lastcolon_left < lastcolon_right && _left.first.substr(0,lastcolon_left) == _right.first.substr(0,lastcolon_left)) return false;
-        return false;
+      std::cout << "default return false"<<std::endl;
+      return false;
     }
   };
 
