@@ -55,13 +55,16 @@ void Profiler::active(const int level, const int stopPrint)
 }
 
 #include <assert.h>
+static char colon_replace=';';
 void Profiler::start(const std::string& name)
 {
   level++;
   if (level>activeLevel) return;
   assert(level==(int)resourcesStack.size()+1);
-  struct resources now=getResources();now.name=name;now.calls=1;now.parent=this;
-//  std::cout << start "<<name<<" cpu="<<now.cpu<<", level="<<level<<std::endl;
+  struct resources now=getResources();now.name=name;
+  for (auto c=now.name.begin(); c!=now.name.end(); c++) if(*c==':') *c=colon_replace;
+  now.calls=1;now.parent=this;
+//  std::cout << "start "<<now.name<<" cpu="<<now.cpu<<", level="<<level<<std::endl;
   if (! resourcesStack.empty())
     totalise(now,0,0);
 #ifdef MEMORY_H
@@ -112,7 +115,7 @@ void Profiler::stop(const std::string &name, long operations)
   level--;
   if (level > 0 && level>=activeLevel) return;
   assert(level==(int)resourcesStack.size()-1);
-  assert(name=="" || name == resourcesStack.back().name);
+//  assert(name=="" || name == resourcesStack.back().name); // don't do this any more because of colon escaping
   struct resources now=getResources();now.operations=operations;now.parent=this;
 //  std::cout << "stop "<<name<<" cpu="<<now.cpu<<std::endl;
   totalise(now,operations,1);
@@ -183,7 +186,9 @@ Profiler::resultMap Profiler::totals() const
       thiscopy.results[key]=ss;
   }
 #endif
-//  std::cout << "cpu summed "<<thiscopy.results["TOP:Davidson:Hc:operatorOnWavefunction:ab integrals:StringSet::addByOperators[]:addByOperators"].cpu<<std::endl;
+  for (auto& x : thiscopy.results) x.second.parent=this;
+//  std::cout << "cpu summed "<<thiscopy.results["TOP:Davidson"].cpu<<std::endl;
+//  std::cout << "parent summed "<<thiscopy.results["TOP:Davidson"].parent<<std::endl;
   thiscopy.accumulate(thiscopy.results);
   return thiscopy.results;
 }
@@ -206,10 +211,13 @@ std::string Profiler::resources::str(const int width, const int verbosity, const
   if (cumulative) {
       auto pos = name.rfind(":",name.size()-1);
       if (pos != std::string::npos) {
-          size_t lev=1;
+          size_t lev=2;
           for (size_t k=0; k<pos; k++) if (name[k]==':') lev++;
           name = std::string(lev,'.')+name.substr(pos+1);
         }
+      else
+        if (name != "All") name.insert(0,".");
+  for (auto c=name.begin(); c!=name.end(); c++) if(*c==colon_replace) *c=':';
     }
   size_t wid = width > 0 ?  width : name.size();
   ss.precision(precision);
@@ -241,6 +249,7 @@ std::string Profiler::str(const int verbosity, const bool cumulative, const int 
       std::string key;
       resultMap::iterator s=localResults.begin(); for (int j=0; j<i; j++) s++;
       key = s->first;
+      results[key].cumulative=s->second.cumulative;
       auto w=key.rfind(':');
       if (w != std::string::npos) {
           w = key.size()-w + std::count(key.begin(),key.begin()+w,':');
@@ -282,6 +291,8 @@ void Profiler::accumulate(resultMap& results)
 	if (parent->first != child->first)
 	  parent->second.cumulative->stack=std::max(parent->second.cumulative->stack,parent->second.stack+child->second.stack);
         parent->second.cumulative->calls = parent->second.calls;
+        parent->second.cumulative->parent = this;
+//        std::cout << "copying parent field into cumulative "<<parent->second.cumulative->parent<<std::endl;
       }
     }
   }
