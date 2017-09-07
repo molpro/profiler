@@ -137,68 +137,34 @@ public:
   template<class T> struct compareResources : std::binary_function<T,T,bool>
   { inline bool operator () (const T& _left, const T& _right)
     {
-//      std::cout <<"compareResources left="<<_left.first<<", right="<<_right.first<<std::endl;
       auto lastcolon_left = _left.first.rfind(':');
       auto lastcolon_right = _right.first.rfind(':');
       if (lastcolon_left == std::string::npos) return false;
       if (lastcolon_right == std::string::npos) return true;
-//      std::cout <<"compareResources left="<<_left.first.substr(0,lastcolon_left)<<", right="<<_right.first.substr(0,lastcolon_right)<<std::endl;
-//      if (lastcolon_left > lastcolon_right && _left.first.substr(0,lastcolon_right) == _right.first.substr(0,lastcolon_right)) {
       if (_left.first.size() > _right.first.size() && _left.first.substr(0,_right.first.size()) == _right.first) {
-//          std::cout << "right is a parent of left"<<std::endl;
           return true;
         }
-//      if (lastcolon_left < lastcolon_right && _left.first.substr(0,lastcolon_left) == _right.first.substr(0,lastcolon_left)) {
       if (_right.first.size() > _left.first.size() && _right.first.substr(0,_left.first.size()) == _left.first) {
-//          std::cout << "left is a parent of right"<<std::endl;
           return false;
         }
-//      auto l = _left.second;
-//      auto r = _right.second;
       const Profiler& pl=*(_left.second.parent);
-//      int depthl; for ( depthl=0; pl.results[depthl].first != _left.first; depthl++) ;
-//      int depthr; for ( depthr=0; pl.results[depthr].first != _right.first; depthr++) ;
-      auto depthl=std::count(_left.first.begin(),_left.first.end(),':');
-      auto depthr=std::count(_right.first.begin(),_right.first.end(),':');
-//      std::cout << " depthl="<<depthl<<", depthr="<<depthr<<std::endl;
-//      std::cout <<l.parent->resultMap[_left.first]<<" = "<<_left.first<<std::endl;
       // find the common ancestor
       size_t o; for (o=0; o<std::max(_left.first.size(),_right.first.size()) && _left.first[o]==_right.first[o] ;o++) ;
       while (_left.first[o]!=':')o--;
-//      std::cout << "common ancestry "<<_left.first.substr(0,o)<<std::endl;
       auto oL=_left.first.find(':',o+1); if (oL==std::string::npos) oL=_left.first.size();
       auto oR=_right.first.find(':',o+1); if (oR==std::string::npos) oR=_right.first.size();
-//      std::cout << "left comparator "<<_left.first.substr(0,oL)<<std::endl;
-//      std::cout << "right comparator "<<_right.first.substr(0,oR)<<std::endl;
-//      for (auto x = pl.results.begin(); x != pl.results.end(); x++)
-//      std::cout << "_right.second.parent"<<_right.second.parent<<std::endl;
-//      std::cout << "_left.second.parent"<<_left.second.parent<<std::endl;
-//      if (l.parent==nullptr) throw std::runtime_error("parent node not found");
-//      for (auto x = pl.results.begin(); x != pl.results.end(); x++) std::cout << "pl.results element "<<x->first<<" cumulative "<<x->second.cumulative<<std::endl;
-//      std::cout <<pl.results.at(_left.first.substr(0,oL)).cpu<<std::endl;
-//      std::cout <<pl.results.at(_right.first.substr(0,oR)).cpu<<std::endl;
       auto l=pl.results.at(_left.first.substr(0,oL));
       l.cumulative = pl.results.at(_left.first.substr(0,oL)).cumulative;
-//      std::cout << "l assigned"<<_left.first.substr(0,oL)<<std::endl;
       auto r=pl.results.at(_right.first.substr(0,oR));
       r.cumulative = pl.results.at(_right.first.substr(0,oR)).cumulative;
-//      std::cout << "r assigned"<<_right.first.substr(0,oR)<<std::endl;
-//      if (lastcolon_left == lastcolon_right && _left.first.substr(0,lastcolon_left) == _right.first.substr(0,lastcolon_left)) { // brothers
-//          std::cout << "compare brothers"<<std::endl;
-//        } else {
-//        }
       switch (l.parent==nullptr ? wall : l.parent->m_sortBy) {
         case wall:
-//          std::cout << "wall test "<<l.wall<<" vs "<<r.wall<<" result "<< (l.wall < r.wall)<<" "<<l.cumulative<<_left.second.cumulative<<std::endl;
           if (l.cumulative==NULL)
             return l.wall < r.wall;
-//          std::cout << "wall test "<<l.cumulative->wall<<" vs "<<r.cumulative->wall<<" result "<< (l.cumulative->wall < r.cumulative->wall)<<std::endl;
           return l.cumulative->wall < r.cumulative->wall;
         case cpu:
-//          std::cout << "cpu test "<<l.cpu<<" vs "<<r.cpu<<" result "<< (l.cpu < r.cpu)<<std::endl;
           if (l.cumulative==NULL)
             return l.cpu < r.cpu;
-//          std::cout << "cpu test "<<l.cumulative->cpu<<" vs "<<r.cumulative->cpu<<" result "<< (l.cumulative->cpu < r.cumulative->cpu)<<std::endl;
           return l.cumulative->cpu < r.cumulative->cpu;
         case operations:
           if (l.cumulative==NULL)
@@ -211,7 +177,6 @@ public:
         case name:
           return l.name > r.name;
         }
-//      std::cout << "default return false"<<std::endl;
       throw std::logic_error("Failure to compare");
           }
   };
