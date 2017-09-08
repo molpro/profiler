@@ -64,10 +64,10 @@ public:
    * \param communicator The MPI communicator over which statistics should be aggregated.
    */
   Profiler(const std::string &name, sortMethod sortBy=wall, const int level=INT_MAX
-#ifdef PROFILER_MPI
-           , const MPI_Comm communicator=MPI_COMM_WORLD
-#endif
-           );
+    #ifdef PROFILER_MPI
+      , const MPI_Comm communicator=MPI_COMM_WORLD
+    #endif
+      );
   /*!
    * \brief Reset the object.
    * \param name The title of this object.
@@ -101,7 +101,7 @@ public:
    */
   std::string str(const int verbosity=0, const bool cumulative=false, const int precision=3) const;
 public:
-class Push;
+  class Push;
 public:
   /*!
    * \brief Push to a new level on the stack of a Profiler object.
@@ -110,17 +110,18 @@ public:
    */
   Push push(const std::string& name="");
 
- public:
-  struct resources {double cpu; double wall; int calls; long operations; std::string name; int64_t stack;
-                    struct resources * cumulative;
-                    const Profiler *parent;
-                    std::string str(const int width=0, const int verbosity=0, const bool cumulative=false, const int precision=3, const std::string defaultName="") const;
-                    struct Profiler::resources& operator+=(const struct Profiler::resources &other);
-                    struct Profiler::resources& operator-=(const struct Profiler::resources &other);
-                    struct Profiler::resources operator+(const struct Profiler::resources &w2);
-                    struct Profiler::resources operator-(const struct Profiler::resources &w2);
-                    resources() {cpu=0;wall=0;calls=0;operations=0;stack=0;cumulative=nullptr;parent=nullptr;}
-               };
+public:
+  struct resources {
+    double cpu; double wall; int calls; long operations; std::string name; int64_t stack;
+    struct resources * cumulative;
+    const Profiler *parent;
+    std::string str(const int width=0, const int verbosity=0, const bool cumulative=false, const int precision=3, const std::string defaultName="") const;
+    struct Profiler::resources& operator+=(const struct Profiler::resources &other);
+    struct Profiler::resources& operator-=(const struct Profiler::resources &other);
+    struct Profiler::resources operator+(const struct Profiler::resources &w2);
+    struct Profiler::resources operator-(const struct Profiler::resources &w2);
+    resources() {cpu=0;wall=0;calls=0;operations=0;stack=0;cumulative=nullptr;parent=nullptr;}
+  };
   struct resources getResources();
 
   typedef std::map<std::string,struct Profiler::resources> resultMap;
@@ -132,7 +133,7 @@ public:
    */
   resultMap totals() const;
 
- private:
+private:
   void totalise(const struct resources now, const long operations, const int calls=1);
   template<class T> struct compareResources : std::binary_function<T,T,bool>
   { inline bool operator () (const T& _left, const T& _right)
@@ -176,7 +177,7 @@ public:
           return l.name > r.name;
         }
       throw std::logic_error("Failure to compare");
-          }
+    }
   };
 
   sortMethod m_sortBy;
@@ -190,37 +191,37 @@ public:
   void stopall();
   void accumulate(resultMap &results);
 #ifdef PROFILER_MPI
-const MPI_Comm m_communicator;
+  const MPI_Comm m_communicator;
 #endif
 public:
-/*!
+  /*!
  * \brief An object that will execute Profiler::start on construction, and Profiler::stop on destruction.
  */
-class Push{
-public:
-  /*!
+  class Push{
+  public:
+    /*!
    * \brief Push to a new level on the stack of a Profiler object
    * \param profiler The Profiler object
    * \param name The name of the code segment to be profiled
    */
-  Push(Profiler& profiler, const std::string & name)
-    : m_name(name), m_profiler(profiler), m_operations(0) {m_profiler.start(m_name);}
-  ~Push() {m_profiler.stop(m_name,m_operations);}
-  /*!
+    Push(Profiler& profiler, const std::string & name)
+      : m_name(name), m_profiler(profiler), m_operations(0) {m_profiler.start(m_name);}
+    ~Push() {m_profiler.stop(m_name,m_operations);}
+    /*!
    * \brief Advance the counter holding the notional number of operations executed in the code segment.
    * \param operations The number of additional operations.
    */
-  void operator+=(const int operations) { m_operations+=operations;}
-  /*!
+    void operator+=(const int operations) { m_operations+=operations;}
+    /*!
    * \brief Advance the counter holding the notional number of operations executed in the code segment.
    */
-  void operator++() { m_operations++;}
-private:
-  Push();
-  const std::string m_name;
-  Profiler& m_profiler;
-  int m_operations;
-};
+    void operator++() { m_operations++;}
+  private:
+    Push();
+    const std::string m_name;
+    Profiler& m_profiler;
+    int m_operations;
+  };
 
 };
 std::ostream& operator<<(std::ostream& os, Profiler & obj);

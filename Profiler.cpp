@@ -22,16 +22,16 @@
 
 
 Profiler::Profiler(const std::string& name, sortMethod sortBy, const int level
-#ifdef PROFILER_MPI
+		   #ifdef PROFILER_MPI
 		   , const MPI_Comm communicator
-#endif
+		   #endif
 		   ) : m_sortBy(sortBy)
 #ifdef PROFILER_MPI
 , m_communicator(communicator
-#ifdef MOLPRO
-								   == MPI_COMM_WORLD ? MPI_Comm_f2c(PPIDD_Worker_comm()) : communicator
-#endif
-										       )
+		 #ifdef MOLPRO
+		 == MPI_COMM_WORLD ? MPI_Comm_f2c(PPIDD_Worker_comm()) : communicator
+				     #endif
+				     )
 #endif
 {
   reset(name);
@@ -50,8 +50,8 @@ void Profiler::reset(const std::string &name)
 
 void Profiler::active(const int level, const int stopPrint)
 {
-    activeLevel=level;
-    stopPrint_=stopPrint;
+  activeLevel=level;
+  stopPrint_=stopPrint;
 }
 
 #include <assert.h>
@@ -79,7 +79,7 @@ void Profiler::start(const std::string& name)
   //  (a) reset maximum stack to memoryStack1[me]
   // in accumulate(), add max(children) to parent
   //if (! memoryStack0.empty()) {
-    //resourcesStack.back().stack = std::max((int64_t)memory_used(1)-memoryStack0.back(),resourcesStack.back().stack);
+  //resourcesStack.back().stack = std::max((int64_t)memory_used(1)-memoryStack0.back(),resourcesStack.back().stack);
   //}
   memoryStack0.push_back(memory_used(0));
   memoryStack1.push_back(memory_used(1));
@@ -111,17 +111,17 @@ void Profiler::stop(const std::string &name, long operations)
   level--;
   if (level > 0 && level>=activeLevel) return;
   assert(level==(int)resourcesStack.size()-1);
-//  assert(name=="" || name == resourcesStack.back().name); // don't do this any more because of colon escaping
+  //  assert(name=="" || name == resourcesStack.back().name); // don't do this any more because of colon escaping
   struct resources now=getResources();now.operations=operations;now.parent=this;
   totalise(now,operations,1);
 
   if (stopPrint_>-1) {
-    struct resources diff=now;
-    diff-=startResources.back();
-    diff.name="";
-    for(std::vector<resources>::const_reverse_iterator r=resourcesStack.rbegin(); r!= resourcesStack.rend(); r++) diff.name=r->name+":"+diff.name;
-    diff.name.erase(diff.name.end()-1,diff.name.end());
-  }
+      struct resources diff=now;
+      diff-=startResources.back();
+      diff.name="";
+      for(std::vector<resources>::const_reverse_iterator r=resourcesStack.rbegin(); r!= resourcesStack.rend(); r++) diff.name=r->name+":"+diff.name;
+      diff.name.erase(diff.name.end()-1,diff.name.end());
+    }
 
 #ifdef MEMORY_H
   memoryStack0.pop_back();
@@ -174,7 +174,7 @@ Profiler::resultMap Profiler::totals() const
       int64_t stack = ss.stack;
       MPI_Allreduce(&stack,&(ss.stack),len,MPI_LONG_LONG_INT,MPI_MAX,m_communicator);
       thiscopy.results[key]=ss;
-  }
+    }
 #endif
   for (auto& x : thiscopy.results) x.second.parent=this;
   thiscopy.accumulate(thiscopy.results);
@@ -205,7 +205,7 @@ std::string Profiler::resources::str(const int width, const int verbosity, const
         }
       else
         if (name != "All") name.insert(0,".");
-  for (auto c=name.begin(); c!=name.end(); c++) if(*c==colon_replace) *c=':';
+      for (auto c=name.begin(); c!=name.end(); c++) if(*c==colon_replace) *c=':';
     }
   size_t wid = width > 0 ?  width : name.size();
   ss.precision(precision);
@@ -215,14 +215,14 @@ std::string Profiler::resources::str(const int width, const int verbosity, const
   double ops=r->operations;
   double wall=r->wall;
   if (ops>(double)0 && wall>(double)0) {
-    ops /= wall;
-    int shifter = ops > 1 ? (int)(log10(ops)/3) : 0 ; shifter = shifter >= (int) prefixes.size() ? (int) prefixes.size()-1 : shifter;  ops *= pow((double)10, -shifter*3);
-    ss<<", "<<ops<<" "<<prefixes[shifter]<<"op/s";
-  }
+      ops /= wall;
+      int shifter = ops > 1 ? (int)(log10(ops)/3) : 0 ; shifter = shifter >= (int) prefixes.size() ? (int) prefixes.size()-1 : shifter;  ops *= pow((double)10, -shifter*3);
+      ss<<", "<<ops<<" "<<prefixes[shifter]<<"op/s";
+    }
   size_t stack=r->stack;
   if (stack > (size_t)0) {
-    ss<<", stack="<<stack;
-  }
+      ss<<", stack="<<stack;
+    }
   return ss.str();
 }
 
@@ -233,29 +233,29 @@ std::string Profiler::str(const int verbosity, const bool cumulative, const int 
   int n=localResults.size();
   size_t maxWidth=0;
   if (cumulative)
-  for (int i=0; i<n; i++) {
-      std::string key;
-      resultMap::iterator s=localResults.begin(); for (int j=0; j<i; j++) s++;
-      key = s->first;
-      results[key].cumulative=s->second.cumulative;
-      auto w=key.rfind(':');
-      if (w != std::string::npos) {
-          w = key.size()-w + std::count(key.begin(),key.begin()+w,':');
-          maxWidth = std::max(maxWidth,w);
-        }
-    }
+    for (int i=0; i<n; i++) {
+        std::string key;
+        resultMap::iterator s=localResults.begin(); for (int j=0; j<i; j++) s++;
+        key = s->first;
+        results[key].cumulative=s->second.cumulative;
+        auto w=key.rfind(':');
+        if (w != std::string::npos) {
+            w = key.size()-w + std::count(key.begin(),key.begin()+w,':');
+            maxWidth = std::max(maxWidth,w);
+          }
+      }
   typedef std::pair<std::string,Profiler::resources> data_t;
   std::priority_queue<data_t, std::deque<data_t>, compareResources<data_t>  > q(localResults.begin(),localResults.end());
   std::stringstream ss;
   if (!cumulative) {
-  for (resultMap::const_iterator s=localResults.begin(); s!=localResults.end(); ++s)
-    if ((*s).first.size() > maxWidth) maxWidth=(*s).first.size();
-  maxWidth-=localResults.begin()->first.size()+1; // assumes the first node is the top level
+      for (resultMap::const_iterator s=localResults.begin(); s!=localResults.end(); ++s)
+        if ((*s).first.size() > maxWidth) maxWidth=(*s).first.size();
+      maxWidth-=localResults.begin()->first.size()+1; // assumes the first node is the top level
     }
   if (maxWidth < 7) maxWidth=7;
   ss << "Profiler \""<<Name<<"\""; if(cumulative) ss<<" (cumulative)"; if (activeLevel < INT_MAX) ss <<" to depth "<<activeLevel; ss <<std::endl;
   for ( ; ! q.empty(); q.pop())
-      ss << q.top().second.str(maxWidth,verbosity,cumulative,precision) <<std::endl;
+    ss << q.top().second.str(maxWidth,verbosity,cumulative,precision) <<std::endl;
   return ss.str();
 }
 
@@ -266,16 +266,16 @@ void Profiler::accumulate(resultMap& results)
       parent->second.cumulative = new Profiler::resources;
       *parent->second.cumulative-=*parent->second.cumulative;
       // nb 'child' includes the parent itself
-    for (resultMap::iterator child=results.begin(); child!=results.end(); ++child) {
-      if (parent->first.size() <= child->first.size() && parent->first == child->first.substr(0,parent->first.size())) {
-        *parent->second.cumulative += child->second;
-	if (parent->first != child->first)
-	  parent->second.cumulative->stack=std::max(parent->second.cumulative->stack,parent->second.stack+child->second.stack);
-        parent->second.cumulative->calls = parent->second.calls;
-        parent->second.cumulative->parent = this;
-      }
+      for (resultMap::iterator child=results.begin(); child!=results.end(); ++child) {
+          if (parent->first.size() <= child->first.size() && parent->first == child->first.substr(0,parent->first.size())) {
+              *parent->second.cumulative += child->second;
+              if (parent->first != child->first)
+                parent->second.cumulative->stack=std::max(parent->second.cumulative->stack,parent->second.stack+child->second.stack);
+              parent->second.cumulative->calls = parent->second.calls;
+              parent->second.cumulative->parent = this;
+            }
+        }
     }
-  }
 }
 
 std::ostream& operator<<(std::ostream& os, Profiler & obj)
@@ -296,11 +296,11 @@ struct Profiler::resources Profiler::getResources()
   struct timeval time;
   result.wall=(double)0;
   if (!gettimeofday(&time,NULL)) {
-    result.wall = (double)time.tv_sec + (double)time.tv_usec * .000001;
-    if (init) wallbase=result.wall;
-    init=0;
-    result.wall-=wallbase;
-  }
+      result.wall = (double)time.tv_sec + (double)time.tv_usec * .000001;
+      if (init) wallbase=result.wall;
+      init=0;
+      result.wall-=wallbase;
+    }
 #ifdef MEMORY_H
   result.stack=(size_t) memory_used(1);
 #else
