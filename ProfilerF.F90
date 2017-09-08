@@ -138,7 +138,7 @@ MODULE ProfilerF
    INTEGER :: length
    INTEGER(kind=c_int) :: verbosity_, cumulative_, precision_
    verbosity_=0; if (present(verbosity)) verbosity_=int(verbosity,kind=kind(verbosity_))
-   cumulative_=1; if (present(cumulative)) then; if (cumulative) cumulative_=1; endif
+   cumulative_=1; if (present(cumulative)) then; if (.not. cumulative) cumulative_=0; endif
    precision_=3; if (present(precision)) precision_=int(precision,kind=kind(precision_))
    CALL ProfilerStrC(this%handle,result,int(size(result),kind=c_int),verbosity_,cumulative_,precision_)
    DO length=1,SIZE(result)
