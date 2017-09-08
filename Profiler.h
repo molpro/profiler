@@ -137,10 +137,8 @@ public:
   template<class T> struct compareResources : std::binary_function<T,T,bool>
   { inline bool operator () (const T& _left, const T& _right)
     {
-      auto lastcolon_left = _left.first.rfind(':');
-      auto lastcolon_right = _right.first.rfind(':');
-      if (lastcolon_left == std::string::npos) return false;
-      if (lastcolon_right == std::string::npos) return true;
+      if (_left.first.rfind(':') == std::string::npos) return false;
+      if (_right.first.rfind(':') == std::string::npos) return true;
       if (_left.first.size() > _right.first.size() && _left.first.substr(0,_right.first.size()) == _right.first) {
           return true;
         }

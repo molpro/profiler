@@ -64,7 +64,6 @@ void Profiler::start(const std::string& name)
   struct resources now=getResources();now.name=name;
   for (auto c=now.name.begin(); c!=now.name.end(); c++) if(*c==':') *c=colon_replace;
   now.calls=1;now.parent=this;
-//  std::cout << "start "<<now.name<<" cpu="<<now.cpu<<", level="<<level<<std::endl;
   if (! resourcesStack.empty())
     totalise(now,0,0);
 #ifdef MEMORY_H
@@ -87,7 +86,6 @@ void Profiler::start(const std::string& name)
 #endif
   resourcesStack.push_back(now);
   startResources.push_back(now);
-//    std::cout <<std::endl<< "start now.wall="<<now.wall<<std::endl;
 }
 
 void Profiler::totalise(const struct resources now, const long operations, const int calls)
@@ -104,10 +102,8 @@ void Profiler::totalise(const struct resources now, const long operations, const
   for(std::vector<resources>::const_reverse_iterator r=resourcesStack.rbegin(); r!= resourcesStack.rend(); r++) key=r->name+":"+key;
   key.erase(key.end()-1,key.end());
   diff.name=key;
-//  std::cout <<"diff.cpu "<<diff.cpu<<std::endl;
   results[key] += diff;
   results[key].calls += calls;
-//  std::cout << "totalise key="<<key<<", results.size() "<<results.size()<<std::endl;
 }
 
 void Profiler::stop(const std::string &name, long operations)
@@ -117,18 +113,14 @@ void Profiler::stop(const std::string &name, long operations)
   assert(level==(int)resourcesStack.size()-1);
 //  assert(name=="" || name == resourcesStack.back().name); // don't do this any more because of colon escaping
   struct resources now=getResources();now.operations=operations;now.parent=this;
-//  std::cout << "stop "<<name<<" cpu="<<now.cpu<<std::endl;
   totalise(now,operations,1);
 
   if (stopPrint_>-1) {
     struct resources diff=now;
-//    std::cout <<std::endl<< "now.wall="<<now.wall<<std::endl;
-//    std::cout << "then.wall="<<startResources.back().wall<<std::endl;
     diff-=startResources.back();
     diff.name="";
     for(std::vector<resources>::const_reverse_iterator r=resourcesStack.rbegin(); r!= resourcesStack.rend(); r++) diff.name=r->name+":"+diff.name;
     diff.name.erase(diff.name.end()-1,diff.name.end());
-//    std::cout <<"Profiler \""<<Name<<"\" stop: "<< diff.str(0,stopPrint_,false,3,"All") <<std::endl;
   }
 
 #ifdef MEMORY_H
@@ -174,9 +166,7 @@ Profiler::resultMap Profiler::totals() const
       double val=ss.wall;
       MPI_Allreduce(&val,&(ss.wall),len,MPI_DOUBLE,MPI_MAX,m_communicator);
       val=ss.cpu;
-//      std::cout << "cpu local "<<ss.cpu<<std::endl;
       MPI_Allreduce(&val,&(ss.cpu),len,MPI_DOUBLE,MPI_SUM,m_communicator);
-//      std::cout << "cpu summed "<<ss.cpu<<std::endl;
       int calls=ss.calls;
       MPI_Allreduce(&calls,&(ss.calls),len,MPI_INT,MPI_SUM,m_communicator);
       long operations=ss.operations;
@@ -187,8 +177,6 @@ Profiler::resultMap Profiler::totals() const
   }
 #endif
   for (auto& x : thiscopy.results) x.second.parent=this;
-//  std::cout << "cpu summed "<<thiscopy.results["TOP:Davidson"].cpu<<std::endl;
-//  std::cout << "parent summed "<<thiscopy.results["TOP:Davidson"].parent<<std::endl;
   thiscopy.accumulate(thiscopy.results);
   return thiscopy.results;
 }
@@ -266,10 +254,8 @@ std::string Profiler::str(const int verbosity, const bool cumulative, const int 
     }
   if (maxWidth < 7) maxWidth=7;
   ss << "Profiler \""<<Name<<"\""; if(cumulative) ss<<" (cumulative)"; if (activeLevel < INT_MAX) ss <<" to depth "<<activeLevel; ss <<std::endl;
-  for ( ; ! q.empty(); q.pop()) {
-//      std::cout << "queue pop "<<q.top().first<<": "<<q.top().second.cpu<<std::endl;
+  for ( ; ! q.empty(); q.pop())
       ss << q.top().second.str(maxWidth,verbosity,cumulative,precision) <<std::endl;
-    }
   return ss.str();
 }
 
@@ -277,22 +263,16 @@ void Profiler::accumulate(resultMap& results)
 {
   for (resultMap::iterator r=results.begin(); r!=results.end(); ++r) r->second.name=r->first;
   for (resultMap::iterator parent=results.begin(); parent!=results.end(); ++parent) {
-//      std::cout << "accumulate parent="<<parent->first<<std::endl;
       parent->second.cumulative = new Profiler::resources;
-//      std::cout << " parent cpu set to "<<parent->second.cumulative->cpu<<std::endl;
       *parent->second.cumulative-=*parent->second.cumulative;
       // nb 'child' includes the parent itself
     for (resultMap::iterator child=results.begin(); child!=results.end(); ++child) {
       if (parent->first.size() <= child->first.size() && parent->first == child->first.substr(0,parent->first.size())) {
-//          std::cout << " accumulate child="<<child->first<<std::endl;
         *parent->second.cumulative += child->second;
-//          std::cout << " child cpu "<<child->second.cpu<<std::endl;
-//          std::cout << " parent cpu set to "<<parent->second.cumulative->cpu<<std::endl;
 	if (parent->first != child->first)
 	  parent->second.cumulative->stack=std::max(parent->second.cumulative->stack,parent->second.stack+child->second.stack);
         parent->second.cumulative->calls = parent->second.calls;
         parent->second.cumulative->parent = this;
-//        std::cout << "copying parent field into cumulative "<<parent->second.cumulative->parent<<std::endl;
       }
     }
   }
