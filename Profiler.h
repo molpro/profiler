@@ -64,9 +64,9 @@ public:
    * \param communicator The MPI communicator over which statistics should be aggregated.
    */
   Profiler(const std::string &name, sortMethod sortBy=wall, const int level=INT_MAX
-    #ifdef PROFILER_MPI
+#ifdef PROFILER_MPI
       , const MPI_Comm communicator=MPI_COMM_WORLD
-    #endif
+#endif
       );
   /*!
    * \brief Reset the object.

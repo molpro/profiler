@@ -22,15 +22,15 @@
 
 
 Profiler::Profiler(const std::string& name, sortMethod sortBy, const int level
-		   #ifdef PROFILER_MPI
+#ifdef PROFILER_MPI
 		   , const MPI_Comm communicator
-		   #endif
+#endif
 		   ) : m_sortBy(sortBy)
 #ifdef PROFILER_MPI
 , m_communicator(communicator
-		 #ifdef MOLPRO
+#ifdef MOLPRO
 		 == MPI_COMM_WORLD ? MPI_Comm_f2c(PPIDD_Worker_comm()) : communicator
-				     #endif
+#endif
 				     )
 #endif
 {
