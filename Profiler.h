@@ -99,7 +99,7 @@ public:
    * \param precision How many decimal places for seconds.
    * \return
    */
-  std::string str(const int verbosity=0, const bool cumulative=false, const int precision=3) const;
+  std::string str(const int verbosity=0, const bool cumulative=true, const int precision=3) const;
 public:
   class Push;
 public:
