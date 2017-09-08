@@ -66,7 +66,7 @@ void Profiler::start(const std::string& name)
   now.calls=1;now.parent=this;
   if (! resourcesStack.empty())
     totalise(now,0,0);
-#ifdef MEMORY_H
+#ifdef MEMORY_MEMORY_H
   // memory accounting:
   // the statistic for a segment is the maximum used, ie memory_used(1) minus the actual start memory, ie memory_used(0)
   // memory_reset_maximum_stack()  is used to reset the memory manager's notion of high water
@@ -123,7 +123,7 @@ void Profiler::stop(const std::string &name, long operations)
       diff.name.erase(diff.name.end()-1,diff.name.end());
     }
 
-#ifdef MEMORY_H
+#ifdef MEMORY_MEMORY_H
   memoryStack0.pop_back();
   memoryStack1.pop_back();
   memory_reset_maximum_stack(memoryStack1.back());
@@ -301,7 +301,7 @@ struct Profiler::resources Profiler::getResources()
       init=0;
       result.wall-=wallbase;
     }
-#ifdef MEMORY_H
+#ifdef MEMORY_MEMORY_H
   result.stack=(size_t) memory_used(1);
 #else
   result.stack=0;
