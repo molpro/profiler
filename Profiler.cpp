@@ -17,7 +17,7 @@
 #include "Profiler.h"
 #include "memory.h"
 #ifdef MOLPRO
-#include "ppidd_c.h"
+#include "ppidd.h"
 #endif
 
 
