@@ -6,6 +6,7 @@
 #include <map>
 #include <vector>
 #include <climits>
+#include <stdexcept>
 #include <stdint.h>
 // if you want to force MPI mode, uncomment the next line
 //#define PROFILER_MPI
