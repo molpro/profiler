@@ -141,22 +141,40 @@ private:
     {
       if (_left.first.rfind(':') == std::string::npos) return false;
       if (_right.first.rfind(':') == std::string::npos) return true;
-      if (_left.first.size() > _right.first.size() && _left.first.substr(0,_right.first.size()) == _right.first) {
+      auto leftname=_left.first+":";
+      auto rightname=_right.first+":";
+      if (leftname.size() > rightname.size() && leftname.substr(0,rightname.size()) == rightname) {
           return true;
         }
-      if (_right.first.size() > _left.first.size() && _right.first.substr(0,_left.first.size()) == _left.first) {
+      if (rightname.size() > leftname.size() && rightname.substr(0,leftname.size()) == leftname) {
           return false;
         }
       const Profiler& pl=*(_left.second.parent);
       // find the common ancestor
-      size_t o; for (o=0; o<std::max(_left.first.size(),_right.first.size()) && _left.first[o]==_right.first[o] ;o++) ;
-      while (_left.first[o]!=':')o--;
-      auto oL=_left.first.find(':',o+1); if (oL==std::string::npos) oL=_left.first.size();
-      auto oR=_right.first.find(':',o+1); if (oR==std::string::npos) oR=_right.first.size();
-      auto l=pl.results.at(_left.first.substr(0,oL));
-      l.cumulative = pl.results.at(_left.first.substr(0,oL)).cumulative;
-      auto r=pl.results.at(_right.first.substr(0,oR));
-      r.cumulative = pl.results.at(_right.first.substr(0,oR)).cumulative;
+      size_t o; for (o=0; o<std::max(leftname.size(),rightname.size()) && leftname[o]==rightname[o] ;o++) ;
+      while ((leftname[o]!=':' || rightname[o]!=':') && o>=0) o--;
+      auto oL=leftname.find(':',o+1); if (oL==std::string::npos) oL=leftname.size();
+      auto oR=rightname.find(':',o+1); if (oR==std::string::npos) oR=rightname.size();
+      auto l=pl.results.at(leftname.substr(0,oL));
+      l.cumulative = pl.results.at(leftname.substr(0,oL)).cumulative;
+      auto r=pl.results.at(rightname.substr(0,oR));
+      r.cumulative = pl.results.at(rightname.substr(0,oR)).cumulative;
+      if (false){ // check the ancestors for debugging purposes only
+          std::cout << "\ncompare "<<leftname <<" and "<<rightname<<std::endl;
+          std::cout << "ancestors\n"<<leftname.substr(0,oL)<<"\n"<<rightname.substr(0,oR)<<std::endl;
+          auto leftsep=leftname.substr(0,oL).find_last_of(":");
+          auto leftroot=leftname.substr(0,leftsep);
+          auto leftqualified=leftname.substr(leftsep+1,oL-leftsep-1);
+          auto rightsep=rightname.substr(0,oR).find_last_of(":");
+          auto rightroot=rightname.substr(0,rightsep);
+          auto rightqualified=rightname.substr(rightsep+1,oR-rightsep-1);
+          if (rightroot != leftroot ||  rightqualified.substr(0,rightqualified.find(":")) == leftqualified.substr(0,leftqualified.find(":"))) {
+              std::cout << "L: "<<leftroot << "////"<<leftqualified<<std::endl;
+              std::cout << "R: "<<rightroot << "////"<<rightqualified<<std::endl;
+              if (rightroot != leftroot) throw std::logic_error("left and right roots not the same");
+              if (rightqualified.substr(0,rightqualified.find(":")) == leftqualified.substr(0,leftqualified.find(":"))) throw std::logic_error("left and right nodes unexpectedly identical");
+            }
+      }
       switch (l.parent==nullptr ? wall : l.parent->m_sortBy) {
         case wall:
           if (l.cumulative==NULL)

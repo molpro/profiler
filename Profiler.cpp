@@ -55,7 +55,7 @@ void Profiler::active(const int level, const int stopPrint)
 }
 
 #include <assert.h>
-static char colon_replace=';';
+static char colon_replace=(char)30;
 void Profiler::start(const std::string& name)
 {
   level++;
@@ -271,8 +271,7 @@ void Profiler::accumulate(resultMap& results)
       *parent->second.cumulative-=*parent->second.cumulative;
       // nb 'child' includes the parent itself
       for (resultMap::iterator child=results.begin(); child!=results.end(); ++child) {
-          if (parent->first.size() <= child->first.size() && parent->first+":" == child->first.substr(0,parent->first.size()+1)) {
-              std::cout << child->first<<" thought to be a child of "<<parent->first<<std::endl;
+          if (parent->first==child->first || (parent->first.size() <= child->first.size() && parent->first+":" == child->first.substr(0,parent->first.size()+1))) {
               *parent->second.cumulative += child->second;
               if (parent->first != child->first)
                 parent->second.cumulative->stack=std::max(parent->second.cumulative->stack,parent->second.stack+child->second.stack);
