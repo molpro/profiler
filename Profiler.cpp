@@ -111,7 +111,11 @@ void Profiler::stop(const std::string &name, long operations)
   level--;
   if (level > 0 && level>=activeLevel) return;
   assert(level==(int)resourcesStack.size()-1);
-  //  assert(name=="" || name == resourcesStack.back().name); // don't do this any more because of colon escaping
+#ifndef NDEBUG
+  std::string nam(name);
+  for (auto c=nam.begin(); c!=nam.end(); c++) if(*c==':') *c=colon_replace;
+  assert(nam=="" || nam == resourcesStack.back().name);
+#endif
   struct resources now=getResources();now.operations=operations;now.parent=this;
   totalise(now,operations,1);
 
