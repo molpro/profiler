@@ -151,7 +151,7 @@ private:
         }
       const Profiler& pl=*(_left.second.parent);
       // find the common ancestor
-      size_t o; for (o=0; o<std::max(leftname.size(),rightname.size()) && leftname[o]==rightname[o] ;o++) ;
+      std::ptrdiff_t o; for (o=0; o<std::max(leftname.size(),rightname.size()) && leftname[o]==rightname[o] ;o++) ;
       while ((leftname[o]!=':' || rightname[o]!=':') && o>=0) o--;
       auto oL=leftname.find(':',o+1); if (oL==std::string::npos) oL=leftname.size();
       auto oR=rightname.find(':',o+1); if (oR==std::string::npos) oR=rightname.size();
