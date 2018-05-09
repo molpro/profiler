@@ -95,7 +95,7 @@ void Profiler::totalise(const struct resources now, const long operations, const
   diff.name=resourcesStack.back().name;
   diff.operations=operations;
   diff.parent=this;
-#ifdef MEMORY_H
+#ifdef MEMORY_MEMORY_H
   diff.stack=memory_used(1)-memoryStack0.back();
 #endif
   std::string key;
