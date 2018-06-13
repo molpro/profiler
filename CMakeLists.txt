@@ -9,11 +9,15 @@ add_executable(ProfilerF.exe ProfilerF.F90 Profiler.cpp Profiler.h)
 #target_link_libraries(ProfilerF.exe -lstdc++)
 
 # get rid of the next lines if you want serial
+get_directory_property(hasParent PARENT_DIRECTORY)
+if(hasParent)
+else()
 find_package(MPI REQUIRED)
 include_directories(${MPI_CXX_INCLUDE_PATH})
 add_definitions(-DMPI2)
 target_link_libraries(Profiler.exe ${MPI_CXX_LIBRARIES})
 target_link_libraries(ProfilerF.exe ${MPI_CXX_LIBRARIES})
+endif()
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
