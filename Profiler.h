@@ -13,7 +13,7 @@
 #ifdef MOLPRO
 #include "common/molpro_config.h"
 #endif
-#if defined(GA_MPI) || defined(MPI2) || defined(GCI_MPI) || defined(GCI_PARALLEL) || defined(PPIDD)
+#if defined(HAVE_MPI_H) || defined(GCI_MPI) || defined(GCI_PARALLEL) || defined(PPIDD)
 #define PROFILER_MPI
 #endif
 #ifdef PROFILER_MPI
