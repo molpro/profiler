@@ -62,11 +62,10 @@ public:
    * \param sortBy Criterion for sorting printed result table.
    * \param level
    * A large value means that data will always be accumulated; zero means that calls to start and stop do nothing.
-   * \param communicator The MPI communicator over which statistics should be aggregated.
    */
   Profiler(const std::string &name, sortMethod sortBy=wall, const int level=INT_MAX
 #ifdef PROFILER_MPI
-      , const MPI_Comm communicator=MPI_COMM_WORLD
+      , const MPI_Comm communicator=MPI_COMM_WORLD //< * The MPI communicator over which statistics should be aggregated.
 #endif
       );
   /*!
