@@ -1,7 +1,7 @@
 #include "../lib/Profiler.h"
 #include <iostream>
 #include <cmath>
-#include <time.h>
+#include <ctime>
 #include <sys/time.h>
 #ifdef HAVE_MPI_H
 #include "mpi.h"
@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     Profiler profiler("C++",Profiler::name);
 
     profiler.start("sqrt");
-    double a=(double)0;
+    auto a=(double)0;
     for (size_t i=0; i<repeat; i++) a*=std::sqrt(a+i)/std::sqrt(a+i+1);
     profiler.stop("sqrt",2*repeat);
 
@@ -28,13 +28,13 @@ int main(int argc, char *argv[])
 
     for (size_t i=0; i<repeatr ; i++){ profiler.start("profiler"); profiler.stop("profiler",1); }
 
-    profiler.start("gettimeofday"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); } profiler.stop("gettimeofday",repeats);
+    profiler.start("gettimeofday"); for (size_t i=0; i<repeats ; i++){ struct timeval time{0}; gettimeofday(&time,nullptr); } profiler.stop("gettimeofday",repeats);
 
     {auto envelope=profiler.push("Envelope");
-    {Profiler::Push s(profiler,"gettimeofday-Stack-1"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); } s+=repeats; }
-    {Profiler::Push s(profiler,"gettimeofday-Stack-2"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); ++s; } }
-    {auto s = profiler.push("gettimeofday-Stack-1"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); } s+=repeats; }
-    {auto s = profiler.push("gettimeofday-Stack-2"); for (size_t i=0; i<repeats ; i++){ struct timeval time; gettimeofday(&time,NULL); ++s; } }
+    {Profiler::Push s(profiler,"gettimeofday-Stack-1"); for (size_t i=0; i<repeats ; i++){ struct timeval time{0}; gettimeofday(&time,nullptr); } s+=repeats; }
+    {Profiler::Push s(profiler,"gettimeofday-Stack-2"); for (size_t i=0; i<repeats ; i++){ struct timeval time{0}; gettimeofday(&time,nullptr); ++s; } }
+    {auto s = profiler.push("gettimeofday-Stack-1"); for (size_t i=0; i<repeats ; i++){ struct timeval time{0}; gettimeofday(&time,nullptr); } s+=repeats; }
+    {auto s = profiler.push("gettimeofday-Stack-2"); for (size_t i=0; i<repeats ; i++){ struct timeval time{0}; gettimeofday(&time,nullptr); ++s; } }
     }
 
     std::cout << profiler << std::endl;
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 
   {
     void* profilerC=profilerNew((char*)"C");
-    double a=(double)0;
+    auto a=(double)0;
     profilerStart(profilerC,(char*)"sqrt");
     for (size_t i=0; i<repeat; i++) a*=std::sqrt(a+i)/std::sqrt(a+i+1);
     profilerStop(profilerC,(char*)"sqrt",2*repeat);

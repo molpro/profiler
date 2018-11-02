@@ -4,21 +4,20 @@ set(CMAKE_CXX_STANDARD 11)
 
 ########## Compiler Flags ##########
 
-#FIXME: need a better procedure
 # get rid of the next lines if you want serial
 if (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
     find_package(MPI REQUIRED)
-    if (MPI_CXX_FOUND AND MPI_FORTRAN_FOUND)
-        add_definitions(-DHAVE_MPI_H)
-        message(STATUS "MPI C++ and Fortran libraries found")
-    endif ()
+endif ()
+if (MPI_CXX_FOUND)
+    add_definitions(-DHAVE_MPI_H)
+    message(STATUS "Building with MPI")
 endif ()
 
 
 ########## Targets ##########
 
 add_subdirectory(lib)
-add_subdirectory(test)
+add_subdirectory(example)
 
 ########## Documentation ##########
 

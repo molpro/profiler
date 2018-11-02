@@ -142,7 +142,7 @@ MODULE ProfilerF
    precision_=3; if (present(precision)) precision_=int(precision,kind=kind(precision_))
    CALL ProfilerStrC(this%handle,result,int(size(result),kind=c_int),verbosity_,cumulative_,precision_)
    DO length=1,SIZE(result)
-    IF (result(length).EQ.C_NULL_CHAR) EXIT
+    IF (result(length) == C_NULL_CHAR) EXIT
    END DO
    WRITE (unit,'(65535A)') result(:MIN(length,SIZE(result))-1)
   END SUBROUTINE ProfilerPrintF
@@ -179,11 +179,11 @@ SUBROUTINE profiler_module_test(printlevel)
  call p%stop('subsubtask')
  end do
  call p%stop('subtask')
- if (printlevel.gt.0) CALL p%print(6)
- if (printlevel.gt.0) CALL p%print(6,cumulative=.TRUE.)
+ if (printlevel > 0) CALL p%print(6)
+ if (printlevel > 0) CALL p%print(6,cumulative=.TRUE.)
 #ifdef MEMORY
- IF (printlevel.GT.0) CALL time_memory(1000000*printlevel)
- if (printlevel.gt.9) PRINT *, 'done',memory_used('STACK',.TRUE.),memory_used('STACK',.FALSE.)
+ IF (printlevel > 0) CALL time_memory(1000000*printlevel)
+ if (printlevel > 9) PRINT *, 'done',memory_used('STACK',.TRUE.),memory_used('STACK',.FALSE.)
 #endif
  CONTAINS
  SUBROUTINE worker
@@ -199,14 +199,14 @@ SUBROUTINE profiler_module_test(printlevel)
  call memory_release(x)
 #endif
  CALL p%stop('sqrt',2*repeat)
- IF (printlevel.GT.99) PRINT *,a ! to avoid compiler optimisation
+ IF (printlevel > 99) PRINT *,a ! to avoid compiler optimisation
 
 ! not explicitly accounted - should appear in total
  a=1d0
  DO i=1,repeat
   a=a*EXP(a+1d0/i)/EXP(a+3d0/i+1)
  END DO
- IF (printlevel.GT.99) PRINT *,a ! to avoid compiler optimisation
+ IF (printlevel > 99) PRINT *,a ! to avoid compiler optimisation
 
  CALL p%start('exp')
 #ifdef MEMORY
@@ -217,7 +217,7 @@ SUBROUTINE profiler_module_test(printlevel)
  DO i=1,repeat
   a=a*EXP(a+1d0/i)/EXP(a+1d0/i+1)
  END DO
- IF (printlevel.GT.99) PRINT *,a ! to avoid compiler optimisation
+ IF (printlevel > 99) PRINT *,a ! to avoid compiler optimisation
  CALL p%stop('exp',2*repeat)
  END SUBROUTINE worker
 #ifdef MEMORY
