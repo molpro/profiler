@@ -4,6 +4,6 @@ target_include_directories(Profiler INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
 
 if (MPI_CXX_FOUND)
     target_include_directories(Profiler PUBLIC ${MPI_CXX_INCLUDE_PATH})
-    target_link_libraries(Profiler PUBLIC MPI::MPI_CXX)
+    target_link_libraries(Profiler PUBLIC MPI::MPI_CXX MPI::MPI_Fortran)
 endif ()
 
