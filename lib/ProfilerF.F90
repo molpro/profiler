@@ -162,7 +162,9 @@ SUBROUTINE profiler_module_test(printlevel)
  TYPE(Profiler) :: p
  INTEGER, PARAMETER :: repeat=2000000
  DOUBLE PRECISION :: a
+#ifdef MEMORY
  DOUBLE PRECISION, POINTER, DIMENSION(:) :: x
+#endif
  INTEGER :: i,kk
  p = Profiler('Fortran')
  !call p%active(2)
