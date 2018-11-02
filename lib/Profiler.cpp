@@ -130,7 +130,7 @@ void Profiler::stop(const std::string &name, long operations)
 #ifdef MEMORY_MEMORY_H
   memoryStack0.pop_back();
   memoryStack1.pop_back();
-  memory_reset_maximum_stack(memoryStack1.back());
+  if (! memoryStack1.empty()) memory_reset_maximum_stack(memoryStack1.back());
 #endif
   resourcesStack.pop_back();
   startResources.pop_back();
