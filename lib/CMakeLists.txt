@@ -1,4 +1,7 @@
-add_library(Profiler Profiler.cpp Profiler.h ProfilerF.F90)
+if (CMAKE_Fortran_COMPILER_ID)
+    set(PROFILER_FORTRAN_SRCS "ProfilerF.F90")
+endif ()
+add_library(Profiler Profiler.cpp Profiler.h ${PROFILER_FORTRAN_SRCS})
 target_include_directories(Profiler INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(Profiler INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
 
