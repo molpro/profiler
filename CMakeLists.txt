@@ -1,8 +1,9 @@
 project(Profiler CXX)
 cmake_minimum_required(VERSION 3.1)
 set(CMAKE_CXX_STANDARD 11)
-option(PROFILER_FORTRAN "Whether to build symmetry_matrix fortran binding" ON)
-
+if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    option(PROFILER_FORTRAN "Whether to build symmetry_matrix fortran binding" ON)
+endif ()
 if (PROFILER_FORTRAN)
     enable_language(Fortran)
 endif ()
@@ -42,7 +43,6 @@ if (CMAKE_Fortran_COMPILER_ID)
         set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -Wall")
     endif ()
 endif ()
-
 
 
 ########## Targets ##########
