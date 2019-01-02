@@ -256,4 +256,3 @@ SUBROUTINE profiler_module_test(printlevel)
  END SUBROUTINE time_memory
 #endif
 END SUBROUTINE profiler_module_test
-
