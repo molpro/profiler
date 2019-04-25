@@ -229,7 +229,7 @@ public:
    * \brief Advance the counter holding the notional number of operations executed in the code segment.
    * \param operations The number of additional operations.
    */
-    void operator+=(const int operations) { m_operations+=operations;}
+    void operator+=(const uint64_t operations) { m_operations+=operations;}
     /*!
    * \brief Advance the counter holding the notional number of operations executed in the code segment.
    */
@@ -238,7 +238,7 @@ public:
     Push();
     const std::string m_name;
     Profiler& m_profiler;
-    int m_operations;
+    uint64_t m_operations;
   };
 
 };
