@@ -62,6 +62,7 @@ void Profiler::start(const std::string& name)
   if (level>activeLevel) return;
   assert(level==(int)resourcesStack.size()+1);
   struct resources now=getResources();now.name=name;
+//  std::cout << "Profiler::start "<<name<<" wall="<<now.wall<<std::endl;
   for (auto c=now.name.begin(); c!=now.name.end(); c++) if(*c==':') *c=colon_replace;
   now.calls=1;now.parent=this;
   if (! resourcesStack.empty())
@@ -117,6 +118,7 @@ void Profiler::stop(const std::string &name, long operations)
   assert(nam=="" || nam == resourcesStack.back().name);
 #endif
   struct resources now=getResources();now.operations=operations;now.parent=this;
+//  std::cout << "Profiler::stop  "<<name<<" wall="<<now.wall<<std::endl;
   totalise(now,operations,1);
 
   if (stopPrint_>-1) {
