@@ -174,7 +174,7 @@ Profiler::resultMap Profiler::totals() const
       val=ss.cpu;
       MPI_Allreduce(&val,&(ss.cpu),len,MPI_DOUBLE,MPI_SUM,m_communicator);
       int calls=ss.calls;
-      MPI_Allreduce(&calls,&(ss.calls),len,MPI_INT,MPI_SUM,m_communicator);
+      MPI_Allreduce(&calls,&(ss.calls),len,MPI_INT,MPI_MAX,m_communicator);
       long operations=ss.operations;
       MPI_Allreduce(&operations,&(ss.operations),len,MPI_LONG,MPI_SUM,m_communicator);
       int64_t stack = ss.stack;
