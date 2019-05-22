@@ -11,7 +11,7 @@
 // if you want to force MPI mode, uncomment the next line
 //#define PROFILER_MPI
 #ifdef MOLPRO
-#include "common/molpro_config.h"
+#include "molpro_config.h"
 #endif
 #if defined(HAVE_MPI_H) || defined(GCI_MPI) || defined(GCI_PARALLEL) || defined(PPIDD)
 #define PROFILER_MPI
