@@ -1,6 +1,7 @@
 #ifndef PROFILER_H
 #define PROFILER_H
 #ifdef __cplusplus
+#include "Profiler-config.h"
 #include <iostream>
 #include <string>
 #include <map>

@@ -1,0 +1,11 @@
+#ifndef PROFILER_CONFIG_H
+#define PROFILER_CONFIG_H
+#ifndef HAVE_MPI_H
+#cmakedefine HAVE_MPI_H
+#endif
+#cmakedefine PROFILER_FORTRAN
+#cmakedefine PROFILER_I8
+#ifndef MOLPRO
+#cmakedefine MOLPRO
+#endif
+#endif
