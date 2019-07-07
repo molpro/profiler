@@ -1,3 +1,4 @@
+include(libconfig.cmake)
 if (CMAKE_Fortran_COMPILER_ID)
     set(PROFILER_FORTRAN_SRCS "ProfilerF.F90")
     set(PROFILER_FORTRAN 1)
@@ -15,4 +16,4 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "PGI")
 endif ()
 
 
-include(libconfig.cmake)
+configure_library(${PROJECT_NAME} "${DEPENDENCIES}")
