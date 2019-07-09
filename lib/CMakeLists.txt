@@ -1,4 +1,3 @@
-include(libconfig.cmake)
 if (CMAKE_Fortran_COMPILER_ID)
     set(PROFILER_FORTRAN_SRCS "ProfilerF.F90")
     set(PROFILER_FORTRAN 1)
