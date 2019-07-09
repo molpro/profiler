@@ -9,6 +9,11 @@ if (FORTRAN)
     enable_language(Fortran)
 endif ()
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+include(libconfig)
+
+
 ########## Compiler Flags ##########
 
 # get rid of the next lines if you want serial
