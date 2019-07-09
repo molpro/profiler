@@ -11,3 +11,5 @@ cmake_install.cmake
 html/
 latex/
 .idea
+cmake-build*/
+dependencies/*/
