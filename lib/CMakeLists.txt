@@ -4,6 +4,11 @@ if (CMAKE_Fortran_COMPILER_ID)
 endif ()
 add_library(Profiler Profiler.cpp Profiler.h ${PROFILER_FORTRAN_SRCS})
 
+if (Molpro_SOURCE_DIR)
+    target_compile_definitions(Profiler PRIVATE MOLPRO)
+    target_link_libraries(Profiler PRIVATE ppidd::ppidd)
+endif ()
+
 if (MPI_CXX_FOUND)
     message(STATUS "Building with MPI")
     set(HAVE_MPI_H 1)
