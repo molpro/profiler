@@ -6,7 +6,7 @@ add_library(Profiler Profiler.cpp Profiler.h ${PROFILER_FORTRAN_SRCS})
 
 if (Molpro_SOURCE_DIR)
     target_compile_definitions(Profiler PRIVATE MOLPRO)
-    target_link_libraries(Profiler PRIVATE ppidd::ppidd)
+    target_link_libraries(Profiler PRIVATE ppidd::ppidd memory::memory)
 endif ()
 
 if (MPI_CXX_FOUND)
