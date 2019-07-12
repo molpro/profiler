@@ -23,6 +23,8 @@ endif ()
 if (Molpro_SOURCE_DIR)
     get_dependency(ppidd)
     list(APPEND DEPENDENCIES ppidd)
+    get_dependency(memory)
+    list(APPEND DEPENDENCIES memory)
 endif ()
 
 configure_library(${PROJECT_NAME} "${DEPENDENCIES}")
