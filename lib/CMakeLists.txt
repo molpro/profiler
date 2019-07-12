@@ -20,5 +20,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "PGI")
     target_compile_definitions(Profile PRIVATE -DEIGEN_DONT_VECTORIZE)
 endif ()
 
+if (Molpro_SOURCE_DIR)
+    get_dependency(ppidd)
+    list(APPEND DEPENDENCIES ppidd)
+endif ()
 
 configure_library(${PROJECT_NAME} "${DEPENDENCIES}")
