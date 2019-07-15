@@ -1,4 +1,3 @@
-unset(DEPENDENCIES)
 if (CMAKE_Fortran_COMPILER_ID)
     set(PROFILER_FORTRAN_SRCS "ProfilerF.F90")
     set(PROFILER_FORTRAN 1)
@@ -17,14 +16,13 @@ if (MPI_CXX_FOUND)
 endif ()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "PGI")
-    target_compile_definitions(Profile PRIVATE -DEIGEN_DONT_VECTORIZE)
+    target_compile_definitions(Profiler PRIVATE -DEIGEN_DONT_VECTORIZE)
 endif ()
 
 if (Molpro_SOURCE_DIR)
     get_dependency(ppidd)
-    list(APPEND DEPENDENCIES ppidd)
     get_dependency(memory)
-    list(APPEND DEPENDENCIES memory)
+    configure_library(${PROJECT_NAME} ppidd memory)
+else ()
+    configure_library(${PROJECT_NAME})
 endif ()
-
-configure_library(${PROJECT_NAME} "${DEPENDENCIES}")
