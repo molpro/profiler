@@ -15,7 +15,9 @@
 #include <string.h>
 #include <iomanip>
 #include "Profiler.h"
+#if defined(MOLPRO) || defined(PROFILER_MEMORY)
 #include "memory.h"
+#endif
 #ifdef MOLPRO
 #include "ppidd.h"
 #endif
