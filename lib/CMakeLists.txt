@@ -2,7 +2,7 @@ if (CMAKE_Fortran_COMPILER_ID)
     set(PROFILER_FORTRAN_SRCS "ProfilerF.F90")
     set(PROFILER_FORTRAN 1)
 endif ()
-add_library(Profiler Profiler.cpp Profiler.h ${PROFILER_FORTRAN_SRCS})
+add_library(Profiler Profiler.cpp Profiler.h ProfilerSingle.h ProfilerSingle.cpp ${PROFILER_FORTRAN_SRCS})
 
 if (Molpro_SOURCE_DIR)
     target_compile_definitions(Profiler PRIVATE MOLPRO)
