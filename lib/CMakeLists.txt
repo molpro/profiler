@@ -12,6 +12,7 @@ endif ()
 if (MPI_CXX_FOUND)
     message(STATUS "Building with MPI")
     set(HAVE_MPI_H 1)
+    target_compile_definitions(Profiler PUBLIC HAVE_MPI_H)
     target_link_libraries(Profiler PUBLIC MPI::MPI_CXX)
 endif ()
 
