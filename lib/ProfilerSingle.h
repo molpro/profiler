@@ -12,16 +12,15 @@
 
 /*!
  * @brief Access to a single profiler for a given name and communicator if compiled with MPI
+ *
+ * This is a utility to avoid creation of a global object for a profiler that is used through out the application.
+ *
+ * For local profilers which might be used only within a particular class composition should still be preferred
+ * instead of creating a global instance.
  */
 class ProfilerSingle {
 public:
-    /*!
-     * @brief Returns a pointer to the profiler instance.
-     *
-     * Arguments are forwarded to Profiler() and are only relevant on first call,.
-     * If compiled with mpi, each communicator has it's own profiler instance.
-     *
-     */
+    ProfilerSingle() = delete;
 #ifdef PROFILER_MPI
     using key_t = std::pair<std::string, MPI_Comm>;
 #else
@@ -29,26 +28,65 @@ public:
 #endif
     using profilers_t = std::map<key_t, std::shared_ptr<Profiler>>;
 
-#ifdef PROFILER_MPI
 
+    /*!
+     * @brief Creates an instance of a profiler identified by its name and communicator if compiled with mpi
+     *
+     * @param name passed to Profiler() constructor
+     * @param sortBy passed to Profiler() constructor
+     * @param level passed to Profiler() constructor
+     * @param communicator passed to Profiler() constructor
+     * @param set_default sets this profiler as default, allows access with ProfilerSingle::instance() without arguments
+     * @param replace if a profiler with the same key already exists replace it with a new on
+     * @return the new profiler instance
+     */
     static std::shared_ptr<Profiler>
-    Instance(const std::string &name, Profiler::sortMethod sortBy = Profiler::wall, const int level = INT_MAX,
-             const MPI_Comm communicator = MPI_COMM_WORLD //< * The MPI communicator over which statistics should be aggregated.
-    ) {
+    create(const std::string &name, Profiler::sortMethod sortBy = Profiler::wall, const int level = INT_MAX,
+#ifdef PROFILER_MPI
+            const MPI_Comm communicator = MPI_COMM_WORLD,
+#endif
+           bool set_default = true, bool replace = false) {
+#ifdef PROFILER_MPI
         auto key = key_t{name, communicator};
-        if (profilers.count(key) == 0)
-            profilers.insert({key, std::make_shared<Profiler>(name, sortBy, level, communicator)});
+#else
+        auto key = key_t{name};
+#endif
+        if (replace || profilers.count(key) == 0)
+#ifdef PROFILER_MPI
+            profilers[key] = std::make_shared<Profiler>(name, sortBy, level, communicator);
+#else
+            profilers[key] = std::make_shared<Profiler>(name, sortBy, level);
+#endif
+        if (set_default)
+            default_key = key;
+        return profilers[key];
+    }
+
+    /*!
+     * @brief Returns a global profiler instance created by ProfilerSingle::create()
+     * @param name  name of the Profiler
+     * @param communicator mpi communicator
+     * @param set_default sets this profiler as default, allows access with ProfilerSingle::instance() without arguments
+     */
+    static std::shared_ptr<Profiler>
+    instance(const std::string &name,
+#ifdef PROFILER_MPI
+            const MPI_Comm communicator = MPI_COMM_WORLD,
+#endif
+             bool set_default = false) {
+#ifdef PROFILER_MPI
+        auto key = key_t{name, communicator};
+#else
+        auto key = key_t{name};
+#endif
         return profilers.at(key);
     }
 
-#else
+    //! Return the default global profiler
     static std::shared_ptr<Profiler>
-    Instance(const std::string &name = "", Profiler::sortMethod sortBy = Profiler::wall, const int level = INT_MAX) {
-        if (!profilers.count(name))
-            profilers.insert({name, std::make_shared<Profiler>(name, sortBy, level)});
-        return profilers.at(name);
+    instance() {
+        return profilers.at(default_key);
     }
-#endif
 
     /*!
      * @brief collection of global profilers
@@ -56,6 +94,7 @@ public:
      * They are made public to allow finer control, with the hope that this trust will not be abused.
      */
     static profilers_t profilers;
+    static key_t default_key;
 
 };
 
