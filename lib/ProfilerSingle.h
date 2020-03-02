@@ -11,7 +11,7 @@
 
 
 /*!
- * @brief Access to a single profiler instance per communicator if compiled with MPI
+ * @brief Access to a single profiler for a given name and communicator if compiled with MPI
  */
 class ProfilerSingle {
 public:
@@ -34,10 +34,10 @@ public:
     }
 #else
     static std::shared_ptr<Profiler>
-    Instance(const std::string &name="", Profiler::sortMethod sortBy = Profiler::wall, const int level = INT_MAX) {
-        if (!m_profiler)
-            m_profiler = std::make_shared<Profiler>(name, sortBy, level);
-        return m_profiler;
+    Instance(const std::string &name = "", Profiler::sortMethod sortBy = Profiler::wall, const int level = INT_MAX) {
+        if (!m_profiler.count(name))
+            m_profiler.insert({name, std::make_shared<Profiler>(name, sortBy, level)});
+        return m_profiler.at(name);
     }
 #endif
 
@@ -45,7 +45,7 @@ protected:
 #ifdef PROFILER_MPI
     static std::map<MPI_Comm, std::shared_ptr<Profiler>> m_profiler;
 #else
-    static std::shared_ptr<Profiler> m_profiler;
+    static std::map<std::string, std::shared_ptr<Profiler>> m_profiler;
 #endif
 
 };
