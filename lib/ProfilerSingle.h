@@ -32,7 +32,7 @@ public:
 #ifdef PROFILER_MPI
 
     static std::shared_ptr<Profiler>
-    Instance(const std::string &name = "", Profiler::sortMethod sortBy = Profiler::wall, const int level = INT_MAX,
+    Instance(const std::string &name, Profiler::sortMethod sortBy = Profiler::wall, const int level = INT_MAX,
              const MPI_Comm communicator = MPI_COMM_WORLD //< * The MPI communicator over which statistics should be aggregated.
     ) {
         auto key = key_t{name, communicator};
