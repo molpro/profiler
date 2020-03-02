@@ -23,30 +23,39 @@ public:
      *
      */
 #ifdef PROFILER_MPI
+    using key_t = std::pair<std::string, MPI_Comm>;
+#else
+    using key_t = std::string;
+#endif
+    using profilers_t = std::map<key_t, std::shared_ptr<Profiler>>;
+
+#ifdef PROFILER_MPI
+
     static std::shared_ptr<Profiler>
     Instance(const std::string &name = "", Profiler::sortMethod sortBy = Profiler::wall, const int level = INT_MAX,
              const MPI_Comm communicator = MPI_COMM_WORLD //< * The MPI communicator over which statistics should be aggregated.
     ) {
-        auto key = std::make_pair(name, communicator);
-        if (m_profiler.count(key) == 0)
-            m_profiler.insert({key, std::make_shared<Profiler>(name, sortBy, level, communicator)});
-        return m_profiler.at(key);
+        auto key = key_t{name, communicator};
+        if (profilers.count(key) == 0)
+            profilers.insert({key, std::make_shared<Profiler>(name, sortBy, level, communicator)});
+        return profilers.at(key);
     }
+
 #else
     static std::shared_ptr<Profiler>
     Instance(const std::string &name = "", Profiler::sortMethod sortBy = Profiler::wall, const int level = INT_MAX) {
-        if (!m_profiler.count(name))
-            m_profiler.insert({name, std::make_shared<Profiler>(name, sortBy, level)});
-        return m_profiler.at(name);
+        if (!profilers.count(name))
+            profilers.insert({name, std::make_shared<Profiler>(name, sortBy, level)});
+        return profilers.at(name);
     }
 #endif
 
-protected:
-#ifdef PROFILER_MPI
-    static std::map<std::pair<std::string, MPI_Comm>, std::shared_ptr<Profiler>> m_profiler;
-#else
-    static std::map<std::string, std::shared_ptr<Profiler>> m_profiler;
-#endif
+    /*!
+     * @brief collection of global profilers
+     *
+     * They are made public to allow finer control, with the hope that this trust will not be abused.
+     */
+    static profilers_t profilers;
 
 };
 
