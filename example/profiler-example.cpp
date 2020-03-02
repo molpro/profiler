@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 #ifdef HAVE_MPI_H
     MPI_Init(&argc,&argv);
 #endif
-    Profiler profiler("C++",Profiler::name);
+    ProfilerSerial profiler("C++", Profiler::name);
 
     profiler.start("sqrt");
     auto a=(double)0;
