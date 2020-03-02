@@ -27,15 +27,22 @@ void sleep_milliseconds(const std::string &name, int repeats) {
 int main(int argc, char *argv[]) {
 #ifdef HAVE_MPI_H
     MPI_Init(&argc, &argv);
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 #endif
     // initial call to create the profiler with necessary settings
     profiler(Profiler::wall);
     sleep_milliseconds("fast", 200);
     sleep_milliseconds("medium", 300);
     sleep_milliseconds("slow", 500);
-    std::cout << *profiler() << std::endl;
 #ifdef HAVE_MPI_H
+    auto summary = profiler()->str();
+    if (rank == 0)
+        std::cout << summary << std::endl;
+    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
+#else
+    std::cout << *profiler() << std::endl;
 #endif
     return 0;
 }
