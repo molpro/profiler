@@ -1,4 +1,4 @@
-#include "../lib/Profiler.h"
+#include "Profiler.h"
 #include <iostream>
 #include <cmath>
 #include <ctime>

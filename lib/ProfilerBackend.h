@@ -1,16 +1,5 @@
-#ifndef PROFILER_PROFILER_H
-#define PROFILER_PROFILER_H
-#ifdef PROFILER_MPI
-#include "ProfilerMPI.h"
-#else
-#include "ProfilerSerial.h"
-#endif
-
-#ifdef PROFILER_MPI
-using Profiler = ProfilerMPI;
-#else
-using Profiler = ProfilerSerial;
-#endif
+#ifndef PROFILER_PROFILERBACKEND_H
+#define PROFILER_PROFILERBACKEND_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,4 +16,5 @@ void profilerStrSubroutine(void*profiler, char* result, int maxResult, int verbo
 }
 #endif
 
-#endif //PROFILER_PROFILER_H
+
+#endif //PROFILER_PROFILERBACKEND_H

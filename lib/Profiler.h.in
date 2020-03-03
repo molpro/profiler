@@ -1,0 +1,11 @@
+#ifndef PROFILER_PROFILER_H_IN
+#define PROFILER_PROFILER_H_IN
+
+#include "@PROFILER_CLASS@.h"
+
+using Profiler = @PROFILER_CLASS@;
+
+#include "ProfilerBackend.h"
+
+
+#endif //PROFILER_PROFILER_H_IN
