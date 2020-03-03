@@ -2,9 +2,6 @@
 #define PROFILER_MPI_H
 #include "ProfilerSerial.h"
 #include "mpi.h"
-#ifndef PROFILER_DEFAULT_COMMUNICATOR
-#define PROFILER_DEFAULT_COMMUNICATOR MPI_COMM_WORLD
-#endif
 
 /*!
  * \brief MPI version of the profiler
@@ -22,7 +19,7 @@ public:
    * \param communicator The MPI communicator over which statistics should be aggregated.
    */
   ProfilerMPI(const std::string &name, sortMethod sortBy = wall, int level = INT_MAX,
-           MPI_Comm communicator = PROFILER_DEFAULT_COMMUNICATOR);
+           MPI_Comm communicator = MPI_COMM_WORLD);
 
   /*!
    * \brief Obtain a summary of the resources used for each category.
