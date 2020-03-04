@@ -11,7 +11,7 @@ target_include_directories(TempProfilerMPI PUBLIC
         )
 
 target_link_libraries(TempProfilerMPI PUBLIC TempProfilerSerial MPI::MPI_CXX)
-target_compile_definitions(TempProfilerMPI PRIVATE PROFILER_MPI)
+target_compile_definitions(TempProfilerMPI PUBLIC PROFILER_MPI)
 
 set(PROFILER_CLASS ProfilerMPI)
 configure_file(../Profiler.h.in ${CMAKE_CURRENT_BINARY_DIR}/ProfilerMPI/Profiler.h)
