@@ -32,7 +32,7 @@ PROGRAM mainf
   call execute_command_line('sleep 1')
   call p%stop('a', 100)
   call p%print(6)
-  call p%print(6, cumulative = .true.)
+  call p%print(6, cumulative = .false.)
 #ifdef HAVE_MPI_H
     call MPI_Finalize()
 #endif

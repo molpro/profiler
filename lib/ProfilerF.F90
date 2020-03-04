@@ -180,7 +180,7 @@ SUBROUTINE profiler_module_test(printlevel)
  end do
  call p%stop('subtask')
  if (printlevel > 0) CALL p%print(6)
- if (printlevel > 0) CALL p%print(6,cumulative=.TRUE.)
+ if (printlevel > 0) CALL p%print(6,cumulative=.FALSE.)
 #ifdef MEMORY
  IF (printlevel > 0) CALL time_memory(1000000*printlevel)
  if (printlevel > 9) PRINT *, 'done',memory_used('STACK',.TRUE.),memory_used('STACK',.FALSE.)
