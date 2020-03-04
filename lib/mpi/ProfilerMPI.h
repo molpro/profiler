@@ -24,7 +24,7 @@ public:
   /*!
    * \brief Obtain a summary of the resources used for each category.
    * Must be called by all MPI processes collectively.
-   * \return std::map of \ref resources
+   * \return std::map of \ref ProfilerSerial::resources
    */
   virtual resultMap totals() const override;
 

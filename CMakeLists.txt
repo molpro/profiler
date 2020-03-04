@@ -56,7 +56,8 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
         add_custom_target(${PROJECT_NAME}-doc ALL
                 DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
                 )
-        file(GLOB headers lib/*.h lib/*.F90)
+        file(GLOB headers README.md lib/*.h lib/serial/*.h lib/mpi/*.h lib/*.F90)
+        message(STATUS ${headers})
         add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
                 COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
                 DEPENDS ${SRC_LIST} ${headers} ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
