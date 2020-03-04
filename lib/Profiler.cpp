@@ -1,10 +1,11 @@
-#include "Profiler.h"
+#include "ProfilerSingle.h"
 
 // C binding
 extern "C" {
 #include <stdlib.h>
 #include <string.h>
-void* profilerNew(char* name) { return new Profiler(name); }
+void* profilerNew(char* name) { return ProfilerSingle::create(std::string(name)).get(); }
+void profilerDelete(char* name) { ProfilerSingle::destroy(std::string(name)); }
 void profilerReset(void* profiler, char* name) { Profiler* obj=(Profiler*)profiler; obj->reset(std::string(name)); }
 void profilerActive(void* profiler, int level, int stopPrint) { Profiler* obj=(Profiler*)profiler; obj->active(level,stopPrint); }
 void profilerStart(void* profiler, char* name) { Profiler* obj=(Profiler*)profiler; obj->start(std::string(name)); }
