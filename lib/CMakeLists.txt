@@ -1,45 +1,48 @@
-if (CMAKE_Fortran_COMPILER_ID)
-    set(PROFILER_FORTRAN_SRCS "ProfilerF.F90")
-    set(PROFILER_FORTRAN 1)
-endif ()
+add_subdirectory(serial)
+if(MPI)
+    add_subdirectory(mpi)
+endif()
 
-add_library(Profiler STATIC Profiler.cpp ProfilerSerial.cpp ProfilerSingle.cpp ${PROFILER_FORTRAN_SRCS})
-set_target_properties(Profiler PROPERTIES
-        PUBLIC_HEADER ${CMAKE_CURRENT_BINARY_DIR}/Profiler.h
-        PUBLIC_HEADER ProfilerSerial.h
-        PUBLIC_HEADER ProfilerSingle.h
+set(PROFILER_SRCS
+        Profiler.cpp
+        ProfilerSingle.cpp
         )
 
-set(PROFILER_CLASS ProfilerSerial)
-set(PROFILER_DEFAULT_COMMUNICATOR MPI_COMM_WORLD)
-
-if (Molpro_SOURCE_DIR)
-    target_compile_definitions(Profiler PRIVATE MOLPRO)
-    target_link_libraries(Profiler PRIVATE ppidd::ppidd memory::memory)
-    set(PROFILER_DEFAULT_COMMUNICATOR "MPI_Comm_f2c(PPIDD_Worker_comm())")
-    set(EXTRA_MPI_INCLUDE "#include <ppidd.h>")
+if (CMAKE_Fortran_COMPILER_ID)
+    list(APPEND PROFILER_SRCS ProfilerF.F90)
 endif ()
 
-if (MPI_CXX_FOUND)
-    message(STATUS "Building with MPI")
-    set(PROFILER_CLASS ProfilerMPI)
-    target_compile_definitions(Profiler PRIVATE PROFILER_MPI)
-    target_sources(Profiler PRIVATE ProfilerMPI.cpp)
-    set_target_properties(Profiler PROPERTIES PRIVATE_HEADER ProfilerMPI.h)
-    target_link_libraries(Profiler PUBLIC MPI::MPI_CXX)
-endif ()
+set(PROFILER_PUBLIC_HEADERS
+        ProfilerBackend.h
+        ProfilerSingle.h
+        )
 
-configure_file(Profiler.h.in ${CMAKE_CURRENT_BINARY_DIR}/Profiler.h)
-configure_file(ProfilerMPIConfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/ProfilerMPIConfig.h)
+add_library(ProfilerSerial STATIC ${PROFILER_SRCS})
+set_target_properties(ProfilerSerial PROPERTIES
+        PUBLIC_HEADER "${PROFILER_PUBLIC_HEADERS}"
+        )
+target_include_directories(ProfilerSerial PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/serial/ProfilerSerial>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}>
+        )
+target_link_libraries(ProfilerSerial PUBLIC TempProfilerSerial)
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "PGI")
-    target_compile_definitions(Profiler PRIVATE -DEIGEN_DONT_VECTORIZE)
-endif ()
+if(MPI)
+    add_library(ProfilerMPI STATIC ${PROFILER_SRCS})
+    set_target_properties(ProfilerMPI PROPERTIES
+            PUBLIC_HEADER "${PROFILER_PUBLIC_HEADERS}"
+            )
+    target_include_directories(ProfilerMPI PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/mpi/ProfilerMPI>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            $<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}>
+            )
+    target_link_libraries(ProfilerMPI PUBLIC TempProfilerMPI)
+endif()
 
-if (Molpro_SOURCE_DIR)
-    get_dependency(ppidd)
-    get_dependency(memory)
-    configure_library(${PROJECT_NAME} ppidd memory)
-else ()
-    configure_library(${PROJECT_NAME})
-endif ()
+
+add_library(Profiler::serial ALIAS ProfilerSerial)
+add_library(Profiler::mpi ALIAS ProfilerMPI)

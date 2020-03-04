@@ -1,14 +1,16 @@
 foreach (example profiler-example.cpp profiler-singleton-example.cpp profiler-fortran-example.F90)
     get_filename_component(name ${example} NAME_WE)
-    add_executable(${name} ${example})
-    target_link_libraries(${name} PUBLIC Profiler)
+    add_executable(${name}-serial ${example})
+    target_link_libraries(${name}-serial PUBLIC Profiler::serial)
+    add_test(NAME ${name}-serial COMMAND ${name}-serial WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+    set_tests_properties(${name}-serial PROPERTIES TIMEOUT 60)
     if (MPI_CXX_FOUND)
-        target_compile_definitions(${name} PRIVATE HAVE_MPI_H)
-        add_test(NAME ${name} COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
-                ${MPIEXEC_PREFLAGS} ${CMAKE_CURRENT_BINARY_DIR}/${name} ${MPIEXEC_POSTFLAGS}
+        add_executable(${name}-mpi ${example})
+        target_link_libraries(${name}-mpi PUBLIC Profiler::mpi)
+        target_compile_definitions(${name}-mpi PRIVATE HAVE_MPI_H)
+        add_test(NAME ${name}-mpi COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
+                ${MPIEXEC_PREFLAGS} ${CMAKE_CURRENT_BINARY_DIR}/${name}-mpi ${MPIEXEC_POSTFLAGS}
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-    else()
-        add_test(NAME ${name} COMMAND ${name} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+        set_tests_properties(${name}-mpi PROPERTIES TIMEOUT 60)
     endif ()
-    set_tests_properties(${name} PROPERTIES TIMEOUT 60)
 endforeach ()
