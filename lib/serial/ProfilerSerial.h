@@ -228,6 +228,7 @@ public:
   };
 
 };
+//! Writes summary of profile to the stream, with end of line
 std::ostream& operator<<(std::ostream& os, ProfilerSerial & obj);
 
 #endif // __cplusplus

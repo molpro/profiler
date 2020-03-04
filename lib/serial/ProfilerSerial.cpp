@@ -243,7 +243,7 @@ void ProfilerSerial::accumulate(resultMap& results)
 
 std::ostream& operator<<(std::ostream& os, ProfilerSerial & obj)
 {
-  return os << obj.str();
+  return os << obj.str() << std::endl;
 }
 
 #include <time.h>

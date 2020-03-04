@@ -50,3 +50,13 @@ ProfilerMPI::resultMap ProfilerMPI::totals() const
   thiscopy.accumulate(thiscopy.results);
   return thiscopy.results;
 }
+
+std::ostream &operator<<(std::ostream &os, ProfilerMPI &obj) {
+  int rank;
+  MPI_Comm_rank(obj.m_communicator, &rank);
+  auto str = obj.str();
+  if (rank == 0)
+    return os << str << std::endl;
+  else
+    return os;
+}

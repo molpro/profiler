@@ -28,9 +28,13 @@ public:
    */
   virtual resultMap totals() const override;
 
-private:
+  //! Writes summary of profile to the stream, with end of line
+  friend std::ostream& operator<<(std::ostream& os, ProfilerMPI & obj);
+
+protected:
   const MPI_Comm m_communicator;
 };
+
 
 
 #endif // PROFILER_MPI_H
