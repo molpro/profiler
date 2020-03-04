@@ -37,6 +37,7 @@ endif ()
 ########## Targets ##########
 
 add_subdirectory(lib)
+enable_testing()
 add_subdirectory(example)
 
 ########## Documentation ##########
