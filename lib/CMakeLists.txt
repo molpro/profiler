@@ -1,5 +1,6 @@
 add_subdirectory(serial)
-if(MPI)
+
+if(MPI_CXX_FOUND)
     add_subdirectory(mpi)
 endif()
 
@@ -28,8 +29,9 @@ target_include_directories(ProfilerSerial PUBLIC
         $<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}>
         )
 target_link_libraries(ProfilerSerial PUBLIC TempProfilerSerial)
+add_library(Profiler::serial ALIAS ProfilerSerial)
 
-if(MPI)
+if(TARGET TempProfilerMPI)
     add_library(ProfilerMPI STATIC ${PROFILER_SRCS})
     set_target_properties(ProfilerMPI PROPERTIES
             PUBLIC_HEADER "${PROFILER_PUBLIC_HEADERS}"
@@ -41,8 +43,7 @@ if(MPI)
             $<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}>
             )
     target_link_libraries(ProfilerMPI PUBLIC TempProfilerMPI)
+    add_library(Profiler::mpi ALIAS ProfilerMPI)
 endif()
 
 
-add_library(Profiler::serial ALIAS ProfilerSerial)
-add_library(Profiler::mpi ALIAS ProfilerMPI)

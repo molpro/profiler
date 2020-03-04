@@ -1,7 +1,3 @@
-if (NOT MPI_CXX_FOUND)
-    message(FATAL_ERROR "Instructed to build with MPI, but MPI C++ compiler was not found")
-endif ()
-
 message(STATUS "Building with MPI")
 
 add_library(TempProfilerMPI STATIC ProfilerMPI.cpp)
