@@ -20,12 +20,14 @@ include(libconfig2)
 
 ########## Compiler Flags ##########
 
-string(TOUPPER ${MPI} MPI_UPPER)
-if (MPI_UPPER STREQUAL "TRY")
-    find_package(MPI COMPONENTS CXX)
-    message(WARNING "Instructed to try and build with MPI, but MPI C++ compiler was not found")
-elseif (MPI_UPPER STREQUAL "ON")
-    find_package(MPI REQUIRED COMPONENTS CXX)
+if (MPI)
+    string(TOUPPER ${MPI} MPI_UPPER)
+    if (MPI_UPPER STREQUAL "TRY")
+        find_package(MPI COMPONENTS CXX)
+        message(WARNING "Instructed to try and build with MPI, but MPI C++ compiler was not found")
+    elseif (MPI_UPPER STREQUAL "ON")
+        find_package(MPI REQUIRED COMPONENTS CXX)
+    endif ()
 endif ()
 
 if (CMAKE_Fortran_COMPILER_ID)
