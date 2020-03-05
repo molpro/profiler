@@ -15,7 +15,7 @@ endif ()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-include(libconfig)
+include(libconfig2)
 
 
 ########## Compiler Flags ##########
