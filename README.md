@@ -36,3 +36,8 @@ Peter Knowles
 
 ### Contributors
 Marat Sibaev
+
+### License
+
+MIT License
+Copyright (c) 2020 Peter James Knowles
