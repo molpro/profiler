@@ -38,10 +38,11 @@ public:
      * @return the new profiler instance
      */
     static std::shared_ptr<Profiler>
-    create(const std::string &name, Profiler::sortMethod sortBy = Profiler::wall, int level = INT_MAX,
+    create(const std::string &name,
 #ifdef PROFILER_MPI
            MPI_Comm communicator = MPI_COMM_WORLD,
 #endif
+           Profiler::sortMethod sortBy = Profiler::wall, int level = INT_MAX,
            bool set_default = true, bool replace = false);
 
     /*!

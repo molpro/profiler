@@ -53,6 +53,13 @@ MODULE ProfilerF
    TYPE(c_ptr) :: ProfilerNewC
   END FUNCTION ProfilerNewC
  !> \private
+  FUNCTION ProfilerNewCComm(name,comm) BIND (C, name='profilerNewComm')
+   USE iso_c_binding
+   CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
+   INTEGER(kind=c_int), INTENT(in), VALUE ::  comm
+   TYPE(c_ptr) :: ProfilerNewCComm
+  END FUNCTION ProfilerNewCComm
+ !> \private
   SUBROUTINE ProfilerActiveC(handle, level, stopPrint) BIND (C, name='profilerActive')
    USE iso_c_binding
    TYPE(c_ptr), INTENT(in), VALUE :: handle
@@ -85,11 +92,16 @@ MODULE ProfilerF
  CONTAINS
 !> \public Construct a new instance.
 !! Should be called through object construction.
-  FUNCTION ProfilerNewF(name)
+  FUNCTION ProfilerNewF(name,comm)
    USE iso_c_binding
    TYPE(Profiler) :: ProfilerNewF
    CHARACTER(len=*), INTENT(in) :: name !< Title of this object
-   ProfilerNewF%handle = ProfilerNewC((TRIM(name)//C_NULL_CHAR))
+   INTEGER, INTENT(in), OPTIONAL :: comm
+   IF (PRESENT(comm)) THEN
+    ProfilerNewF%handle = ProfilerNewCComm((TRIM(name)//C_NULL_CHAR),INT(comm,kind=c_int))
+   ELSE
+    ProfilerNewF%handle = ProfilerNewC((TRIM(name)//C_NULL_CHAR))
+   END IF
   END FUNCTION ProfilerNewF
 !> \public Begin timing a code segment.
 !! Should be called through type-bound interface \c start.
