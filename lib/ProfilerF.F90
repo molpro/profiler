@@ -52,6 +52,7 @@ MODULE ProfilerF
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
    TYPE(c_ptr) :: ProfilerNewC
   END FUNCTION ProfilerNewC
+#ifdef PROFILER_MPI
  !> \private
   FUNCTION ProfilerNewCComm(name,comm) BIND (C, name='profilerNewComm')
    USE iso_c_binding
@@ -59,6 +60,7 @@ MODULE ProfilerF
    INTEGER(kind=c_int), INTENT(in), VALUE ::  comm
    TYPE(c_ptr) :: ProfilerNewCComm
   END FUNCTION ProfilerNewCComm
+#endif
  !> \private
   SUBROUTINE ProfilerActiveC(handle, level, stopPrint) BIND (C, name='profilerActive')
    USE iso_c_binding
@@ -97,11 +99,15 @@ MODULE ProfilerF
    TYPE(Profiler) :: ProfilerNewF
    CHARACTER(len=*), INTENT(in) :: name !< Title of this object
    INTEGER, INTENT(in), OPTIONAL :: comm
+#ifdef PROFILER_MPI
    IF (PRESENT(comm)) THEN
     ProfilerNewF%handle = ProfilerNewCComm((TRIM(name)//C_NULL_CHAR),INT(comm,kind=c_int))
    ELSE
+#endif
     ProfilerNewF%handle = ProfilerNewC((TRIM(name)//C_NULL_CHAR))
+#ifdef PROFILER_MPI
    END IF
+#endif
   END FUNCTION ProfilerNewF
 !> \public Begin timing a code segment.
 !! Should be called through type-bound interface \c start.
