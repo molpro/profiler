@@ -14,3 +14,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "PGI")
     target_compile_definitions(Profiler PRIVATE -DEIGEN_DONT_VECTORIZE)
 endif ()
 
+install(TARGETS TempProfilerSerial
+        EXPORT ProfilerTargets
+        )
+

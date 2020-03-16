@@ -2,12 +2,11 @@ message(STATUS "Building with MPI")
 
 add_library(TempProfilerMPI STATIC ProfilerMPI.cpp)
 set_target_properties(TempProfilerMPI PROPERTIES
-        PRIVATE_HEADER "ProfilerMPI.h;ProfilerMPIConfig.h."
+        PRIVATE_HEADER "ProfilerMPI.h;${CMAKE_CURRENT_BINARY_DIR}/ProfilerMPIConfig.h"
         )
 target_include_directories(TempProfilerMPI PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}>
         )
 
 target_link_libraries(TempProfilerMPI PUBLIC TempProfilerSerial MPI::MPI_CXX)
@@ -25,3 +24,6 @@ if (Molpro_SOURCE_DIR)
 endif ()
 
 configure_file(ProfilerMPIConfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/ProfilerMPIConfig.h)
+install(TARGETS TempProfilerMPI
+        EXPORT ProfilerTargets
+        )
