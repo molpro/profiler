@@ -29,15 +29,17 @@ target_include_directories(ProfilerSerial PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/serial/ProfilerSerial>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}>
+        $<INSTALL_INTERFACE:include/ProfilerSerial>
         )
 target_link_libraries(ProfilerSerial PUBLIC TempProfilerSerial)
 add_library(Profiler::serial ALIAS ProfilerSerial)
 install(TARGETS ProfilerSerial
         EXPORT ProfilerTargets
+        PUBLIC_HEADER DESTINATION include/ProfilerSerial
+        PRIVATE_HEADER DESTINATION include/ProfilerSerial
         )
 
 if (TARGET TempProfilerMPI)
-    message(STATUS "!adding Profiler::mpi")
     add_library(ProfilerMPI STATIC ${PROFILER_SRCS})
     set_target_properties(ProfilerMPI PROPERTIES
             PUBLIC_HEADER "${PROFILER_PUBLIC_HEADERS};${CMAKE_CURRENT_BINARY_DIR}/mpi/ProfilerMPI/Profiler.h"
@@ -48,17 +50,21 @@ if (TARGET TempProfilerMPI)
             $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/mpi/ProfilerMPI>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
             $<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}>
+            $<INSTALL_INTERFACE:include/ProfilerSerial>
             )
     target_link_libraries(ProfilerMPI PUBLIC TempProfilerMPI)
     add_library(Profiler::mpi ALIAS ProfilerMPI)
     install(TARGETS ProfilerMPI
             EXPORT ProfilerTargets
+            PUBLIC_HEADER DESTINATION include/ProfilerMPI
+            PRIVATE_HEADER DESTINATION include/ProfilerMPI
             )
 endif ()
 
 install(EXPORT ProfilerTargets
         NAMESPACE Profiler::
         DESTINATION lib/cmake/Profiler
+        FILE ProfilerConfig.cmake
         )
 
 

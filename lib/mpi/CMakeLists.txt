@@ -7,6 +7,7 @@ set_target_properties(TempProfilerMPI PROPERTIES
 target_include_directories(TempProfilerMPI PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:include/ProfilerMPI>
         )
 
 target_link_libraries(TempProfilerMPI PUBLIC TempProfilerSerial MPI::MPI_CXX)
@@ -26,4 +27,6 @@ endif ()
 configure_file(ProfilerMPIConfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/ProfilerMPIConfig.h)
 install(TARGETS TempProfilerMPI
         EXPORT ProfilerTargets
+        PUBLIC_HEADER DESTINATION include/ProfilerMPI
+        PRIVATE_HEADER DESTINATION include/ProfilerMPI
         )

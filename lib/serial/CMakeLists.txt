@@ -6,7 +6,7 @@ configure_file(../Profiler.h.in ${CMAKE_CURRENT_BINARY_DIR}/ProfilerSerial/Profi
 target_include_directories(TempProfilerSerial PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}>
+        $<INSTALL_INTERFACE:include/ProfilerSerial>
         )
 add_configure_file(TempProfilerSerial Profiler)
 
@@ -16,5 +16,7 @@ endif ()
 
 install(TARGETS TempProfilerSerial
         EXPORT ProfilerTargets
+        PUBLIC_HEADER DESTINATION include/ProfilerSerial
+        PRIVATE_HEADER DESTINATION include/ProfilerSerial
         )
 
