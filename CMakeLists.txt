@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 11)
 ########## Options ##########
 
 if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-    option(FORTRAN "Whether to build Profiler fortran binding" ON)
+    option(FORTRAN "Whether to build Profiler fortran binding" OFF)
     option(MPI "Whether to build Profiler::mpi" OFF)
     if (FORTRAN)
         enable_language(Fortran)
