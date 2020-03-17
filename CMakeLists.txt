@@ -6,11 +6,16 @@ set(CMAKE_CXX_STANDARD 11)
 
 if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     option(FORTRAN "Whether to build Profiler fortran binding" ON)
-    set(MPI "TRY" CACHE STRING "Whether to build with MPI support: TRY - use mpi if found, ON - mpi required, OFF - no mpi.")
-endif ()
+    option(MPI "Whether to build Profiler::mpi" OFF)
 
-if (FORTRAN)
-    enable_language(Fortran)
+    if (FORTRAN)
+        enable_language(Fortran)
+    endif ()
+
+    if (MPI)
+        message("Building parallel Profiler::mpi")
+        find_package(MPI REQUIRED COMPONENTS CXX)
+    endif ()
 endif ()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")

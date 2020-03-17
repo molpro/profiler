@@ -1,7 +1,6 @@
 add_subdirectory(serial)
 
-if (MPI_CXX_FOUND)
-    message(STATUS "adding mpi subdirectory")
+if (TARGET MPI::MPI_CXX)
     add_subdirectory(mpi)
 endif ()
 
