@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.14)
 project(Profiler VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 11)
 
@@ -7,14 +7,12 @@ set(CMAKE_CXX_STANDARD 11)
 if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     option(FORTRAN "Whether to build Profiler fortran binding" ON)
     option(MPI "Whether to build Profiler::mpi" OFF)
-
     if (FORTRAN)
         enable_language(Fortran)
     endif ()
-
     if (MPI)
         message("Building parallel Profiler::mpi")
-        find_package(MPI REQUIRED COMPONENTS CXX)
+        find_package(MPI REQUIRED COMPONENTS MPICXX)
     endif ()
 endif ()
 

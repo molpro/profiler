@@ -4,7 +4,7 @@ foreach (example profiler-example.cpp profiler-singleton-example.cpp profiler-fo
     target_link_libraries(${name}-serial PUBLIC Profiler::serial)
     add_test(NAME ${name}-serial COMMAND ${name}-serial WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
     set_tests_properties(${name}-serial PROPERTIES TIMEOUT 60)
-    if (MPI_CXX_FOUND)
+    if (TARGET Profiler::mpi)
         add_executable(${name}-mpi ${example})
         target_link_libraries(${name}-mpi PUBLIC Profiler::mpi)
         target_compile_definitions(${name}-mpi PRIVATE HAVE_MPI_H)

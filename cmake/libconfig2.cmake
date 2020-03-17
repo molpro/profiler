@@ -94,8 +94,12 @@ function(add_configure_file LIBRARY_NAME PROJECT_NAME_)
 #endif
 ")
     configure_file("${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_}-config.h.in" ${PROJECT_NAME_}-config.h)
-    get_target_property(tp ${LIBRARY_NAME} PUBLIC_HEADER)
-    set_target_properties(${LIBRARY_NAME} PROPERTIES PUBLIC_HEADER "${tp};${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_}-config.h")
+    set_property(TARGET ${LIBRARY_NAME} APPEND PROPERTY
+            PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_}-config.h"
+            )
+    message("target = ${LIBRARY_NAME}")
+    get_target_property(head ProfilerSerial PUBLIC_HEADER)
+    message("add config head serial = ${head}")
 endfunction()
 
 # Completion of configuration for a library, including installation and package
