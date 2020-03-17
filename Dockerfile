@@ -1,8 +1,8 @@
 # parent image
-FROM alpine:latest
+FROM ubuntu:20.04
 
 # Install any needed packages
-RUN apk update && apk add --no-cache \ 
-cmake g++ gfortran git doxygen build-base binutils file util-linux bash rsync
+RUN apt-get update 
+RUN apt-get upgrade -y
+RUN apt-get install -y cmake git g++ gfortran doxygen bash rsync curl mpich
 
-RUN apk update && apk add --no-cache procps
