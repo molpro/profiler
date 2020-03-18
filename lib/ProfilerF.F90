@@ -47,17 +47,18 @@ MODULE ProfilerF
 
  INTERFACE
  !> \private
-  FUNCTION ProfilerNewC(name) BIND (C, name='profilerNew')
+  FUNCTION ProfilerNewC(name, sort, length) BIND (C, name='profilerNew')
    USE iso_c_binding
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
+   INTEGER(kind=c_int), INTENT(in), VALUE ::  sort, length
    TYPE(c_ptr) :: ProfilerNewC
   END FUNCTION ProfilerNewC
 #ifdef PROFILER_MPI
  !> \private
-  FUNCTION ProfilerNewCComm(name,comm) BIND (C, name='profilerNewComm')
+  FUNCTION ProfilerNewCComm(name, sort, length, comm) BIND (C, name='profilerNewComm')
    USE iso_c_binding
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
-   INTEGER(kind=c_int), INTENT(in), VALUE ::  comm
+   INTEGER(kind=c_int), INTENT(in), VALUE ::  sort, length, comm
    TYPE(c_ptr) :: ProfilerNewCComm
   END FUNCTION ProfilerNewCComm
 #endif
@@ -94,17 +95,28 @@ MODULE ProfilerF
  CONTAINS
 !> \public Construct a new instance.
 !! Should be called through object construction.
-  FUNCTION ProfilerNewF(name,comm)
+  FUNCTION ProfilerNewF(name, sort, length, comm)
    USE iso_c_binding
    TYPE(Profiler) :: ProfilerNewF
    CHARACTER(len=*), INTENT(in) :: name !< Title of this object
-   INTEGER, INTENT(in), OPTIONAL :: comm
+   INTEGER, INTENT(in), OPTIONAL :: sort, length, comm
+   INTEGER(kind=c_int) :: sortC, lengthC, commC
+   IF (PRESENT(sort)) THEN
+    sortC = INT(sort,kind=c_int)
+   ELSE
+    sortC = 0
+   ENDIF
+   IF (PRESENT(length)) THEN 
+    lengthC = INT(length,kind=c_int)
+   ELSE 
+    lengthC = 0 
+   ENDIF
 #ifdef PROFILER_MPI
    IF (PRESENT(comm)) THEN
-    ProfilerNewF%handle = ProfilerNewCComm((TRIM(name)//C_NULL_CHAR),INT(comm,kind=c_int))
+    ProfilerNewF%handle = ProfilerNewCComm((TRIM(name)//C_NULL_CHAR),sortC,lengthC,INT(comm,kind=c_int))
    ELSE
 #endif
-    ProfilerNewF%handle = ProfilerNewC((TRIM(name)//C_NULL_CHAR))
+    ProfilerNewF%handle = ProfilerNewC((TRIM(name)//C_NULL_CHAR),sortC,lengthC)
 #ifdef PROFILER_MPI
    END IF
 #endif

@@ -5,9 +5,9 @@
 extern "C" {
 #endif
 #ifdef PROFILER_MPI
- void* profilerNewComm(char* name, int comm);
+ void* profilerNewComm(char* name, int sort, int level, int comm);
 #endif
-void* profilerNew(char* name);
+void* profilerNew(char* name, int sort, int level);
 void profilerReset(void* profiler, char* name);
 void profilerActive(void* profiler, int level, int stopPrint);
 void profilerStart(void* profiler, char* name);

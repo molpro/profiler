@@ -5,9 +5,49 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #ifdef PROFILER_MPI
- void* profilerNewComm(char* name, int comm) { return ProfilerSingle::create(std::string(name),MPI_Comm_f2c(comm)).get(); }
+ void* profilerNewComm(char* name, int sort, int level, int comm) { 
+    Profiler::sortMethod sortBy;
+    switch(sort) {
+      case 1:
+        sortBy = Profiler::wall;
+        break;
+      case 2:
+        sortBy = Profiler::cpu;
+        break;
+      case 3:
+        sortBy = Profiler::calls;
+        break;
+      case 4:
+        sortBy = Profiler::operations;
+        break;
+      default:
+        sortBy = Profiler::wall;
+    }
+    if (level == 0) level = INT_MAX;
+    return ProfilerSingle::create(std::string(name),sortBy,level,MPI_Comm_f2c(comm)).get();
+}
 #endif
-void* profilerNew(char* name) { return ProfilerSingle::create(std::string(name)).get(); }
+void* profilerNew(char* name, int sort, int level) {
+    Profiler::sortMethod sortBy;
+    switch(sort) {
+      case 1:
+        sortBy = Profiler::wall;
+        break;
+      case 2:
+        sortBy = Profiler::cpu;
+        break;
+      case 3:
+        sortBy = Profiler::calls;
+        break;
+      case 4:
+        sortBy = Profiler::operations;
+        break;
+      default:
+        sortBy = Profiler::wall;
+    }
+    if (level == 0) level = INT_MAX;
+    return ProfilerSingle::create(std::string(name),sortBy,level).get();
+}
 void profilerDelete(char* name) { ProfilerSingle::destroy(std::string(name)); }
 void profilerReset(void* profiler, char* name) { Profiler* obj=(Profiler*)profiler; obj->reset(std::string(name)); }
 void profilerActive(void* profiler, int level, int stopPrint) { Profiler* obj=(Profiler*)profiler; obj->active(level,stopPrint); }

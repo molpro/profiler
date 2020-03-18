@@ -23,7 +23,7 @@ PROGRAM mainf
   READ(buff, '(I8)') level
   CALL profiler_module_test(level)
 
-  p = Profiler('testing',MPI_COMM_WORLD)
+  p = Profiler('testing',1,0,MPI_COMM_WORLD)
   call p%active(99, stopPrint = 0)
   call execute_command_line('sleep 1')
   call p%start('a')

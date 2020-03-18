@@ -5,11 +5,10 @@
 
 
 std::shared_ptr<Profiler>
-ProfilerSingle::create(const std::string &name,
+ProfilerSingle::create(const std::string &name, Profiler::sortMethod sortBy, const int level,
 #ifdef PROFILER_MPI
                        MPI_Comm communicator,
 #endif
-                       Profiler::sortMethod sortBy, const int level,
                        bool set_default, bool replace) {
 #ifdef PROFILER_MPI
     if (communicator == MPI_COMM_WORLD)
