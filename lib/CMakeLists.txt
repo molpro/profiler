@@ -6,7 +6,7 @@ set_target_properties(ProfilerSerial PROPERTIES
         PUBLIC_HEADER "ProfilerSerial.h;ProfilerBackend.h;ProfilerSingle.h"
         EXPORT_NAME serial
         )
-if (CMAKE_Fortran_COMPILER_ID)
+if (CMAKE_Fortran_COMPILER)
     target_sources(ProfilerSerial PRIVATE ProfilerF.F90)
 endif ()
 add_configure_file(ProfilerSerial Profiler)

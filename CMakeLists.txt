@@ -23,7 +23,7 @@ include(libconfig2)
 
 ########## Compiler Flags ##########
 
-if (CMAKE_Fortran_COMPILER_ID)
+if (CMAKE_Fortran_COMPILER)
     message("Configuring Fortran support for ${CMAKE_CURRENT_SOURCE_DIR}")
     include(CheckFortranCompilerFlag)
     foreach (f "-fdefault-integer-8" "-i8")
