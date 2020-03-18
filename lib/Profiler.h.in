@@ -3,7 +3,9 @@
 
 #include "@PROFILER_CLASS@.h"
 
-using Profiler = @PROFILER_CLASS@;
-
+//using Profiler = @PROFILER_CLASS@;
+struct Profiler: public @PROFILER_CLASS@{
+        using @PROFILER_CLASS@::@PROFILER_CLASS@;
+};
 
 #endif //PROFILER_PROFILER_H_IN
