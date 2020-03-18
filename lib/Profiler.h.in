@@ -5,7 +5,5 @@
 
 using Profiler = @PROFILER_CLASS@;
 
-#include "ProfilerBackend.h"
-
 
 #endif //PROFILER_PROFILER_H_IN

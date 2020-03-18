@@ -1,3 +1,4 @@
+#include "ProfilerC.h"
 #include "ProfilerSingle.h"
 
 // C binding

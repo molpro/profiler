@@ -1,4 +1,5 @@
 #include "Profiler.h"
+#include "ProfilerC.h"
 #include <iostream>
 #include <cmath>
 #include <ctime>

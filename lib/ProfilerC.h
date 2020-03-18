@@ -1,5 +1,5 @@
-#ifndef PROFILER_PROFILERBACKEND_H
-#define PROFILER_PROFILERBACKEND_H
+#ifndef PROFILER_PROFILERC_H
+#define PROFILER_PROFILERC_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,4 +17,4 @@ void profilerStrSubroutine(void*profiler, char* result, int maxResult, int verbo
 #endif
 
 
-#endif //PROFILER_PROFILERBACKEND_H
+#endif //PROFILER_PROFILERC_H

@@ -1,9 +1,9 @@
 add_library(ProfilerSerial STATIC)
 target_sources(ProfilerSerial
-        PRIVATE ProfilerSerial.cpp Profiler.cpp ProfilerSingle.cpp
+        PRIVATE ProfilerSerial.cpp ProfilerC.cpp ProfilerSingle.cpp
         )
 set_target_properties(ProfilerSerial PROPERTIES
-        PUBLIC_HEADER "ProfilerSerial.h;ProfilerBackend.h;ProfilerSingle.h"
+        PUBLIC_HEADER "ProfilerSerial.h;ProfilerC.h;ProfilerSingle.h"
         EXPORT_NAME serial
         )
 if (CMAKE_Fortran_COMPILER)
