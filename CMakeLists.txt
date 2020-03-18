@@ -23,18 +23,6 @@ include(libconfig2)
 
 ########## Compiler Flags ##########
 
-if (MPI)
-    string(TOUPPER ${MPI} MPI_UPPER)
-    if (MPI_UPPER STREQUAL "TRY")
-        find_package(MPI COMPONENTS CXX)
-        if(NOT TARGET MPI::MPI_CXX)
-            message(WARNING "Instructed to try and build with MPI, but MPI C++ compiler was not found")
-        endif()
-    elseif (MPI_UPPER STREQUAL "ON")
-        find_package(MPI REQUIRED COMPONENTS CXX)
-    endif ()
-endif ()
-
 if (CMAKE_Fortran_COMPILER_ID)
     message("Configuring Fortran support for ${CMAKE_CURRENT_SOURCE_DIR}")
     include(CheckFortranCompilerFlag)
