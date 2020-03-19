@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
   }
 
   {
-    void* profilerC=profilerNew((char*)"C");
+    void* profilerC=profilerNewSerialA((char*)"C");
     auto a=(double)0;
     profilerStart(profilerC,(char*)"sqrt");
     for (size_t i=0; i<repeat; i++) a*=std::sqrt(a+i)/std::sqrt(a+i+1);
