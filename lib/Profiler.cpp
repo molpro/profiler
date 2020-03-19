@@ -5,7 +5,8 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #ifdef PROFILER_MPI
- void* profilerNewComm(char* name, int sort, int level, int comm) { 
+ void* profilerNewMPIA(char* name, int comm) { return ProfilerSingle::create(std::string(name),Profiler::wall,INT_MAX,MPI_Comm_f2c(comm)).get(); }
+ void* profilerNewMPIB(char* name, int sort, int level, int comm) { 
     Profiler::sortMethod sortBy;
     switch(sort) {
       case 1:
@@ -23,11 +24,12 @@ extern "C" {
       default:
         sortBy = Profiler::wall;
     }
-    if (level == 0) level = INT_MAX;
+    if (level == -1) level = INT_MAX;
     return ProfilerSingle::create(std::string(name),sortBy,level,MPI_Comm_f2c(comm)).get();
 }
 #endif
-void* profilerNew(char* name, int sort, int level) {
+void* profilerNewSerialA(char* name) { return ProfilerSingle::create(std::string(name)).get(); }
+void* profilerNewSerialB(char* name, int sort, int level) {
     Profiler::sortMethod sortBy;
     switch(sort) {
       case 1:
@@ -45,7 +47,7 @@ void* profilerNew(char* name, int sort, int level) {
       default:
         sortBy = Profiler::wall;
     }
-    if (level == 0) level = INT_MAX;
+    if (level == -1) level = INT_MAX;
     return ProfilerSingle::create(std::string(name),sortBy,level).get();
 }
 void profilerDelete(char* name) { ProfilerSingle::destroy(std::string(name)); }

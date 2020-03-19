@@ -47,20 +47,33 @@ MODULE ProfilerF
 
  INTERFACE
  !> \private
-  FUNCTION ProfilerNewC(name, sort, length) BIND (C, name='profilerNew')
+  FUNCTION ProfilerNewCSerA(name) BIND (C, name='profilerNewSerialA')
    USE iso_c_binding
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
-   INTEGER(kind=c_int), INTENT(in), VALUE ::  sort, length
-   TYPE(c_ptr) :: ProfilerNewC
-  END FUNCTION ProfilerNewC
+   TYPE(c_ptr) :: ProfilerNewCSerA
+  END FUNCTION ProfilerNewCSerA
+ !> \private
+  FUNCTION ProfilerNewCSerB(name, sort, level) BIND (C, name='profilerNewSerialB')
+   USE iso_c_binding
+   CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
+   INTEGER(kind=c_int), INTENT(in), VALUE ::  sort, level
+   TYPE(c_ptr) :: ProfilerNewCSerB
+  END FUNCTION ProfilerNewCSerB
 #ifdef PROFILER_MPI
  !> \private
-  FUNCTION ProfilerNewCComm(name, sort, length, comm) BIND (C, name='profilerNewComm')
+  FUNCTION ProfilerNewCMPIA(name, comm) BIND (C, name='profilerNewMPIA')
    USE iso_c_binding
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
-   INTEGER(kind=c_int), INTENT(in), VALUE ::  sort, length, comm
-   TYPE(c_ptr) :: ProfilerNewCComm
-  END FUNCTION ProfilerNewCComm
+   INTEGER(kind=c_int), INTENT(in), VALUE ::  comm
+   TYPE(c_ptr) :: ProfilerNewCMPIA
+  END FUNCTION ProfilerNewCMPIA
+ !> \private
+  FUNCTION ProfilerNewCMPIB(name, sort, level, comm) BIND (C, name='profilerNewMPIB')
+   USE iso_c_binding
+   CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
+   INTEGER(kind=c_int), INTENT(in), VALUE ::  sort, level, comm
+   TYPE(c_ptr) :: ProfilerNewCMPIB
+  END FUNCTION ProfilerNewCMPIB
 #endif
  !> \private
   SUBROUTINE ProfilerActiveC(handle, level, stopPrint) BIND (C, name='profilerActive')
@@ -95,31 +108,43 @@ MODULE ProfilerF
  CONTAINS
 !> \public Construct a new instance.
 !! Should be called through object construction.
-  FUNCTION ProfilerNewF(name, sort, length, comm)
+  FUNCTION ProfilerNewF(name, sort, level, comm)
    USE iso_c_binding
    TYPE(Profiler) :: ProfilerNewF
    CHARACTER(len=*), INTENT(in) :: name !< Title of this object
-   INTEGER, INTENT(in), OPTIONAL :: sort, length, comm
-   INTEGER(kind=c_int) :: sortC, lengthC, commC
+   INTEGER, INTENT(in), OPTIONAL :: sort, level, comm
+   INTEGER(kind=c_int) :: sortC, levelC, commC
    IF (PRESENT(sort)) THEN
     sortC = INT(sort,kind=c_int)
    ELSE
     sortC = 0
    ENDIF
-   IF (PRESENT(length)) THEN 
-    lengthC = INT(length,kind=c_int)
+   IF (PRESENT(level)) THEN 
+    levelC = INT(level,kind=c_int)
    ELSE 
-    lengthC = 0 
+    levelC = -1 
    ENDIF
+   IF (PRESENT(sort) .or. PRESENT(level)) THEN
 #ifdef PROFILER_MPI
-   IF (PRESENT(comm)) THEN
-    ProfilerNewF%handle = ProfilerNewCComm((TRIM(name)//C_NULL_CHAR),sortC,lengthC,INT(comm,kind=c_int))
+    IF (PRESENT(comm)) THEN
+     ProfilerNewF%handle = ProfilerNewCMPIB((TRIM(name)//C_NULL_CHAR),sortC,levelC,INT(comm,kind=c_int))
+    ELSE
+#endif
+    ProfilerNewF%handle = ProfilerNewCSerB((TRIM(name)//C_NULL_CHAR),sortC,levelC)
+#ifdef PROFILER_MPI
+    ENDIF
+#endif
    ELSE
-#endif
-    ProfilerNewF%handle = ProfilerNewC((TRIM(name)//C_NULL_CHAR),sortC,lengthC)
 #ifdef PROFILER_MPI
-   END IF
+    IF (PRESENT(comm)) THEN
+     ProfilerNewF%handle = ProfilerNewCMPIA((TRIM(name)//C_NULL_CHAR),INT(comm,kind=c_int))
+    ELSE
 #endif
+    ProfilerNewF%handle = ProfilerNewCSerA((TRIM(name)//C_NULL_CHAR))
+#ifdef PROFILER_MPI
+    ENDIF
+#endif
+   END IF
   END FUNCTION ProfilerNewF
 !> \public Begin timing a code segment.
 !! Should be called through type-bound interface \c start.
