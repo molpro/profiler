@@ -1,4 +1,5 @@
-#include "../lib/Profiler.h"
+#include "Profiler.h"
+#include "ProfilerC.h"
 #include <iostream>
 #include <cmath>
 #include <ctime>
@@ -13,7 +14,7 @@ int main(int argc, char *argv[])
 #ifdef HAVE_MPI_H
     MPI_Init(&argc,&argv);
 #endif
-    Profiler profiler("C++",Profiler::name);
+    Profiler profiler("C++", Profiler::name);
 
     profiler.start("sqrt");
     auto a=(double)0;
@@ -41,7 +42,7 @@ int main(int argc, char *argv[])
   }
 
   {
-    void* profilerC=profilerNew((char*)"C");
+    void* profilerC=profilerNewSerialA((char*)"C");
     auto a=(double)0;
     profilerStart(profilerC,(char*)"sqrt");
     for (size_t i=0; i<repeat; i++) a*=std::sqrt(a+i)/std::sqrt(a+i+1);

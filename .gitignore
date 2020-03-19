@@ -12,4 +12,5 @@ html/
 latex/
 .idea
 cmake-build*/
+build*/
 dependencies/*/

@@ -1,18 +1,24 @@
-enable_testing()
+add_custom_target(profiler-examples ALL COMMENT "Builds all profiler examples")
 
-add_executable(profiler-example profiler-example.cpp)
-add_executable(profiler-singleton-example profiler-singleton-example.cpp)
-add_executable(profiler-fortran-example profiler-fortran-example.F90)
-target_link_libraries(profiler-example PUBLIC Profiler)
-target_link_libraries(profiler-singleton-example PUBLIC Profiler)
-target_link_libraries(profiler-fortran-example PUBLIC Profiler)
-
-add_test(NAME profiler-example COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
-        ${MPIEXEC_PREFLAGS} profiler-example ${MPIEXEC_POSTFLAGS})
-add_test(NAME profiler-singleton-example COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
-        ${MPIEXEC_PREFLAGS} profiler-singleton-example ${MPIEXEC_POSTFLAGS})
-add_test(NAME profiler-fortran-example COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
-        ${MPIEXEC_PREFLAGS} profiler-fortran-example ${MPIEXEC_POSTFLAGS})
-set_tests_properties(profiler-example PROPERTIES TIMEOUT 60)
-set_tests_properties(profiler-singleton-example PROPERTIES TIMEOUT 60)
-set_tests_properties(profiler-fortran-example PROPERTIES TIMEOUT 60)
+list(APPEND srcs profiler-example.cpp profiler-singleton-example.cpp)
+if (CMAKE_Fortran_COMPILER)
+    list(APPEND srcs profiler-fortran-example.F90)
+endif()
+foreach (example ${srcs})
+    get_filename_component(name ${example} NAME_WE)
+    add_executable(${name}-serial ${example})
+    target_link_libraries(${name}-serial PUBLIC Profiler::serial)
+    add_test(NAME ${name}-serial COMMAND ${name}-serial WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+    set_tests_properties(${name}-serial PROPERTIES TIMEOUT 60)
+    add_dependencies(profiler-examples ${name}-serial)
+    if (TARGET Profiler::mpi)
+        add_executable(${name}-mpi ${example})
+        target_link_libraries(${name}-mpi PUBLIC Profiler::mpi)
+        target_compile_definitions(${name}-mpi PRIVATE HAVE_MPI_H)
+        add_test(NAME ${name}-mpi COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}
+                ${MPIEXEC_PREFLAGS} ${CMAKE_CURRENT_BINARY_DIR}/${name}-mpi ${MPIEXEC_POSTFLAGS}
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+        set_tests_properties(${name}-mpi PROPERTIES TIMEOUT 60)
+        add_dependencies(profiler-examples ${name}-mpi)
+    endif ()
+endforeach ()

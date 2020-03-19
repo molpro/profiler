@@ -3,9 +3,6 @@
 
 #include "Profiler.h"
 
-#ifdef PROFILER_MPI
-#include "mpi.h"
-#endif
 #include <map>
 #include <memory>
 
@@ -41,26 +38,11 @@ public:
      * @return the new profiler instance
      */
     static std::shared_ptr<Profiler>
-    create(const std::string &name, Profiler::sortMethod sortBy = Profiler::wall, const int level = INT_MAX,
+    create(const std::string &name, Profiler::sortMethod sortBy = Profiler::wall, int level = INT_MAX,
 #ifdef PROFILER_MPI
-            const MPI_Comm communicator = MPI_COMM_WORLD,
+           MPI_Comm communicator = MPI_COMM_WORLD,
 #endif
-           bool set_default = true, bool replace = false) {
-#ifdef PROFILER_MPI
-        auto key = key_t{name, communicator};
-#else
-        auto key = key_t{name};
-#endif
-        if (replace || profilers.count(key) == 0)
-#ifdef PROFILER_MPI
-            profilers[key] = std::make_shared<Profiler>(name, sortBy, level, communicator);
-#else
-            profilers[key] = std::make_shared<Profiler>(name, sortBy, level);
-#endif
-        if (set_default)
-            default_key = key;
-        return profilers[key];
-    }
+           bool set_default = true, bool replace = false);
 
     /*!
      * @brief Returns a global profiler instance created by ProfilerSingle::create()
@@ -71,22 +53,25 @@ public:
     static std::shared_ptr<Profiler>
     instance(const std::string &name,
 #ifdef PROFILER_MPI
-            const MPI_Comm communicator = MPI_COMM_WORLD,
+             MPI_Comm communicator = MPI_COMM_WORLD,
 #endif
-             bool set_default = false) {
-#ifdef PROFILER_MPI
-        auto key = key_t{name, communicator};
-#else
-        auto key = key_t{name};
-#endif
-        return profilers.at(key);
-    }
+             bool set_default = false);
 
     //! Return the default global profiler
     static std::shared_ptr<Profiler>
-    instance() {
-        return profilers.at(default_key);
-    }
+    instance();
+
+    /*!
+     * @brief Destroys a global instance
+     * @param name  name of the Profiler
+     * @param communicator mpi communicator
+     */
+    static void
+    destroy(const std::string &name
+#ifdef PROFILER_MPI
+            , MPI_Comm communicator = MPI_COMM_WORLD
+#endif
+    );
 
     /*!
      * @brief collection of global profilers

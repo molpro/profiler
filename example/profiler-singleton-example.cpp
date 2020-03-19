@@ -26,17 +26,12 @@ void run(const std::string &name) {
 int main(int argc, char *argv[]) {
 #ifdef HAVE_MPI_H
     MPI_Init(&argc, &argv);
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 #else
-    int rank{0};
 #endif
     run("job 1");
     run("job 2");
     for (const auto &profiler : ProfilerSingle::profilers) {
-        auto summary = profiler.second->str();
-        if (rank == 0)
-            std::cout << summary << std::endl;
+        std::cout << *profiler.second;
     }
 #ifdef HAVE_MPI_H
     MPI_Finalize();

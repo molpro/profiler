@@ -14,33 +14,20 @@
 #include <string>
 #include <string.h>
 #include <iomanip>
-#include "Profiler.h"
+#include "ProfilerSerial.h"
 #if defined(MOLPRO) || defined(PROFILER_MEMORY)
 #include "memory.h"
 #endif
-#ifdef MOLPRO
-#include "ppidd.h"
-#endif
 
 
-Profiler::Profiler(const std::string& name, sortMethod sortBy, const int level
-#ifdef PROFILER_MPI
-		   , const MPI_Comm communicator
-#endif
-		   ) : m_sortBy(sortBy)
-#ifdef PROFILER_MPI
-, m_communicator(communicator
-#ifdef MOLPRO
-		 == MPI_COMM_WORLD ? MPI_Comm_f2c(PPIDD_Worker_comm()) : communicator
-#endif
-				     )
-#endif
+ProfilerSerial::ProfilerSerial(const std::string& name, sortMethod sortBy, const int level)
+: m_sortBy(sortBy)
 {
   reset(name);
   active(level);
 }
 
-void Profiler::reset(const std::string &name)
+void ProfilerSerial::reset(const std::string &name)
 {
   Name=name;
   stopall();
@@ -50,7 +37,7 @@ void Profiler::reset(const std::string &name)
   start("TOP");
 }
 
-void Profiler::active(const int level, const int stopPrint)
+void ProfilerSerial::active(const int level, const int stopPrint)
 {
   activeLevel=level;
   stopPrint_=stopPrint;
@@ -58,7 +45,7 @@ void Profiler::active(const int level, const int stopPrint)
 
 #include <assert.h>
 static char colon_replace=(char)30;
-void Profiler::start(const std::string& name)
+void ProfilerSerial::start(const std::string& name)
 {
   level++;
   if (level>activeLevel) return;
@@ -91,7 +78,7 @@ void Profiler::start(const std::string& name)
   startResources.push_back(now);
 }
 
-void Profiler::totalise(const struct resources now, const long operations, const int calls)
+void ProfilerSerial::totalise(const struct resources now, const long operations, const int calls)
 {
   resources diff=now;
   diff-=resourcesStack.back();
@@ -109,7 +96,7 @@ void Profiler::totalise(const struct resources now, const long operations, const
   results[key].calls += calls;
 }
 
-void Profiler::stop(const std::string &name, long operations)
+void ProfilerSerial::stop(const std::string &name, long operations)
 {
   level--;
   if (level > 0 && level>=activeLevel) return;
@@ -141,55 +128,23 @@ void Profiler::stop(const std::string &name, long operations)
   if (! resourcesStack.empty()) {now.name=resourcesStack.back().name; resourcesStack.back()=now;}
 }
 
-void Profiler::stopall()
+void ProfilerSerial::stopall()
 {
   while (! resourcesStack.empty()) stop();
 }
 
 #include <cmath>
-Profiler::resultMap Profiler::totals() const
+ProfilerSerial::resultMap ProfilerSerial::totals() const
 {
-  Profiler thiscopy=*this; // take a copy so that we can run stopall yet be const, and so that we can sum globally
+  ProfilerSerial thiscopy=*this; // take a copy so that we can run stopall yet be const, and so that we can sum globally
   thiscopy.stopall();
   while(thiscopy.results.erase(""));
-#ifdef PROFILER_MPI
-  int rank;
-  MPI_Comm_rank(m_communicator,&rank);
-  std::string key;
-  // use the table on the master node as definitive, since others may be missing entries
-  int n=thiscopy.results.size();
-  MPI_Bcast(&n,1,MPI_INT,0,m_communicator);
-  for (int i=0; i<n; i++) {
-      int l;
-      if (rank == 0) {
-          resultMap::iterator s=thiscopy.results.begin(); for (int j=0; j<i; j++) s++;
-          key = s->first;
-          l=key.size();
-        }
-      MPI_Bcast(&l,1,MPI_INT,0,m_communicator);
-      key.resize(l);
-      MPI_Bcast(&key[0],l,MPI_CHAR,0,m_communicator);
-      struct Profiler::resources ss = thiscopy.results[key]; ss.parent=this;
-      int len=1;
-      double val=ss.wall;
-      MPI_Allreduce(&val,&(ss.wall),len,MPI_DOUBLE,MPI_MAX,m_communicator);
-      val=ss.cpu;
-      MPI_Allreduce(&val,&(ss.cpu),len,MPI_DOUBLE,MPI_SUM,m_communicator);
-      int calls=ss.calls;
-      MPI_Allreduce(&calls,&(ss.calls),len,MPI_INT,MPI_MAX,m_communicator);
-      long operations=ss.operations;
-      MPI_Allreduce(&operations,&(ss.operations),len,MPI_LONG,MPI_SUM,m_communicator);
-      int64_t stack = ss.stack;
-      MPI_Allreduce(&stack,&(ss.stack),len,MPI_LONG_LONG_INT,MPI_MAX,m_communicator);
-      thiscopy.results[key]=ss;
-    }
-#endif
   for (auto& x : thiscopy.results) x.second.parent=this;
   thiscopy.accumulate(thiscopy.results);
   return thiscopy.results;
 }
 
-std::string Profiler::resources::str(const int width, const int verbosity, const bool cumulative, const int precision, const std::string defaultName) const
+std::string ProfilerSerial::resources::str(const int width, const int verbosity, const bool cumulative, const int precision, const std::string defaultName) const
 {
   std::stringstream ss;
   std::vector<std::string> prefixes;
@@ -234,7 +189,7 @@ std::string Profiler::resources::str(const int width, const int verbosity, const
   return ss.str();
 }
 
-std::string Profiler::str(const int verbosity, const bool cumulative, const int precision) const
+std::string ProfilerSerial::str(const int verbosity, const bool cumulative, const int precision) const
 {
   if (verbosity<0) return "";
   resultMap localResults=totals();
@@ -252,7 +207,7 @@ std::string Profiler::str(const int verbosity, const bool cumulative, const int 
             maxWidth = std::max(maxWidth,w);
           }
       }
-  typedef std::pair<std::string,Profiler::resources> data_t;
+  typedef std::pair<std::string,ProfilerSerial::resources> data_t;
   std::priority_queue<data_t, std::deque<data_t>, compareResources<data_t>  > q(localResults.begin(),localResults.end());
   std::stringstream ss;
   if (!cumulative) {
@@ -267,11 +222,11 @@ std::string Profiler::str(const int verbosity, const bool cumulative, const int 
   return ss.str();
 }
 
-void Profiler::accumulate(resultMap& results)
+void ProfilerSerial::accumulate(resultMap& results)
 {
   for (resultMap::iterator r=results.begin(); r!=results.end(); ++r) r->second.name=r->first;
   for (resultMap::iterator parent=results.begin(); parent!=results.end(); ++parent) {
-      parent->second.cumulative = new Profiler::resources;
+      parent->second.cumulative = new ProfilerSerial::resources;
       *parent->second.cumulative-=*parent->second.cumulative;
       // nb 'child' includes the parent itself
       for (resultMap::iterator child=results.begin(); child!=results.end(); ++child) {
@@ -286,18 +241,18 @@ void Profiler::accumulate(resultMap& results)
     }
 }
 
-std::ostream& operator<<(std::ostream& os, Profiler & obj)
+std::ostream& operator<<(std::ostream& os, ProfilerSerial & obj)
 {
-  return os << obj.str();
+  return os << obj.str() << std::endl;
 }
 
 #include <time.h>
 #include <sys/time.h>
 static int init=1;
 static double wallbase;
-struct Profiler::resources Profiler::getResources()
+struct ProfilerSerial::resources ProfilerSerial::getResources()
 {
-  struct Profiler::resources result;
+  struct ProfilerSerial::resources result;
   result.operations=0;
   result.calls=0;
   result.cpu=(double)clock()/CLOCKS_PER_SEC;
@@ -323,7 +278,7 @@ struct Profiler::resources Profiler::getResources()
  * \param w2 object to add
  * \return a copy of the object
  */
-struct Profiler::resources& Profiler::resources::operator+=( const struct Profiler::resources &w2)
+struct ProfilerSerial::resources& ProfilerSerial::resources::operator+=(const struct ProfilerSerial::resources &w2)
 {
   cpu += w2.cpu;
   wall += w2.wall;
@@ -332,14 +287,14 @@ struct Profiler::resources& Profiler::resources::operator+=( const struct Profil
   return *this;
 }
 
-struct Profiler::resources Profiler::resources::operator+(const struct Profiler::resources &w2)
+struct ProfilerSerial::resources ProfilerSerial::resources::operator+(const struct ProfilerSerial::resources &w2)
 {
-  struct Profiler::resources result=*this;
+  struct ProfilerSerial::resources result=*this;
   result += w2;
   return result;
 }
 
-struct Profiler::resources& Profiler::resources::operator-=( const struct Profiler::resources &w2)
+struct ProfilerSerial::resources& ProfilerSerial::resources::operator-=(const struct ProfilerSerial::resources &w2)
 {
   cpu -= w2.cpu;
   wall -= w2.wall;
@@ -348,24 +303,12 @@ struct Profiler::resources& Profiler::resources::operator-=( const struct Profil
   return *this;
 }
 
-struct Profiler::resources Profiler::resources::operator-(const struct Profiler::resources &w2)
+struct ProfilerSerial::resources ProfilerSerial::resources::operator-(const struct ProfilerSerial::resources &w2)
 {
-  struct Profiler::resources result=*this;
+  struct ProfilerSerial::resources result=*this;
   result -= w2;
   return result;
 }
 
-Profiler::Push Profiler::push(const std::string &name) {return Push(*this,name);}
+ProfilerSerial::Push ProfilerSerial::push(const std::string &name) {return Push(*this, name);}
 
-// C binding
-extern "C" {
-#include <stdlib.h>
-#include <string.h>
-void* profilerNew(char* name) { return new Profiler(name); }
-void profilerReset(void* profiler, char* name) { Profiler* obj=(Profiler*)profiler; obj->reset(std::string(name)); }
-void profilerActive(void* profiler, int level, int stopPrint) { Profiler* obj=(Profiler*)profiler; obj->active(level,stopPrint); }
-void profilerStart(void* profiler, char* name) { Profiler* obj=(Profiler*)profiler; obj->start(std::string(name)); }
-void profilerStop(void* profiler, char* name, long operations) { Profiler* obj=(Profiler*)profiler; obj->stop(std::string(name),operations); }
-char* profilerStr(void* profiler, int verbosity, int cumulative, int precision) { Profiler* obj=(Profiler*)profiler; std::string res = obj->str(verbosity,bool(cumulative), precision); char* result = (char*)malloc(res.size()+1); strcpy(result, res.c_str()); return result; }
-void profilerStrSubroutine(void*profiler, char* result, int maxResult, int verbosity, int cumulative, int precision) { strncpy(result, profilerStr(profiler, verbosity, cumulative, precision),maxResult-1);}
-}
