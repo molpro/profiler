@@ -9,16 +9,8 @@
 #include <climits>
 #include <stdexcept>
 #include <stdint.h>
-// if you want to force MPI mode, uncomment the next line
-//#define PROFILER_MPI
 #ifdef MOLPRO
 #include "molpro_config.h"
-#endif
-#if defined(HAVE_MPI_H) || defined(GCI_MPI) || defined(GCI_PARALLEL) || defined(PPIDD)
-#define PROFILER_MPI
-#endif
-#ifdef PROFILER_MPI
-#include "mpi.h"
 #endif
 
 /*!
@@ -44,10 +36,10 @@ const size_t repeat=20000000, repeatr=1000000, repeats=10000000;
 }
  * \endcode
  */
-class Profiler
+class ProfilerSerial
 {
-  Profiler();
 public:
+    ProfilerSerial()=delete;
   /*!
    * \brief Sorting criteria for categories in report.
    */
@@ -64,11 +56,7 @@ public:
    * \param level
    * A large value means that data will always be accumulated; zero means that calls to start and stop do nothing.
    */
-  Profiler(const std::string &name, sortMethod sortBy=wall, const int level=INT_MAX
-#ifdef PROFILER_MPI
-      , const MPI_Comm communicator=MPI_COMM_WORLD //< * The MPI communicator over which statistics should be aggregated.
-#endif
-      );
+  ProfilerSerial(const std::string &name, sortMethod sortBy=wall, const int level=INT_MAX);
   /*!
    * \brief Reset the object.
    * \param name The title of this object.
@@ -115,26 +103,26 @@ public:
   struct resources {
     double cpu; double wall; int calls; long operations; std::string name; int64_t stack;
     struct resources * cumulative;
-    const Profiler *parent;
+    const ProfilerSerial *parent;
     std::string str(const int width=0, const int verbosity=0, const bool cumulative=false, const int precision=3, const std::string defaultName="") const;
-    struct Profiler::resources& operator+=(const struct Profiler::resources &other);
-    struct Profiler::resources& operator-=(const struct Profiler::resources &other);
-    struct Profiler::resources operator+(const struct Profiler::resources &w2);
-    struct Profiler::resources operator-(const struct Profiler::resources &w2);
+    struct ProfilerSerial::resources& operator+=(const struct ProfilerSerial::resources &other);
+    struct ProfilerSerial::resources& operator-=(const struct ProfilerSerial::resources &other);
+    struct ProfilerSerial::resources operator+(const struct ProfilerSerial::resources &w2);
+    struct ProfilerSerial::resources operator-(const struct ProfilerSerial::resources &w2);
     resources() {cpu=0;wall=0;calls=0;operations=0;stack=0;cumulative=nullptr;parent=nullptr;}
   };
   struct resources getResources();
 
-  typedef std::map<std::string,struct Profiler::resources> resultMap;
+  typedef std::map<std::string,struct ProfilerSerial::resources> resultMap;
 
   /*!
    * \brief Obtain a summary of the resources used for each category.
    * Must be called by all MPI processes collectively.
    * \return std::map of \ref resources
    */
-  resultMap totals() const;
+  virtual resultMap totals() const;
 
-private:
+protected:
   void totalise(const struct resources now, const long operations, const int calls=1);
   template<class T> struct compareResources : std::binary_function<T,T,bool>
   { inline bool operator () (const T& _left, const T& _right)
@@ -149,7 +137,7 @@ private:
       if (rightname.size() > leftname.size() && rightname.substr(0,leftname.size()) == leftname) {
           return false;
         }
-      const Profiler& pl=*(_left.second.parent);
+      const ProfilerSerial& pl=*(_left.second.parent);
       // find the common ancestor
       std::ptrdiff_t o; for (o=0; o<static_cast<std::ptrdiff_t>(std::max(leftname.size(),rightname.size())) && leftname[o]==rightname[o] ;o++) ;
       while ((leftname[o]!=':' || rightname[o]!=':') && o>=0) o--;
@@ -209,9 +197,6 @@ private:
   int stopPrint_;
   void stopall();
   void accumulate(resultMap &results);
-#ifdef PROFILER_MPI
-  const MPI_Comm m_communicator;
-#endif
 public:
   /*!
  * \brief An object that will execute Profiler::start on construction, and Profiler::stop on destruction.
@@ -223,7 +208,7 @@ public:
    * \param profiler The Profiler object
    * \param name The name of the code segment to be profiled
    */
-    Push(Profiler& profiler, const std::string & name)
+    Push(ProfilerSerial& profiler, const std::string & name)
       : m_name(name), m_profiler(profiler), m_operations(0) {m_profiler.start(m_name);}
     ~Push() {m_profiler.stop(m_name,m_operations);}
     /*!
@@ -235,30 +220,17 @@ public:
    * \brief Advance the counter holding the notional number of operations executed in the code segment.
    */
     void operator++() { m_operations++;}
-  private:
+  protected:
     Push();
     const std::string m_name;
-    Profiler& m_profiler;
+    ProfilerSerial& m_profiler;
     uint64_t m_operations;
   };
 
 };
-std::ostream& operator<<(std::ostream& os, Profiler & obj);
+//! Writes summary of profile to the stream, with end of line
+std::ostream& operator<<(std::ostream& os, ProfilerSerial & obj);
 
-
-
-extern "C" {
-#endif
-void* profilerNew(char* name);
-void profilerReset(void* profiler, char* name);
-void profilerActive(void* profiler, int level, int stopPrint);
-void profilerStart(void* profiler, char* name);
-void profilerDeclare(void* profiler, char* name);
-void profilerStop(void* profiler, char* name, long operations=0);
-char* profilerStr(void* profiler, int verbosity, int cumulative, int precision);
-void profilerStrSubroutine(void*profiler, char* result, int maxResult, int verbosity, int cumulative, int precision);
-#ifdef __cplusplus
-}
-#endif
+#endif // __cplusplus
 
 #endif // PROFILER_H

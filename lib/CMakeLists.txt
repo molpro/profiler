@@ -1,29 +1,63 @@
-if (CMAKE_Fortran_COMPILER_ID)
-    set(PROFILER_FORTRAN_SRCS "ProfilerF.F90")
-    set(PROFILER_FORTRAN 1)
+add_library(ProfilerSerial STATIC)
+target_sources(ProfilerSerial
+        PRIVATE ProfilerSerial.cpp ProfilerC.cpp ProfilerSingle.cpp
+        )
+set_target_properties(ProfilerSerial PROPERTIES
+        PUBLIC_HEADER "ProfilerSerial.h;ProfilerC.h;ProfilerSingle.h"
+        EXPORT_NAME serial
+        )
+if (CMAKE_Fortran_COMPILER)
+    target_sources(ProfilerSerial PRIVATE ProfilerF.F90)
 endif ()
-add_library(Profiler Profiler.cpp Profiler.h ProfilerSingle.h ProfilerSingle.cpp ${PROFILER_FORTRAN_SRCS})
+add_configure_file(ProfilerSerial Profiler)
+target_include_directories(ProfilerSerial PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:include/ProfilerSerial>
+        )
 
-if (Molpro_SOURCE_DIR)
-    target_compile_definitions(Profiler PRIVATE MOLPRO)
-    target_link_libraries(Profiler PRIVATE ppidd::ppidd memory::memory)
+add_subdirectory(serial)
+
+add_library(Profiler::serial ALIAS ProfilerSerial)
+install(TARGETS ProfilerSerial
+        EXPORT ProfilerTargets
+        PUBLIC_HEADER DESTINATION include/ProfilerSerial
+        PRIVATE_HEADER DESTINATION include/ProfilerSerial
+        )
+
+# ProfilerMPI is a duplicate of ProfilerSerial with a different Profiler.h
+if (TARGET MPI::MPI_CXX)
+    add_library(ProfilerMPI STATIC "")
+    get_target_property(srcs ProfilerSerial SOURCES)
+    get_target_property(pub_head ProfilerSerial PUBLIC_HEADER)
+    list(FILTER pub_head EXCLUDE REGEX "Profiler.h$")
+    target_sources(ProfilerMPI
+            PRIVATE ${srcs}
+            )
+    set_target_properties(ProfilerMPI PROPERTIES
+            PUBLIC_HEADER "${pub_head}"
+            EXPORT_NAME mpi
+            )
+    target_include_directories(ProfilerMPI PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            $<INSTALL_INTERFACE:include/ProfilerMPI>
+            )
+    target_compile_definitions(ProfilerMPI PUBLIC PROFILER_MPI)
+    target_link_libraries(ProfilerMPI PUBLIC MPI::MPI_CXX)
+    add_subdirectory(mpi)
+    add_library(Profiler::mpi ALIAS ProfilerMPI)
+    install(TARGETS ProfilerMPI
+            EXPORT ProfilerTargets
+            PUBLIC_HEADER DESTINATION include/ProfilerMPI
+            PRIVATE_HEADER DESTINATION include/ProfilerMPI
+            )
 endif ()
 
-if (MPI_CXX_FOUND)
-    message(STATUS "Building with MPI")
-    set(HAVE_MPI_H 1)
-    target_compile_definitions(Profiler PUBLIC HAVE_MPI_H)
-    target_link_libraries(Profiler PUBLIC MPI::MPI_CXX)
-endif ()
+install(EXPORT ProfilerTargets
+        NAMESPACE Profiler::
+        DESTINATION lib/cmake/Profiler
+        FILE ProfilerConfig.cmake
+        )
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "PGI")
-    target_compile_definitions(Profiler PRIVATE -DEIGEN_DONT_VECTORIZE)
-endif ()
 
-if (Molpro_SOURCE_DIR)
-    get_dependency(ppidd)
-    get_dependency(memory)
-    configure_library(${PROJECT_NAME} ppidd memory)
-else ()
-    configure_library(${PROJECT_NAME})
-endif ()

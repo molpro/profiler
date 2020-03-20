@@ -1,0 +1,26 @@
+cache:
+  key: ${CI_PROJECT_NAME}
+  paths:
+    - public
+    - build
+build:
+  image: ${CI_REGISTRY}/mxs301/profiler
+  #  only:
+  #    - merge_requests
+  script:
+    - TOP=$PWD
+    - git checkout $CI_COMMIT_SHA # because of cache
+    - git fetch --tags
+    - git reset --hard
+    - git clean -f program lib test
+    - procs=$(lscpu -p | egrep -v '^#' | wc -l ) || procs=$(sysctl -n hw.physicalcpu) || procs=1; echo $procs processors available
+    - cd $TOP; BUILD=build ; mkdir -p $BUILD && cd $BUILD && pwd && cmake $TOP -DFORTRAN=ON -DMPI=ON;  cmake --build . ;  ctest -V -j $procs
+    - mkdir -p $TOP/public/${CI_COMMIT_BRANCH}
+    - rsync -a --delete $TOP/$BUILD/html/ $TOP/public/${CI_COMMIT_BRANCH}
+pages:
+  stage: deploy
+  script:
+    - echo nothing
+  artifacts:
+    paths:
+      - public
