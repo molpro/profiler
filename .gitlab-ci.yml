@@ -4,7 +4,7 @@ cache:
     - public
     - build
 build:
-  image: ${CI_REGISTRY}/mxs301/profiler
+  image: ${CI_REGISTRY}/molpro/profiler
   #  only:
   #    - merge_requests
   script:
