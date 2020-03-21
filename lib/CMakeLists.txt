@@ -2,6 +2,7 @@ add_library(ProfilerSerial STATIC)
 target_sources(ProfilerSerial
         PRIVATE ProfilerSerial.cpp ProfilerC.cpp ProfilerSingle.cpp
         )
+target_compile_features(ProfilerSerial PUBLIC cxx_std_11)
 set_target_properties(ProfilerSerial PROPERTIES
         PUBLIC_HEADER "ProfilerSerial.h;ProfilerC.h;ProfilerSingle.h"
         EXPORT_NAME serial
@@ -43,6 +44,7 @@ if (TARGET MPI::MPI_CXX)
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
             $<INSTALL_INTERFACE:include/ProfilerMPI>
             )
+    target_compile_features(ProfilerMPI PUBLIC cxx_std_11)
     target_compile_definitions(ProfilerMPI PUBLIC PROFILER_MPI)
     target_link_libraries(ProfilerMPI PUBLIC MPI::MPI_CXX)
     add_subdirectory(mpi)
