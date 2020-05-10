@@ -32,7 +32,7 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = @CMAKE_PROJECT_NAME@
+PROJECT_NAME           = @PROJECT_NAME@
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
@@ -747,6 +747,8 @@ INPUT                  = "@CMAKE_CURRENT_SOURCE_DIR@/lib"
 INPUT                 += "@CMAKE_CURRENT_SOURCE_DIR@/lib/serial"
 INPUT                 += "@CMAKE_CURRENT_SOURCE_DIR@/lib/mpi"
 INPUT                 += "@CMAKE_CURRENT_SOURCE_DIR@/README.md"
+INPUT                 += "@CMAKE_CURRENT_SOURCE_DIR@/README.md"
+INPUT                 += "@CMAKE_CURRENT_BINARY_DIR@/lib/mpi/ProfilerMPI/Profiler.h"
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -1970,7 +1972,7 @@ TAGFILES               =
 # tag file that is based on the input files it reads. See section "Linking to
 # external documentation" for more information about the usage of tag files.
 
-GENERATE_TAGFILE       =
+GENERATE_TAGFILE       = @projectDocDir@/@PROJECT_NAME@.tag
 
 # If the ALLEXTERNALS tag is set to YES all external class will be listed in the
 # class index. If set to NO only the inherited external classes will be listed.
