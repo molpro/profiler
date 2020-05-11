@@ -6,6 +6,7 @@
 #include <map>
 #include <memory>
 
+namespace molpro{
 
 /*!
  * @brief Access to a single profiler for a given name and communicator if compiled with MPI
@@ -83,5 +84,6 @@ public:
 
 };
 
+} // namespace molpro
 
 #endif //PROFILER_PROFILERSINGLE_H

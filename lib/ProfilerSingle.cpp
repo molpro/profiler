@@ -3,6 +3,7 @@
 #include "ProfilerMPIConfig.h"
 #endif
 
+namespace molpro {
 
 std::shared_ptr<Profiler>
 ProfilerSingle::create(const std::string &name, Profiler::sortMethod sortBy, const int level,
@@ -74,3 +75,5 @@ ProfilerSingle::destroy(const std::string &name
 
 ProfilerSingle::profilers_t ProfilerSingle::profilers{};
 ProfilerSingle::key_t ProfilerSingle::default_key{};
+
+} // namespace molpro

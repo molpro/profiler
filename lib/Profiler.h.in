@@ -3,9 +3,10 @@
 
 #include "@PROFILER_CLASS@.h"
 
+namespace molpro{
 //using Profiler = @PROFILER_CLASS@;
 struct Profiler: public @PROFILER_CLASS@{
         using @PROFILER_CLASS@::@PROFILER_CLASS@;
 };
-
+} // namespace molpro
 #endif //PROFILER_PROFILER_H_IN

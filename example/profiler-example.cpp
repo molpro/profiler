@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 #ifdef HAVE_MPI_H
     MPI_Init(&argc,&argv);
 #endif
-    Profiler profiler("C++", Profiler::name);
+    molpro::Profiler profiler("C++", molpro::Profiler::name);
 
     profiler.start("sqrt");
     auto a=(double)0;
@@ -25,15 +25,15 @@ int main(int argc, char *argv[])
     for (size_t i=0; i<repeat; i++) a*=std::exp(a+(double)1/i)/std::exp(a+(double)1/i+1);
     profiler.stop("exp",2*repeat);
 
-    profiler.start("getResources"); for (size_t i=0; i<repeatr; i++) struct Profiler::resources r = profiler.getResources(); profiler.stop("getResources",2*repeatr);
+    profiler.start("getResources"); for (size_t i=0; i<repeatr; i++) struct molpro::Profiler::resources r = profiler.getResources(); profiler.stop("getResources",2*repeatr);
 
     for (size_t i=0; i<repeatr ; i++){ profiler.start("profiler"); profiler.stop("profiler",1); }
 
     profiler.start("gettimeofday"); for (size_t i=0; i<repeats ; i++){ struct timeval time{0}; gettimeofday(&time,nullptr); } profiler.stop("gettimeofday",repeats);
 
     {auto envelope=profiler.push("Envelope");
-    {Profiler::Push s(profiler,"gettimeofday-Stack-1"); for (size_t i=0; i<repeats ; i++){ struct timeval time{0}; gettimeofday(&time,nullptr); } s+=repeats; }
-    {Profiler::Push s(profiler,"gettimeofday-Stack-2"); for (size_t i=0; i<repeats ; i++){ struct timeval time{0}; gettimeofday(&time,nullptr); ++s; } }
+    {molpro::Profiler::Push s(profiler,"gettimeofday-Stack-1"); for (size_t i=0; i<repeats ; i++){ struct timeval time{0}; gettimeofday(&time,nullptr); } s+=repeats; }
+    {molpro::Profiler::Push s(profiler,"gettimeofday-Stack-2"); for (size_t i=0; i<repeats ; i++){ struct timeval time{0}; gettimeofday(&time,nullptr); ++s; } }
     {auto s = profiler.push("gettimeofday-Stack-1"); for (size_t i=0; i<repeats ; i++){ struct timeval time{0}; gettimeofday(&time,nullptr); } s+=repeats; }
     {auto s = profiler.push("gettimeofday-Stack-2"); for (size_t i=0; i<repeats ; i++){ struct timeval time{0}; gettimeofday(&time,nullptr); ++s; } }
     }

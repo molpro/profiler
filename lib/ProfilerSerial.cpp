@@ -13,13 +13,17 @@
 #include <queue>
 #include <string>
 #include <string.h>
+#include <cmath>
 #include <iomanip>
 #include "ProfilerSerial.h"
+#include <assert.h>
+#include <time.h>
+#include <sys/time.h>
 #if defined(MOLPRO) || defined(PROFILER_MEMORY)
 #include "memory.h"
 #endif
 
-
+namespace molpro{
 ProfilerSerial::ProfilerSerial(const std::string& name, sortMethod sortBy, const int level)
 : m_sortBy(sortBy)
 {
@@ -43,7 +47,6 @@ void ProfilerSerial::active(const int level, const int stopPrint)
   stopPrint_=stopPrint;
 }
 
-#include <assert.h>
 static char colon_replace=(char)30;
 void ProfilerSerial::start(const std::string& name)
 {
@@ -133,7 +136,6 @@ void ProfilerSerial::stopall()
   while (! resourcesStack.empty()) stop();
 }
 
-#include <cmath>
 ProfilerSerial::resultMap ProfilerSerial::totals() const
 {
   ProfilerSerial thiscopy=*this; // take a copy so that we can run stopall yet be const, and so that we can sum globally
@@ -241,13 +243,6 @@ void ProfilerSerial::accumulate(resultMap& results)
     }
 }
 
-std::ostream& operator<<(std::ostream& os, ProfilerSerial & obj)
-{
-  return os << obj.str() << std::endl;
-}
-
-#include <time.h>
-#include <sys/time.h>
 static int init=1;
 static double wallbase;
 struct ProfilerSerial::resources ProfilerSerial::getResources()
@@ -311,4 +306,10 @@ struct ProfilerSerial::resources ProfilerSerial::resources::operator-(const stru
 }
 
 ProfilerSerial::Push ProfilerSerial::push(const std::string &name) {return Push(*this, name);}
+}
+
+std::ostream& operator<<(std::ostream& os, molpro::ProfilerSerial & obj)
+{
+    return os << obj.str() << std::endl;
+}
 

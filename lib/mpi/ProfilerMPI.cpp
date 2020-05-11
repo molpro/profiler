@@ -1,6 +1,8 @@
 #include "ProfilerMPI.h"
 #include "ProfilerMPIConfig.h"
+#include <cmath>
 
+namespace molpro{
 
 ProfilerMPI::ProfilerMPI(const std::string &name, sortMethod sortBy, const int level, const MPI_Comm communicator)
         : ProfilerSerial(name, sortBy, level),
@@ -10,7 +12,6 @@ ProfilerMPI::ProfilerMPI(const std::string &name, sortMethod sortBy, const int l
   active(level);
 }
 
-#include <cmath>
 ProfilerMPI::resultMap ProfilerMPI::totals() const
 {
   ProfilerMPI thiscopy=*this; // take a copy so that we can run stopall yet be const, and so that we can sum globally
@@ -60,3 +61,4 @@ std::ostream &operator<<(std::ostream &os, ProfilerMPI &obj) {
   else
     return os;
 }
+} //  namespace molpro

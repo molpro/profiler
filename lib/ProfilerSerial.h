@@ -13,6 +13,7 @@
 #include "molpro_config.h"
 #endif
 
+namespace molpro{
 /*!
  * \brief The Profiler class: framework for timing code sections.
  *
@@ -228,8 +229,9 @@ public:
   };
 
 };
+} // namespace molpro
 //! Writes summary of profile to the stream, with end of line
-std::ostream& operator<<(std::ostream& os, ProfilerSerial & obj);
+std::ostream& operator<<(std::ostream& os, molpro::ProfilerSerial & obj);
 
 #endif // __cplusplus
 

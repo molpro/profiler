@@ -3,6 +3,8 @@
 #include "ProfilerSerial.h"
 #include "mpi.h"
 
+namespace molpro{
+
 /*!
  * \brief MPI version of the profiler
  *
@@ -35,6 +37,7 @@ protected:
   const MPI_Comm m_communicator;
 };
 
+} // namespace molpro
 
 
 #endif // PROFILER_MPI_H
