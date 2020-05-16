@@ -94,9 +94,9 @@ function(add_configure_file LIBRARY_NAME PROJECT_NAME_)
 #endif
 ")
     configure_file("${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_}-config.h.in" ${PROJECT_NAME_}-config.h)
-    set_property(TARGET ${LIBRARY_NAME} APPEND PROPERTY
-            PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_}-config.h"
-            )
+#    set_property(TARGET ${LIBRARY_NAME} APPEND PROPERTY
+#            PUBLIC_HEADER "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME_}-config.h"
+#            )
 endfunction()
 
 # Completion of configuration for a library, including installation and package

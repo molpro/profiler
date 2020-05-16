@@ -1,5 +1,5 @@
 #include "ProfilerC.h"
-#include "ProfilerSingle.h"
+#include "molpro/ProfilerSingle.h"
 
 // C binding
 extern "C" {

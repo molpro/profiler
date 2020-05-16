@@ -1,4 +1,4 @@
-#include <ProfilerSingle.h>
+#include <molpro/ProfilerSingle.h>
 #ifdef HAVE_MPI_H
 #include "mpi.h"
 #endif
@@ -28,9 +28,17 @@ int main(int argc, char *argv[]) {
     MPI_Init(&argc, &argv);
 #else
 #endif
+    {
+        auto p = molpro::ProfilerSingle::create("", false, false);
+#ifdef HAVE_MPI_H
+        auto p2 = molpro::ProfilerSingle::create("", MPI_COMM_WORLD, false, false);
+#else
+        auto p2 = molpro::ProfilerSingle::create("", 0, false, false);
+#endif
+    }
     run("job 1");
     run("job 2");
-    for (const auto &profiler : molpro::ProfilerSingle::profilers) {
+    for (const auto &profiler : molpro::ProfilerSingle::profilers()) {
         std::cout << *profiler.second;
     }
 #ifdef HAVE_MPI_H

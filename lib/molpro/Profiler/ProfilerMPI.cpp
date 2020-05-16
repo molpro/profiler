@@ -1,5 +1,5 @@
 #include "ProfilerMPI.h"
-#include "ProfilerMPIConfig.h"
+#include "molpro/Profiler/mpi/ProfilerMPIConfig.h"
 #include <cmath>
 
 namespace molpro{

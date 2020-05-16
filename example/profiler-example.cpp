@@ -1,5 +1,5 @@
-#include "Profiler.h"
-#include "ProfilerC.h"
+#include "molpro/Profiler.h"
+#include "molpro/ProfilerC.h"
 #include <iostream>
 #include <cmath>
 #include <ctime>
