@@ -46,7 +46,7 @@ add_subdirectory(example)
 include(FetchContent)
 FetchContent_Declare(
         molpro_cmake_modules
-        GIT_REPOSITORY git@gitlab.com:Knowles-group/molpro-cmake-modules.git
+        GIT_REPOSITORY https://gitlab.com/Knowles-group/molpro-cmake-modules.git
         GIT_TAG 89c978c5fbcbf489cee73c52ed09c4c8c31955d5
 )
 FetchContent_MakeAvailable(molpro_cmake_modules)
@@ -55,4 +55,4 @@ include(MolproDocs)
 MolproDocs_Add(Profiler
         FILES README.md
         DOXYFILE Doxyfile
-        DOC_URL https://mxs301.gitlab.io/profiler/update_doxygen)
+        DOC_URL https://knowles-group.gitlab.io/profiler/update_doxygen)
