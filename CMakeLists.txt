@@ -46,7 +46,7 @@ add_subdirectory(example)
 include(FetchContent)
 FetchContent_Declare(
         molpro_cmake_modules
-        GIT_REPOSITORY https://gitlab.com/Knowles-group/molpro-cmake-modules.git
+        GIT_REPOSITORY https://gitlab+deploy-token-174471:sRkL1gwtp8v1gxGY1AX1@gitlab.com/Knowles-group/molpro-cmake-modules.git
         GIT_TAG 89c978c5fbcbf489cee73c52ed09c4c8c31955d5
 )
 FetchContent_MakeAvailable(molpro_cmake_modules)
