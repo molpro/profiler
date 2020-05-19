@@ -43,20 +43,16 @@ add_subdirectory(example)
 
 ########## Documentation ##########
 
-#if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-find_package(Doxygen)
-if (DOXYGEN_FOUND)
-    set(projectDocDir ${CMAKE_BINARY_DIR}/docs/${PROJECT_NAME})
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${projectDocDir}/Doxyfile @ONLY)
-    add_custom_target(${PROJECT_NAME}-doc ALL
-            DEPENDS ${projectDocDir}/html/index.html
-            )
-    file(GLOB headers README.md lib/*.h lib/serial/*.h lib/mpi/*.h lib/*.F90 ${CMAKE_CURRENT_BINARY_DIR}/lib/mpi/ProfilerMPI/Profiler.h)
-    add_custom_command(OUTPUT ${projectDocDir}/html/index.html
-            COMMAND ${DOXYGEN_EXECUTABLE} ${projectDocDir}/Doxyfile
-            DEPENDS ${SRC_LIST} ${headers} ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt ${projectDocDir}/Doxyfile
-            WORKING_DIRECTORY ${projectDocDir}
-            COMMENT "Generating API documentation with Doxygen" VERBATIM
-            )
-endif (DOXYGEN_FOUND)
-#endif ()
+include(FetchContent)
+FetchContent_Declare(
+        molpro_cmake_modules
+        GIT_REPOSITORY git@gitlab.com:Knowles-group/molpro-cmake-modules.git
+        GIT_TAG 89c978c5fbcbf489cee73c52ed09c4c8c31955d5
+)
+FetchContent_MakeAvailable(molpro_cmake_modules)
+
+include(MolproDocs)
+MolproDocs_Add(Profiler
+        FILES README.md
+        DOXYFILE Doxyfile
+        DOC_URL https://mxs301.gitlab.io/profiler/update_doxygen)
