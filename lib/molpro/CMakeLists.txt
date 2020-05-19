@@ -30,4 +30,8 @@ install(EXPORT ProfilerTargets
         DESTINATION lib/cmake
         FILE ProfilerConfig.cmake
         )
+if (CMAKE_Fortran_COMPILER)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/profilerf.mod DESTINATION include)
+    file(CREATE_LINK ${CMAKE_CURRENT_BINARY_DIR}/profilerf.mod ${CMAKE_CURRENT_BINARY_DIR}/../profilerf.mod SYMBOLIC)
+endif ()
 
