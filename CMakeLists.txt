@@ -45,14 +45,15 @@ add_subdirectory(example)
 
 include(FetchContent)
 FetchContent_Declare(
-        molpro_cmake_modules
-        GIT_REPOSITORY https://gitlab+deploy-token-174471:sRkL1gwtp8v1gxGY1AX1@gitlab.com/Knowles-group/molpro-cmake-modules.git
-        GIT_TAG 89c978c5fbcbf489cee73c52ed09c4c8c31955d5
+        dependency_manager
+        GIT_REPOSITORY https://gitlab.com/dependencymanager/dependency-manager.git
+        GIT_TAG 0.1.0
 )
-FetchContent_MakeAvailable(molpro_cmake_modules)
+FetchContent_MakeAvailable(dependency_manager)
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" PARENT_SCOPE)
 
-include(MolproDocs)
-MolproDocs_Add(Profiler
+include(DependencyManagerDocs)
+DependencyManagerDocs_Add(Profiler
         FILES README.md
         DOXYFILE Doxyfile
         DOC_URL https://knowles-group.gitlab.io/profiler/update_doxygen)
