@@ -6,6 +6,7 @@
 #define PROFILER_DEFAULT_KEY MPI_COMM_WORLD
 
 namespace molpro {
+namespace profiler{
 
 /*!
  * \brief MPI version of the profiler
@@ -40,6 +41,7 @@ protected:
     const MPI_Comm m_communicator;
 };
 
+} // namespace profiler
 } // namespace molpro
 
 

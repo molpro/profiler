@@ -24,6 +24,7 @@
 #endif
 
 namespace molpro {
+namespace profiler{
 ProfilerSerial::ProfilerSerial(const std::string &name, sortMethod sortBy, const int level, ProfilerSerial::key_t key)
         : m_sortBy(sortBy) {
     reset(name);
@@ -321,9 +322,11 @@ struct ProfilerSerial::resources ProfilerSerial::resources::operator-(const stru
 }
 
 ProfilerSerial::Push ProfilerSerial::push(const std::string &name) {return Push(*this, name);}
-}
 
-std::ostream &operator<<(std::ostream &os, molpro::ProfilerSerial &obj) {
+} // namespace profiler
+} // namespace molpro
+
+std::ostream &operator<<(std::ostream &os, molpro::profiler::ProfilerSerial &obj) {
     return os << obj.str() << std::endl;
 }
 

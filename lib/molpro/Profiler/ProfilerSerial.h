@@ -15,6 +15,7 @@
 #define PROFILER_DEFAULT_KEY 0
 
 namespace molpro {
+namespace profiler{
 /*!
  * \brief The Profiler class: framework for timing code sections.
  *
@@ -263,9 +264,10 @@ public:
     };
 
 };
+} //  namespace profiler
 } // namespace molpro
 //! Writes summary of profile to the stream, with end of line
-std::ostream &operator<<(std::ostream &os, molpro::ProfilerSerial &obj);
+std::ostream &operator<<(std::ostream &os, molpro::profiler::ProfilerSerial &obj);
 
 #endif // __cplusplus
 

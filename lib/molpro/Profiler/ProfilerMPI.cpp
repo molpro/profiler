@@ -3,6 +3,7 @@
 #include <cmath>
 
 namespace molpro{
+namespace profiler{
 
 ProfilerMPI::ProfilerMPI(const std::string &name, sortMethod sortBy, const int level, const MPI_Comm communicator)
         : ProfilerSerial(name, sortBy, level),
@@ -61,4 +62,5 @@ std::ostream &operator<<(std::ostream &os, ProfilerMPI &obj) {
   else
     return os;
 }
+} // namespace profiler
 } //  namespace molpro

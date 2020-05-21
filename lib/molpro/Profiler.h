@@ -9,7 +9,7 @@
 #endif
 
 namespace molpro {
-struct Profiler : public PROFILER_PROFILER_H_CLASS {
+struct Profiler : public profiler::PROFILER_PROFILER_H_CLASS {
 using PROFILER_PROFILER_H_CLASS::PROFILER_PROFILER_H_CLASS;
 };
 
