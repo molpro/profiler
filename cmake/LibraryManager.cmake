@@ -22,16 +22,25 @@ Functions
 .. code-block:: cmake
 
     LibraryManager_Add(<target>
+                       [INCLUDE_CURRENT]
+                       [NAMESPACE <nameSpace>]
                       [SOURCES <sources> ...]
                       [PUBLIC_HEADER <pubHead> ...]
                       [PRIVATE_HEADER <privHead> ...])
 
 Create a library with specified source files.
 
-.. warning:: The library has to be added in directory ``src/molpro``.
-More complicated use cases have to be handled manually.
+``<target>`` - name of the library
 
-``<target>`` - name of an already existing library
+``INCLUDE_CURRENT`` option if specified sets current directory to be the include directory.
+When installing public headers, structure of the source tree is recreated relative to the include directory
+If not set, directory directly above is the include directory.
+For example, if library is added in src/name_space/CMakeLists.txt, headers will be installed to
+``include/name_space``, but if ``INCLUDE_CURRENT`` is set than headers will be installed to ``include``.
+
+``<NameSpace>`` is the name space for the target alias. Outside users will use library as ``<NameSpace>::<target>``.
+This should match the value set in :cmake:command:`LibraryManager_Export`.
+Defaults to value ``${NameSpace}`` if variable is set, otherwise no namespacing is used.
 
 ``SOURCES`` is followed by a list of source files, which will be appended to
 ``SOURCES`` property of the library.
@@ -46,18 +55,40 @@ More complicated use cases have to be handled manually.
 but not relative to source directory where ``add_library()`` was called.
 #]=============================================================================]
 function(LibraryManager_Add target)
-    string(REGEX MATCH "src/molpro$" out "${CMAKE_CURRENT_SOURCE_DIR}")
-    if (NOT out)
-        message(FATAL_ERROR "library has to be added in src/molpro/ directory")
+    cmake_parse_arguments("ARG" "INCLUDE_CURRENT" "NAMESPACE" "" ${ARGN})
+    if (DEFINED ARG_NAMESPACE)
+        set(NameSpace "${ARG_NAMESPACE}")
+    else ()
+        if (DEFINED NameSpace)
+            get_filename_component(dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+            if (NOT dir STREQUAL NameSpace)
+                message(FATAL_ERROR "library has to be added in ${NameSpace} directory")
+            endif ()
+        endif ()
     endif ()
 
     add_library(${target})
-    add_library(molpro::${target} ALIAS ${target})
+    if (DEFINED NameSpace)
+        if (NOT NAMESPACE STREQUAL "")
+            add_library(${NameSpace}::${target} ALIAS ${target})
+        endif ()
+    endif ()
+    set_target_properties(${target} PROPERTIES __LibraryManager_NameSpace "${NameSpace}")
 
-    LibraryManager_Append(${target} ${ARGN})
-    target_include_directories(${target}
-            PUBLIC $<INSTALL_INTERFACE:include>
-                   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
+    message("ARG_UNPARSED_ARGUMENTS=${ARG_UNPARSED_ARGUMENTS}")
+    if (DEFINED ARG_UNPARSED_ARGUMENTS)
+        LibraryManager_Append(${target} ${ARG_UNPARSED_ARGUMENTS})
+    endif ()
+    target_include_directories(${target} PUBLIC $<INSTALL_INTERFACE:include>)
+    if (ARG_INCLUDE_CURRENT)
+        message("ARG_INCLUDE_CURRENT=${ARG_INCLUDE_CURRENT}")
+        target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+        set_target_properties(${target} PROPERTIES __LibraryManager_IncludeBaseDir "")
+    else ()
+        get_filename_component(dir ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+        target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
+        set_target_properties(${target} PROPERTIES __LibraryManager_IncludeBaseDir "${dir}")
+    endif ()
 endfunction()
 
 #[=============================================================================[.rst
@@ -97,6 +128,28 @@ function(LibraryManager_Append target)
             set_property(TARGET ${target} APPEND PROPERTY ${type} "${srcAbs}")
         endforeach ()
     endforeach ()
+    __LibraryManager_fortranInSources(fort ${ARG_SOURCES})
+    message("fort=${fort}")
+    if (fort)
+        # Are this sensible defaults?
+        set_target_properties(${target} PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fortran)
+        target_include_directories(${target}
+                PUBLIC $<INSTALL_INTERFACE:include/fortran>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fortran>)
+    endif ()
+endfunction()
+
+function(__LibraryManager_fortranInSources out)
+    foreach (src IN LISTS ARGN)
+        get_filename_component(ext ${src} EXT)
+        message("src=${src}")
+        message("ext=${ext}")
+        #todo use regex to match all possible fortran expressions
+        if (ext STREQUAL ".F90")
+            message("fort")
+            set(${out} ON PARENT_SCOPE)
+        endif ()
+    endforeach ()
 endfunction()
 
 macro(__LibraryManager_toAbs dir file out)
@@ -131,8 +184,9 @@ Also, creates an alias library ``molpro::<target>``.
 
 ``ARCHIVE`` argument passed to install as ``ARCHIVE DESTINATION <libDir>``
 
-``PUBLIC_HEADER`` destination for public headers, unlike ``install()`` the source tree structure is reproduces, but
-relateive to ``<pubHead>``. Default value: ``include/molpro``
+``PUBLIC_HEADER`` destination for public headers. The source tree structure is reproduced, matching
+``<publicHead>`` and include base directory inferred in :cmake:command:`LibraryManager_Add`.
+ Default value: ``include/<baseDir>``
 
 ``<extraArgs>`` are forwarded to install. Note that argument forwarding is quite limited in CMake.
 
@@ -154,7 +208,12 @@ function(LibraryManager_Install target)
         endif ()
     endforeach ()
     if (NOT ARG_PUBLIC_HEADER)
-        set(ARG_PUBLIC_HEADER include/molpro)
+        get_property(defined TARGET ${target} PROPERTY __LibraryManager_IncludeBaseDir DEFINED)
+        set(dir "")
+        if (defined)
+            get_property(dir TARGET ${target} PROPERTY __LibraryManager_IncludeBaseDir)
+        endif ()
+        set(ARG_PUBLIC_HEADER include/${dir})
     endif ()
 
     # For now this is the best I can do. Private headers are never used.
@@ -177,6 +236,14 @@ function(LibraryManager_Install target)
         endif ()
         install(FILES ${src} DESTINATION ${ARG_PUBLIC_HEADER}/${path})
     endforeach ()
+
+    # install fortran module directory
+    get_property(path TARGET ${target} PROPERTY Fortran_MODULE_DIRECTORY)
+    if (NOT "${path}" STREQUAL "")
+        get_property(path TARGET ${target} PROPERTY Fortran_MODULE_DIRECTORY)
+        message("path .mod=${path}")
+        install(DIRECTORY ${path} DESTINATION include OPTIONAL)
+    endif ()
 
     # pkgconfig support TODO
 
@@ -209,16 +276,20 @@ function(LibraryManager_Export project)
         set(ARG_FILE ${project}Config.cmake)
     endif ()
     if (NOT ARG_NAMESPACE)
-        set(ARG_NAMESPACE molpro::)
+        if (NameSpace)
+            set(ARG_NAMESPACE ${NameSpace}::)
+        else ()
+            set(ARG_NAMESPACE "")
+        endif ()
     endif ()
     if (NOT ARG_DESINATION)
-        set(ARG_DESINATION lib/cmake/molpro/${project})
+        set(ARG_DESINATION lib/cmake/${ARG_NAMESPACE}/${project})
     endif ()
 
     install(
             EXPORT ${ARG_EXPORT}
             FILE ${ARG_FILE}
-            NAMESPACE ${ARG_NAMESPACE}
+            NAMESPACE "${ARG_NAMESPACE}"
             DESTINATION ${ARG_DESINATION}
     )
 endfunction()
