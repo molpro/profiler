@@ -22,25 +22,24 @@ Functions
 .. code-block:: cmake
 
     LibraryManager_Add(<target>
-                       [INCLUDE_CURRENT]
+                       [INCLUDE_BASE_DIR <baseDir>]
                        [NAMESPACE <nameSpace>]
-                      [SOURCES <sources> ...]
-                      [PUBLIC_HEADER <pubHead> ...]
-                      [PRIVATE_HEADER <privHead> ...])
+                       [SOURCES <sources> ...]
+                       [PUBLIC_HEADER <pubHead> ...]
+                       [PRIVATE_HEADER <privHead> ...])
 
 Create a library with specified source files.
 
 ``<target>`` - name of the library
 
-``INCLUDE_CURRENT`` option if specified sets current directory to be the include directory.
-When installing public headers, structure of the source tree is recreated relative to the include directory
-If not set, directory directly above is the include directory.
-For example, if library is added in src/name_space/CMakeLists.txt, headers will be installed to
-``include/name_space``, but if ``INCLUDE_CURRENT`` is set than headers will be installed to ``include``.
+``INCLUDE_BASE_DIR`` is followed by path to the base directory for reconstructing the source tree.
+During installation path to each header will remap ``<baseDir>`` to include directory
+(see ``INCLUDE_DIR`` in :cmake:command:`LibraryManager_Install`).
+Defaults to ``${CMAKE_CURRENT_SOURCE_DIR}/../``
 
-``<NameSpace>`` is the name space for the target alias. Outside users will use library as ``<NameSpace>::<target>``.
+``<nameSpace>`` is the name space for the target alias. Outside users will use library as ``<nameSpace>::<target>``.
 This should match the value set in :cmake:command:`LibraryManager_Export`.
-Defaults to value ``${NameSpace}`` if variable is set, otherwise no namespacing is used.
+Default:  no namespacing is used.
 
 ``SOURCES`` is followed by a list of source files, which will be appended to
 ``SOURCES`` property of the library.
@@ -55,40 +54,22 @@ Defaults to value ``${NameSpace}`` if variable is set, otherwise no namespacing 
 but not relative to source directory where ``add_library()`` was called.
 #]=============================================================================]
 function(LibraryManager_Add target)
-    cmake_parse_arguments("ARG" "INCLUDE_CURRENT" "NAMESPACE" "" ${ARGN})
-    if (DEFINED ARG_NAMESPACE)
-        set(NameSpace "${ARG_NAMESPACE}")
-    else ()
-        if (DEFINED NameSpace)
-            get_filename_component(dir ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-            if (NOT dir STREQUAL NameSpace)
-                message(FATAL_ERROR "library has to be added in ${NameSpace} directory")
-            endif ()
-        endif ()
-    endif ()
+    cmake_parse_arguments("ARG" "" "NAMESPACE;INCLUDE_BASE_DIR" "" ${ARGN})
 
     add_library(${target})
-    if (DEFINED NameSpace)
-        if (NOT NAMESPACE STREQUAL "")
-            add_library(${NameSpace}::${target} ALIAS ${target})
-        endif ()
+    if (DEFINED ARG_NAMESPACE)
+        add_library(${ARG_NAMESPACE}::${target} ALIAS ${target})
     endif ()
-    set_target_properties(${target} PROPERTIES __LibraryManager_NameSpace "${NameSpace}")
 
-    message("ARG_UNPARSED_ARGUMENTS=${ARG_UNPARSED_ARGUMENTS}")
     if (DEFINED ARG_UNPARSED_ARGUMENTS)
         LibraryManager_Append(${target} ${ARG_UNPARSED_ARGUMENTS})
     endif ()
-    target_include_directories(${target} PUBLIC $<INSTALL_INTERFACE:include>)
-    if (ARG_INCLUDE_CURRENT)
-        message("ARG_INCLUDE_CURRENT=${ARG_INCLUDE_CURRENT}")
-        target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
-        set_target_properties(${target} PROPERTIES __LibraryManager_IncludeBaseDir "")
-    else ()
-        get_filename_component(dir ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
-        target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
-        set_target_properties(${target} PROPERTIES __LibraryManager_IncludeBaseDir "${dir}")
+
+    if (NOT DEFINED ARG_INCLUDE_BASE_DIR)
+        set(ARG_INCLUDE_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../)
     endif ()
+    target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${ARG_INCLUDE_BASE_DIR}>)
+    set_target_properties(${target} PROPERTIES __LibraryManager_IncludeBaseDir "${ARG_INCLUDE_BASE_DIR}")
 endfunction()
 
 #[=============================================================================[.rst
@@ -129,7 +110,6 @@ function(LibraryManager_Append target)
         endforeach ()
     endforeach ()
     __LibraryManager_fortranInSources(fort ${ARG_SOURCES})
-    message("fort=${fort}")
     if (fort)
         # Are this sensible defaults?
         set_target_properties(${target} PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fortran)
@@ -140,13 +120,11 @@ function(LibraryManager_Append target)
 endfunction()
 
 function(__LibraryManager_fortranInSources out)
+    set(${out} OFF PARENT_SCOPE)
     foreach (src IN LISTS ARGN)
         get_filename_component(ext ${src} EXT)
-        message("src=${src}")
-        message("ext=${ext}")
         #todo use regex to match all possible fortran expressions
         if (ext STREQUAL ".F90")
-            message("fort")
             set(${out} ON PARENT_SCOPE)
         endif ()
     endforeach ()
@@ -170,7 +148,7 @@ endmacro()
                    [RUNTIME <runDir>]
                    [LIBRARY <libDir>]
                    [ARCHIVE <archiveDir>]
-                   [PUBLIC_HEADER <pubHead>]
+                   [INCLUDE_DIR <incDir>]
                    [<extraArgs> ...])
 
 Installs <target> with public headers mirroing source tree structure.
@@ -184,9 +162,9 @@ Also, creates an alias library ``molpro::<target>``.
 
 ``ARCHIVE`` argument passed to install as ``ARCHIVE DESTINATION <libDir>``
 
-``PUBLIC_HEADER`` destination for public headers. The source tree structure is reproduced, matching
-``<publicHead>`` and include base directory inferred in :cmake:command:`LibraryManager_Add`.
- Default value: ``include/<baseDir>``
+``INCLUDE_DIR`` destination for public headers. The source tree structure is reproduced, matching
+``<incDir>`` and include base directory specified in :cmake:command:`LibraryManager_Add`.
+ Default value: ``include``
 
 ``<extraArgs>`` are forwarded to install. Note that argument forwarding is quite limited in CMake.
 
@@ -195,9 +173,9 @@ to be relative to source directory where ``add_library()`` was called. See cmake
 
 #]=============================================================================]
 function(LibraryManager_Install target)
-    set(oneValueArgs EXPORT RUNTIME LIBRARY ARCHIVE PUBLIC_HEADER)
+    set(oneValueArgs EXPORT RUNTIME LIBRARY ARCHIVE INCLUDE_DIR)
     cmake_parse_arguments("ARG" "" "${oneValueArgs}" "" ${ARGN})
-    if (NOT ARG_EXPORT)
+    if (NOT DEFINED ARG_EXPORT)
         set(ARG_EXPORT ${target}-export)
     endif ()
     set(EXPORT "EXPORT;${ARG_EXPORT}")
@@ -207,14 +185,10 @@ function(LibraryManager_Install target)
             set(${v} "${v};DESTINATION;${ARG_${v}}")
         endif ()
     endforeach ()
-    if (NOT ARG_PUBLIC_HEADER)
-        get_property(defined TARGET ${target} PROPERTY __LibraryManager_IncludeBaseDir DEFINED)
-        set(dir "")
-        if (defined)
-            get_property(dir TARGET ${target} PROPERTY __LibraryManager_IncludeBaseDir)
-        endif ()
-        set(ARG_PUBLIC_HEADER include/${dir})
+    if (NOT DEFINED ARG_INCLUDE_DIR)
+        set(ARG_INCLUDE_DIR include)
     endif ()
+    target_include_directories(${target} PUBLIC $<INSTALL_INTERFACE:${ARG_INCLUDE_DIR}>)
 
     # For now this is the best I can do. Private headers are never used.
     get_property(pubHead TARGET ${target} PROPERTY PUBLIC_HEADER)
@@ -227,21 +201,18 @@ function(LibraryManager_Install target)
 
     # Install public headers one at a time
     get_property(srcDir TARGET ${target} PROPERTY SOURCE_DIR)
+    get_property(baseDir TARGET ${target} PROPERTY __LibraryManager_IncludeBaseDir)
     foreach (src IN LISTS pubHead)
-        if (IS_ABSOLUTE "${src}")
-            file(RELATIVE_PATH path "${srcDir}" "${src}")
-            get_filename_component(path "${path}" DIRECTORY)
-        else ()
-            set(src ${srcDir}/${src})
-        endif ()
-        install(FILES ${src} DESTINATION ${ARG_PUBLIC_HEADER}/${path})
+        __LibraryManager_toAbs("${srcDIr}" "${src}" src)
+        file(RELATIVE_PATH path "${baseDir}" "${src}")
+        get_filename_component(path "${path}" DIRECTORY)
+        install(FILES ${src} DESTINATION ${ARG_INCLUDE_DIR}/${path})
     endforeach ()
 
     # install fortran module directory
     get_property(path TARGET ${target} PROPERTY Fortran_MODULE_DIRECTORY)
     if (NOT "${path}" STREQUAL "")
         get_property(path TARGET ${target} PROPERTY Fortran_MODULE_DIRECTORY)
-        message("path .mod=${path}")
         install(DIRECTORY ${path} DESTINATION include OPTIONAL)
     endif ()
 
@@ -266,30 +237,30 @@ Meaning of options is the same as in ``install(EXPORT)``,
 but in most cases correct values are set based on ``<projectName>``.
 #]=============================================================================]
 function(LibraryManager_Export project)
-    set(oneValueArgs EXPORT FILE NAMESPACE DESTIONATION)
+    set(oneValueArgs EXPORT FILE NAMESPACE DESTINATION)
     cmake_parse_arguments("ARG" "" "${oneValueArgs}" "" ${ARGN})
 
-    if (NOT ARG_EXPORT)
+    if (NOT DEFINED ARG_EXPORT)
         set(ARG_EXPORT ${project}-export)
     endif ()
-    if (NOT ARG_FILE)
+    if (NOT DEFINED ARG_FILE)
         set(ARG_FILE ${project}Config.cmake)
     endif ()
-    if (NOT ARG_NAMESPACE)
-        if (NameSpace)
-            set(ARG_NAMESPACE ${NameSpace}::)
-        else ()
-            set(ARG_NAMESPACE "")
-        endif ()
+    if (NOT DEFINED ARG_NAMESPACE)
+        set(nameSpace "")
+        set(ARG_NAMESPACE "")
+    else ()
+        set(nameSpace "${ARG_NAMESPACE}")
+        set(ARG_NAMESPACE "NAMESPACE;${ARG_NAMESPACE}")
     endif ()
-    if (NOT ARG_DESINATION)
-        set(ARG_DESINATION lib/cmake/${ARG_NAMESPACE}/${project})
+    if (NOT DEFINED ARG_DESTINATION)
+        set(ARG_DESTINATION lib/cmake/${nameSpace}/${project})
     endif ()
 
     install(
             EXPORT ${ARG_EXPORT}
             FILE ${ARG_FILE}
-            NAMESPACE "${ARG_NAMESPACE}"
-            DESTINATION ${ARG_DESINATION}
+            DESTINATION ${ARG_DESTINATION}
+            ${ARG_NAMESPACE}
     )
 endfunction()
