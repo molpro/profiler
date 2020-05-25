@@ -150,6 +150,7 @@ endmacro()
                    [LIBRARY <libDir>]
                    [ARCHIVE <archiveDir>]
                    [INCLUDE_DIR <incDir>]
+                   [PKG_CONFIG]
                    [<extraArgs> ...])
 
 Installs <target> with public headers mirroing source tree structure.
@@ -169,6 +170,8 @@ The source tree structure is reproduced, matching ``<incDir>`` and include base
 directory specified in :cmake:command:`LibraryManager_Add`.
 Default value: ``include``
 
+``PKG_CONFIG`` option to create ``<target>.pc`` file for pkg-config.
+
 ``<extraArgs>`` are forwarded to install. Note that argument forwarding is quite limited in CMake.
 
 .. note:: Public headers are obtained from ``<target>`` property. If they are not absolute paths, they are assumed
@@ -177,7 +180,7 @@ to be relative to source directory where ``add_library()`` was called. See cmake
 #]=============================================================================]
 function(LibraryManager_Install target)
     set(oneValueArgs EXPORT RUNTIME LIBRARY ARCHIVE INCLUDE_DIR)
-    cmake_parse_arguments("ARG" "" "${oneValueArgs}" "" ${ARGN})
+    cmake_parse_arguments("ARG" "PKG_CONFIG" "${oneValueArgs}" "" ${ARGN})
     if (NOT DEFINED ARG_EXPORT)
         set(ARG_EXPORT ${target}-export)
     endif ()
@@ -219,7 +222,29 @@ function(LibraryManager_Install target)
         install(DIRECTORY ${path} DESTINATION include OPTIONAL)
     endif ()
 
-    # pkgconfig support TODO
+    if (ARG_PKG_CONFIG)
+        set(content
+                "
+Name: ${target}
+Description: Library ${target} built with CMake and installed with LibraryManager
+Version: ${PROJECT_VERSION}
+Requires:
+Requires.private:
+Cflags:
+Libs:
+Libs.private:
+")
+        # Use this hack for now: https://cmake.org/pipermail/cmake/2017-May/065529.html
+        string(REPLACE "$<BUILD_INTERFACE:" "$<0:" content "${content}")
+        message("content=${content}")
+        string(REPLACE "$<INSTALL_INTERFACE:" "$<1:" content "${content}")
+        message("content=${content}")
+        string(REPLACE "$<INSTALL_PREFIX>" "${CMAKE_INSTALL_PREFIX}" content "${content}")
+        message("content=${content}")
+        # pkgconfig support TODO
+        file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${target}.pc CONTENT "${content}")
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${target}.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+    endif ()
 
     # -config configuration script support TODO
 endfunction()
