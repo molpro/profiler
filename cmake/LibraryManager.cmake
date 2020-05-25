@@ -22,7 +22,7 @@ Functions
 .. code-block:: cmake
 
     LibraryManager_Add(<target>
-                       [INCLUDE_BASE_DIR <baseDir>]
+                       [INCLUDE_DIR <baseDir>]
                        [NAMESPACE <nameSpace>]
                        [SOURCES <sources> ...]
                        [PUBLIC_HEADER <pubHead> ...]
@@ -32,11 +32,11 @@ Create a library with specified source files.
 
 ``<target>`` - name of the library
 
-``INCLUDE_BASE_DIR`` is followed by path to the base directory for reconstructing the source tree.
+``INCLUDE_DIR`` is followed by path to the base directory for reconstructing the source tree.
 This is also the include directory of the library as part of build interface.
 During installation path to each header will remap ``<baseDir>`` to include directory
 (see ``INCLUDE_DIR`` in :cmake:command:`LibraryManager_Install`).
-Defaults to ``${CMAKE_CURRENT_SOURCE_DIR}/../``
+Defaults to ``${CMAKE_CURRENT_SOURCE_DIR}``
 
 ``<nameSpace>`` is the name space for the target alias. Outside users will use library as ``<nameSpace>::<target>``.
 This should match the value set in :cmake:command:`LibraryManager_Export`.
@@ -55,7 +55,7 @@ Default:  no namespacing is used.
 but not relative to source directory where ``add_library()`` was called.
 #]=============================================================================]
 function(LibraryManager_Add target)
-    cmake_parse_arguments("ARG" "" "NAMESPACE;INCLUDE_BASE_DIR" "" ${ARGN})
+    cmake_parse_arguments("ARG" "" "NAMESPACE;INCLUDE_DIR" "" ${ARGN})
 
     add_library(${target})
     if (DEFINED ARG_NAMESPACE)
@@ -66,11 +66,11 @@ function(LibraryManager_Add target)
         LibraryManager_Append(${target} ${ARG_UNPARSED_ARGUMENTS})
     endif ()
 
-    if (NOT DEFINED ARG_INCLUDE_BASE_DIR)
-        set(ARG_INCLUDE_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../)
+    if (NOT DEFINED ARG_INCLUDE_DIR)
+        set(ARG_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
     endif ()
-    target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${ARG_INCLUDE_BASE_DIR}>)
-    set_target_properties(${target} PROPERTIES __LibraryManager_IncludeBaseDir "${ARG_INCLUDE_BASE_DIR}")
+    target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${ARG_INCLUDE_DIR}>)
+    set_target_properties(${target} PROPERTIES __LibraryManager_IncludeBaseDir "${ARG_INCLUDE_DIR}")
 endfunction()
 
 #[=============================================================================[.rst
