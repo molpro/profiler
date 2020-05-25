@@ -33,6 +33,7 @@ Create a library with specified source files.
 ``<target>`` - name of the library
 
 ``INCLUDE_BASE_DIR`` is followed by path to the base directory for reconstructing the source tree.
+This is also the include directory of the library as part of build interface.
 During installation path to each header will remap ``<baseDir>`` to include directory
 (see ``INCLUDE_DIR`` in :cmake:command:`LibraryManager_Install`).
 Defaults to ``${CMAKE_CURRENT_SOURCE_DIR}/../``
@@ -162,9 +163,11 @@ Also, creates an alias library ``molpro::<target>``.
 
 ``ARCHIVE`` argument passed to install as ``ARCHIVE DESTINATION <libDir>``
 
-``INCLUDE_DIR`` destination for public headers. The source tree structure is reproduced, matching
-``<incDir>`` and include base directory specified in :cmake:command:`LibraryManager_Add`.
- Default value: ``include``
+``INCLUDE_DIR`` destination for public headers.
+This is also the include directory of the library as part of install interface.
+The source tree structure is reproduced, matching ``<incDir>`` and include base
+directory specified in :cmake:command:`LibraryManager_Add`.
+Default value: ``include``
 
 ``<extraArgs>`` are forwarded to install. Note that argument forwarding is quite limited in CMake.
 
