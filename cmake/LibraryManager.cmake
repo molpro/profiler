@@ -223,30 +223,135 @@ function(LibraryManager_Install target)
     endif ()
 
     if (ARG_PKG_CONFIG)
-        set(content
-                "
-Name: ${target}
-Description: Library ${target} built with CMake and installed with LibraryManager
-Version: ${PROJECT_VERSION}
-Requires:
-Requires.private:
-Cflags:
-Libs:
-Libs.private:
-")
-        # Use this hack for now: https://cmake.org/pipermail/cmake/2017-May/065529.html
-        string(REPLACE "$<BUILD_INTERFACE:" "$<0:" content "${content}")
+        __LibraryManager_writePkgConfig(${target} content)
         message("content=${content}")
-        string(REPLACE "$<INSTALL_INTERFACE:" "$<1:" content "${content}")
-        message("content=${content}")
-        string(REPLACE "$<INSTALL_PREFIX>" "${CMAKE_INSTALL_PREFIX}" content "${content}")
-        message("content=${content}")
-        # pkgconfig support TODO
         file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${target}.pc CONTENT "${content}")
         install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${target}.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
     endif ()
 
     # -config configuration script support TODO
+endfunction()
+
+# Updates properties recursively
+macro(__LibraryManager_appendProps target)
+    get_property(compDef TARGET ${target} PROPERTY INTERFACE_COMPILE_DEFINITIONS)
+    get_property(compOpt TARGET ${target} PROPERTY INTERFACE_COMPILE_OPTIONS)
+    get_property(inclDir TARGET ${target} PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+    get_property(linkLib TARGET ${target} PROPERTY INTERFACE_LINK_LIBRARIES)
+    get_property(linkOpt TARGET ${target} PROPERTY INTERFACE_LINK_OPTIONS)
+    list(APPEND compDefRec ${compDef})
+    list(APPEND compOptRec ${compOpt})
+    list(APPEND inclDirRec ${inclDir})
+    list(APPEND linkOptRec ${linkOpt})
+    message("compDef=${compDef}")
+    message("compOpt=${compOpt}")
+    message("inclDir=${inclDir}")
+    message("linkLib=${linkLib}")
+    message("linkOpt=${linkOpt}")
+    foreach (lib IN LISTS linkLibRec)
+        if (TARGET "${lib}")
+            __LibraryManager_appendProps(${lib})
+        else ()
+            list(APPEND linkLibRec "${lib}")
+        endif ()
+    endforeach ()
+endmacro()
+
+macro(__LibraryManager_parseDefs)
+    foreach (v compOptRec compDefRec)
+        foreach (x IN LISTS ${v})
+            if ("${x}" MATCHES "^SHELL:")
+                string(REPLACE "SHELL:" "" x "${x}")
+                separate_arguments(x UNIX_COMMAND "${x}")
+            endif ()
+            if (NOT "${x}" MATCHES "^-D")
+                set(x "-D${x}")
+            endif ()
+            list(APPEND ${v}_copy "${x}")
+        endforeach ()
+        set(${v} "${${v}_copy}")
+    endforeach ()
+endmacro()
+
+macro(__LibraryManager_parseLinkOpt)
+    list(JOIN CMAKE_CXX_LINKER_WRAPPER_FLAG " " linkWrapFlag)
+    foreach (v linkOptRec)
+        foreach (x IN LISTS ${v})
+            if ("${x}" MATCHES "^SHELL:")
+                string(REPLACE "SHELL:" "" x "${x}")
+                separate_arguments(x UNIX_COMMAND "${x}")
+            endif ()
+            set(sep ",")
+            if ("${x}" MATCHES "LINKER:SHELL:")
+                set(sep " ")
+                string(REPLACE "LINKER:SHELL:" "LINKER:" x "${x}")
+            endif ()
+            if ("${x}" MATCHES "LINKER:")
+                string(REPLACE "LINKER:" "${linkWrapFlag}" x "${x}")
+                string(REPLACE "${sep}" "${CMAKE_CXX_LINKER_WRAPPER_FLAG_SEP}" x "${x}")
+            endif ()
+            list(APPEND ${v}_copy "${x}")
+        endforeach ()
+        set(${v} "${${v}_copy}")
+    endforeach ()
+endmacro()
+
+macro(__LibraryManager_parseInclDir)
+    foreach (x IN LISTS inclDirRec)
+        if ("${x}" MATCHES "[$]<INSTALL_INTERFACE:.*>")
+            string(REGEX MATCH "[$]<INSTALL_INTERFACE:(.*)>" path "${x}")
+            set(path "${CMAKE_MATCH_1}")
+            if (NOT IS_ABSOLUTE "${path}" AND NOT "${path}" STREQUAL "")
+                set(path "${CMAKE_INSTALL_PREFIX}/${path}")
+                set(x "$<INSTALL_INTERFACE:${path}>")
+            endif ()
+        endif ()
+        list(APPEND inclDirRec-copy "${x}")
+    endforeach ()
+    set(inclDirRec "${inclDirRec-copy}")
+endmacro()
+
+# options we might still be missing
+# CMAKE_EXE_LINKER_FLAGS
+# CMAKE_EXE_LINKER_FLAGS_${CMAKE_BUILD_TYPE}
+function(__LibraryManager_writePkgConfig target out)
+    set(content "")
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" bt)
+    set(Cflags ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${bt}})
+    message("Cflags=${Cflags}")
+    __LibraryManager_appendProps(${target})
+    __LibraryManager_parseDefs()
+    __LibraryManager_parseInclDir()
+    __LibraryManager_parseLinkOpt()
+    #    message("compDefRec=${compDefRec}")
+    #    message("compOptRec=${compOptRec}")
+    #    message("inclDirRec=${inclDirRec}")
+    #    message("linkLibRec=${linkLibRec}")
+    #    message("linkOptRec=${linkOptRec}")
+    list(JOIN inclDirRec " -I " inclDirRec)
+    list(JOIN compOptRec " " compOptRec)
+    list(JOIN compDefRec " " compDefRec)
+    list(JOIN linkOptRec " " linkOptRec)
+    list(JOIN linkLibRec " " linkLibRec)
+    set(Cflags "${Cflags} ${compOptRec} ${compDefRec} -I ${inclDirRec}")
+    set(libs "${linkOptRec} ${linkLibRec}")
+
+    set(content
+            "
+Name: ${target}
+Description: Library ${target} built with CMake and installed with LibraryManager
+Version: ${PROJECT_VERSION}
+Requires:
+Requires.private:
+Cflags: ${Cflags}
+Libs: ${libs}
+Libs.private:
+")
+    # Use this hack for now: https://cmake.org/pipermail/cmake/2017-May/065529.html
+    string(REPLACE "$<BUILD_INTERFACE:" "$<0:" content "${content}")
+    string(REPLACE "$<INSTALL_INTERFACE:" "$<1:" content "${content}")
+    string(REPLACE "$<INSTALL_PREFIX>" "${CMAKE_INSTALL_PREFIX}" content "${content}")
+    set(${out} "${content}" PARENT_SCOPE)
 endfunction()
 
 #[=============================================================================[.rst
