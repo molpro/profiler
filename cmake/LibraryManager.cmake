@@ -20,7 +20,7 @@ Functions
 
 .. code-block:: cmake
 
-    LibraryManager_Project(<nameSpace>
+    LibraryManager_Project(
                        [MPI_OPTION]
                        [FORTRAN_OPTION]
                        )
@@ -38,21 +38,10 @@ If using this option, do not previously declare ``Fortran`` as a language in the
 #Could be argument MPI with values ON OFF OPTIONAL?
 #Or a second boolean argument MPI? But maybe need to then pass options for FindMPI
 
+As well as processing these options, the function also sets ``CMAKE_PROJECT_VERSION`` and its subcomponent variables using any defined git tags that look like semantic version numbers, and sets up the environment of the ``LibraryManager`` module, so should always be called.
+
 #]=============================================================================]
-# NameSpace: Project wide namespace. Libraries and programs are aliased behind this namespace
-# There is at least one library with interface in src/${NameSpace}.
-# Backend for the library is behind src/${NameSpace}/${PROJECT_NAME}
-# Headers will be install to include/${NameSpace}
-# This is a special variable.
-# It is checked for in LibraryManager.
-# If implementation does not need NameSpace, it must be unset
-# There are two namespaces at CMake level
-#   1. Include namespace for installing headers
-#   2. Alias namespace for creating aliases to targets, and exporting
-# Include namespace is deduced from directory name where LibraryManager_Add() is called
-# <NameSpace> is the export namespace in point 2.
-macro(LibraryManager_Project NAMESPACE)
-    set(NameSpace ${NAMESPACE})
+macro(LibraryManager_Project)
     cmake_parse_arguments("ARG" "MPI_OPTION;FORTRAN_OPTION" "" "" ${ARGN})
 
     if (ARG_FORTRAN_OPTION)
@@ -70,7 +59,6 @@ macro(LibraryManager_Project NAMESPACE)
     include(semver)
 
     message(VERBOSE "PROJECT: ${PROJECT_NAME} ${PROJECT_VERSION}")
-    message(VERBOSE "NameSpace: ${NameSpace}")
     message(DEBUG "PROJECT_VERSION_MAJOR: ${PROJECT_VERSION_MAJOR}")
     message(DEBUG "PROJECT_VERSION_MINOR: ${PROJECT_VERSION_MINOR}")
 
