@@ -15,7 +15,32 @@ Functions
 ^^^^^^^^^
 
 #]=============================================================================]
+#[=============================================================================[.rst
+.. cmake:command:: LibraryManager_Project
 
+.. code-block:: cmake
+
+    LibraryManager_Project(<nameSpace>
+                       [LANGUAGES <languages> ...]
+                       [MPI_OPTION]
+                       [FORTRAN_OPTION]
+                       )
+
+Define the project. For syntactical reasons, must appear after the CMake ``project()`` command.
+
+``<nameSpace>`` - namespace to be used in the target alias for defined libraries.
+Outside users will use the library as ``<nameSpace>::<target>``.
+
+``LANGUAGES`` is followed by a list of languages to be supported, as in standard ``project()``
+
+``FORTRAN_OPTION`` if specified defines a CMake ``option(FORTRAN ... ON)``, allowing a user to disable Fortran support and achieve a selective build that omits Fortran components. For this to be effective, Fortran source files should be included into libraries only if ``CMAKE_Fortran_Compile`` is set.
+
+``MPI_OPTION``  if specified defines a CMake ``option(MPI ... ON)``, allowing a user to disable MPI support and achieve a serial-only build by querying the variable ``MPI``.
+#TODO do we want to configure MPI here, or leave it to the user?
+#Could be argument MPI with values ON OFF OPTIONAL?
+#Or a second boolean argument MPI? But maybe need to then pass options for FindMPI
+
+#]=============================================================================]
 # NameSpace: Project wide namespace. Libraries and programs are aliased behind this namespace
 # There is at least one library with interface in src/${NameSpace}.
 # Backend for the library is behind src/${NameSpace}/${PROJECT_NAME}
