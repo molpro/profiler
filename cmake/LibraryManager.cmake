@@ -21,19 +21,17 @@ Functions
 .. code-block:: cmake
 
     LibraryManager_Project(<nameSpace>
-                       [LANGUAGES <languages> ...]
                        [MPI_OPTION]
                        [FORTRAN_OPTION]
                        )
 
-Define the project. For syntactical reasons, must appear after the CMake ``project()`` command.
+Define additional characteristics of the project. Must appear after the CMake ``project()`` command.
 
 ``<nameSpace>`` - namespace to be used in the target alias for defined libraries.
 Outside users will use the library as ``<nameSpace>::<target>``.
 
-``LANGUAGES`` is followed by a list of languages to be supported, as in standard ``project()``
-
-``FORTRAN_OPTION`` if specified defines a CMake ``option(FORTRAN ... ON)``, allowing a user to disable Fortran support and achieve a selective build that omits Fortran components. For this to be effective, Fortran source files should be included into libraries only if ``CMAKE_Fortran_Compile`` is set.
+``FORTRAN_OPTION`` if specified defines a CMake ``option(FORTRAN ... ON)``, allowing a user to disable or enable Fortran support and achieve a selective build that includes or omits Fortran components. For this to be effective, Fortran source files should be included into libraries only if ``CMAKE_Fortran_Compile`` is set.
+If using this option, do not previously declare ``Fortran`` as a language in the ``project()`` command or via ``enable_language()``.
 
 ``MPI_OPTION``  if specified defines a CMake ``option(MPI ... ON)``, allowing a user to disable MPI support and achieve a serial-only build by querying the variable ``MPI``.
 #TODO do we want to configure MPI here, or leave it to the user?
@@ -55,44 +53,24 @@ Outside users will use the library as ``<nameSpace>::<target>``.
 # <NameSpace> is the export namespace in point 2.
 macro(LibraryManager_Project NAMESPACE)
     set(NameSpace ${NAMESPACE})
-    cmake_parse_arguments("ARG" "MPI_OPTION;FORTRAN_OPTION" "" "LANGUAGES" ${ARGN})
+    cmake_parse_arguments("ARG" "MPI_OPTION;FORTRAN_OPTION" "" "" ${ARGN})
 
-    if (NOT ARG_LANGUAGES)
-        set(ARG_LANGUAGES "CXX;C")
-    endif ()
     if (ARG_FORTRAN_OPTION)
-        list(FIND ARG_LANGUAGES Fortran _Fortran_pos)
-        if (NOT ${_Fortran_pos} EQUAL -1)
-            option(FORTRAN "Whether to build fortran sources" ON)
-            if (NOT FORTRAN)
-                list(REMOVE_ITEM ARG_LANGUAGES Fortran)
-            endif ()
+        option(FORTRAN "Whether to build fortran sources" ON)
+        if (FORTRAN)
+            enable_language(Fortran)
         endif ()
-        unset(_Fortran_pos)
+        message(DEBUG "CMAKE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER}")
     endif ()
-    message(DEBUG "CMAKE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER}")
+
     if (ARG_MPI_OPTION)
         option(MPI "Whether to build with MPI" ON)
     endif ()
 
     include(semver)
 
-    if (PROJECT_DESCRIPTION)
-        if (PROJECT_HOMEPAGE_URL)
-            project(example LANGUAGES ${ARG_LANGUAGES} VERSION ${PROJECT_VERSION} HOMEPAGE_URL "${PROJECT_HOMEPAGE_URL}")
-        else ()
-            project(example LANGUAGES ${ARG_LANGUAGES} VERSION ${PROJECT_VERSION})
-        endif ()
-    else ()
-        if (PROJECT_HOMEPAGE_URL)
-            project(example LANGUAGES ${ARG_LANGUAGES} VERSION ${PROJECT_VERSION} DESCRIPTION "${PROJECT_DESCRIPTION}" HOMEPAGE_URL "${PROJECT_HOMEPAGE_URL}")
-        else ()
-            project(example LANGUAGES ${ARG_LANGUAGES} VERSION ${PROJECT_VERSION} DESCRIPTION "${PROJECT_DESCRIPTION}")
-        endif ()
-    endif ()
     message(VERBOSE "PROJECT: ${PROJECT_NAME} ${PROJECT_VERSION}")
     message(VERBOSE "NameSpace: ${NameSpace}")
-    message(VERBOSE "LANGUAGES: ${LANGUAGES}")
     message(DEBUG "PROJECT_VERSION_MAJOR: ${PROJECT_VERSION_MAJOR}")
     message(DEBUG "PROJECT_VERSION_MINOR: ${PROJECT_VERSION_MINOR}")
 
