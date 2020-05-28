@@ -246,6 +246,46 @@ macro(__LibraryManager_toAbs dir file out)
 endmacro()
 
 #[=============================================================================[.rst
+.. cmake:command:: LibraryManager_BLAS
+
+.. code-block:: cmake
+
+    LibraryManager_BLAS(<target> <vendor1> <vendor2>...)
+
+Finds a BLAS library and add it as a requirement for a build target.
+
+``<target>`` - name of an already existing library
+
+<vendor1> <vendor2>... are desired BLAS library vendors, as require for variable ``BLA_VENDOR`` used by CMake ``FindBLAS()``.
+Each one is tried in turn until a match is found. If none is matched, then ``FindBLAS()`` is called without vendor specification, to get any available BLAS library.
+#]=============================================================================]
+function(LibraryManager_BLAS target)
+    foreach (BLA_VENDOR ${ARGN})
+        message(DEBUG "try BLA_VENDOR ${BLA_VENDOR}")
+        if (NOT BLAS_FOUND)
+            find_package(BLAS)
+            if (BLAS_FOUND)
+                message(STATUS "Building with BLAS(${BLA_VENDOR})")
+                if (APPLE)
+                    target_link_options(${PROJECT_NAME} PUBLIC "-Wl,-rpath,$ENV{MKLROOT}/lib")
+                endif ()
+                target_compile_definitions(${PROJECT_NAME} PUBLIC USE_MKL)
+                # Note: lack of include directories is an oversight of CMake and should be fixed soon.
+                # See https://gitlab.kitware.com/cmake/cmake/issues/20268
+                target_include_directories(${PROJECT_NAME} PUBLIC $ENV{MKLROOT}/include)
+            endif ()
+        endif ()
+    endforeach ()
+    if (NOT BLAS_FOUND)
+        unset(BLA_VENDOR)
+        find_package(BLAS REQUIRED)
+        message(STATUS "Building with BLAS")
+    endif ()
+    message(DEBUG "BLAS_LIBRARIES ${BLAS_LIBRARIES}")
+    target_link_options(${PROJECT_NAME} PUBLIC ${BLAS_LINKER_FLAGS})
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${BLAS_LIBRARIES})
+endfunction()
+#[=============================================================================[.rst
 .. cmake:command:: LibraryManager_Install
 
 .. code-block:: cmake
