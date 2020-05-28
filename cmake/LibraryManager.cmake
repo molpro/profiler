@@ -1,8 +1,8 @@
 include_guard()
 
-#[=============================================================================[.rst
+#[=============================================================================[.rst:
 LibraryManager
-------
+--------------
 
 .. module:: LibraryManager
 
@@ -15,7 +15,7 @@ Functions
 ^^^^^^^^^
 
 #]=============================================================================]
-#[=============================================================================[.rst
+#[=============================================================================[.rst:
 .. cmake:command:: LibraryManager_Project
 
 .. code-block:: cmake
@@ -112,7 +112,7 @@ PROJECT_VERSION_MINOR=${PROJECT_VERSION_MINOR}
 PROJECT_VERSION_PATCH=${PROJECT_VERSION_PATCH}
 ")
 endmacro()
-#[=============================================================================[.rst
+#[=============================================================================[.rst:
 .. cmake:command:: LibraryManager_Add
 
 .. code-block:: cmake
@@ -148,7 +148,8 @@ Default:  no namespacing is used.
 `PRIVATE_HEADER`` property of the library.
 
 .. note:: Files can be specified as absolute paths, or relative to current source directory,
-but not relative to source directory where ``add_library()`` was called.
+    but not relative to source directory where ``add_library()`` was called.
+
 #]=============================================================================]
 function(LibraryManager_Add target)
     cmake_parse_arguments("ARG" "" "NAMESPACE;INCLUDE_DIR" "" ${ARGN})
@@ -169,7 +170,7 @@ function(LibraryManager_Add target)
     set_target_properties(${target} PROPERTIES __LibraryManager_IncludeBaseDir "${ARG_INCLUDE_DIR}")
 endfunction()
 
-#[=============================================================================[.rst
+#[=============================================================================[.rst:
 .. cmake:command:: LibraryManager_Append
 
 .. code-block:: cmake
@@ -193,7 +194,8 @@ Appends sources and headers to an existing library.
 `PRIVATE_HEADER`` property of the library.
 
 .. note:: Files can be specified as absolute paths, or relative to current source directory,
-but not relative to source directory where ``add_library()`` was called.
+    but not relative to source directory where ``add_library()`` was called.
+
 #]=============================================================================]
 function(LibraryManager_Append target)
     set(options "")
@@ -235,7 +237,7 @@ macro(__LibraryManager_toAbs dir file out)
     set(${out} "${f}")
 endmacro()
 
-#[=============================================================================[.rst
+#[=============================================================================[.rst:
 .. cmake:command:: LibraryManager_BLAS
 
 .. code-block:: cmake
@@ -275,7 +277,7 @@ function(LibraryManager_BLAS target)
     target_link_options(${PROJECT_NAME} PUBLIC ${BLAS_LINKER_FLAGS})
     target_link_libraries(${PROJECT_NAME} PUBLIC ${BLAS_LIBRARIES})
 endfunction()
-#[=============================================================================[.rst
+#[=============================================================================[.rst:
 .. cmake:command:: LibraryManager_Install
 
 .. code-block:: cmake
@@ -311,7 +313,7 @@ Default value: ``include``
 ``<extraArgs>`` are forwarded to install. Note that argument forwarding is quite limited in CMake.
 
 .. note:: Public headers are obtained from ``<target>`` property. If they are not absolute paths, they are assumed
-to be relative to source directory where ``add_library()`` was called. See cmake:command:`LibraryManager_Append`.
+    to be relative to source directory where ``add_library()`` was called. See cmake:command:`LibraryManager_Append`.
 
 #]=============================================================================]
 function(LibraryManager_Install target)
@@ -498,7 +500,7 @@ Libs.private:
     set(${out} "${content}" PARENT_SCOPE)
 endfunction()
 
-#[=============================================================================[.rst
+#[=============================================================================[.rst:
 .. cmake:command:: LibraryManager_Export
 
 .. code-block:: cmake
