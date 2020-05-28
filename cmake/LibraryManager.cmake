@@ -16,6 +16,87 @@ Functions
 
 #]=============================================================================]
 
+# NameSpace: Project wide namespace. Libraries and programs are aliased behind this namespace
+# There is at least one library with interface in src/${NameSpace}.
+# Backend for the library is behind src/${NameSpace}/${PROJECT_NAME}
+# Headers will be install to include/${NameSpace}
+# This is a special variable.
+# It is checked for in LibraryManager.
+# If implementation does not need NameSpace, it must be unset
+# There are two namespaces at CMake level
+#   1. Include namespace for installing headers
+#   2. Alias namespace for creating aliases to targets, and exporting
+# Include namespace is deduced from directory name where LibraryManager_Add() is called
+# <NameSpace> is the export namespace in point 2.
+macro(LibraryManager_Project NAMESPACE)
+    set(NameSpace ${NAMESPACE})
+    cmake_parse_arguments("ARG" "MPI_OPTION;FORTRAN_OPTION" "" "LANGUAGES" ${ARGN})
+
+    if (NOT ARG_LANGUAGES)
+        set(ARG_LANGUAGES "CXX;C")
+    endif ()
+    if (ARG_FORTRAN_OPTION)
+        list(FIND ARG_LANGUAGES Fortran _Fortran_pos)
+        if (NOT ${_Fortran_pos} EQUAL -1)
+            option(FORTRAN "Whether to build fortran sources" ON)
+            if (NOT FORTRAN)
+                list(REMOVE_ITEM ARG_LANGUAGES Fortran)
+            endif ()
+        endif ()
+        unset(_Fortran_pos)
+    endif ()
+    message(DEBUG "CMAKE_Fortran_COMPILER ${CMAKE_Fortran_COMPILER}")
+    if (ARG_MPI_OPTION)
+        option(MPI "Whether to build with MPI" ON)
+    endif ()
+
+    include(semver)
+
+    if (PROJECT_DESCRIPTION)
+        if (PROJECT_HOMEPAGE_URL)
+            project(example LANGUAGES ${ARG_LANGUAGES} VERSION ${SEMVER} HOMEPAGE_URL "${PROJECT_HOMEPAGE_URL}")
+        else ()
+            project(example LANGUAGES ${ARG_LANGUAGES} VERSION ${SEMVER})
+        endif ()
+    else ()
+        if (PROJECT_HOMEPAGE_URL)
+            project(example LANGUAGES ${ARG_LANGUAGES} VERSION ${SEMVER} DESCRIPTION "${PROJECT_DESCRIPTION}" HOMEPAGE_URL "${PROJECT_HOMEPAGE_URL}")
+        else ()
+            project(example LANGUAGES ${ARG_LANGUAGES} VERSION ${SEMVER} DESCRIPTION "${PROJECT_DESCRIPTION}")
+        endif ()
+    endif ()
+    message(VERBOSE "PROJECT: ${PROJECT_NAME} ${PROJECT_VERSION}")
+    message(VERBOSE "NameSpace: ${NameSpace}")
+    message(VERBOSE "LANGUAGES: ${LANGUAGES}")
+    message(DEBUG "PROJECT_VERSION_MAJOR: ${PROJECT_VERSION_MAJOR}")
+    message(DEBUG "PROJECT_VERSION_MINOR: ${PROJECT_VERSION_MINOR}")
+
+    if (CMAKE_Fortran_COMPILER)
+        option(INTEGER8 "Whether to build for 64-bit fortran integers" ON)
+        if (INTEGER8)
+            include(CheckFortranCompilerFlag)
+            foreach (f "-fdefault-integer-8" "-i8")
+                CHECK_Fortran_COMPILER_FLAG(${f} _fortran_flags)
+                if (_fortran_flags)
+                    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${f}")
+                endif ()
+                unset(_fortran_flags CACHE)
+            endforeach ()
+        endif ()
+    endif ()
+
+    include(FetchContent)
+    FetchContent_Declare(
+            dependency_manager
+            GIT_REPOSITORY https://gitlab.com/dependencymanager/dependency-manager.git
+            GIT_TAG 0.1.2
+    )
+    FetchContent_MakeAvailable(dependency_manager)
+    if (NOT ${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+        set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" PARENT_SCOPE)
+    endif ()
+
+endmacro()
 #[=============================================================================[.rst
 .. cmake:command:: LibraryManager_Add
 
