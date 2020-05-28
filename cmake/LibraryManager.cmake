@@ -56,7 +56,7 @@ macro(LibraryManager_Project)
         option(MPI "Whether to build with MPI" ON)
     endif ()
 
-    include(semver)
+    _semver()
 
     message(VERBOSE "PROJECT: ${PROJECT_NAME} ${PROJECT_VERSION}")
     message(DEBUG "PROJECT_VERSION_MAJOR: ${PROJECT_VERSION_MAJOR}")
@@ -87,6 +87,30 @@ macro(LibraryManager_Project)
         set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" PARENT_SCOPE)
     endif ()
 
+endmacro()
+macro(_semver)
+    find_package(Git)
+    if (Git_FOUND)
+        execute_process(
+                COMMAND ${GIT_EXECUTABLE} describe --tags --abbrev=0 --always HEAD
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                OUTPUT_VARIABLE PROJECT_VERSION)
+    else ()
+        set(PROJECT_VERSION "0.0.0")
+    endif ()
+    string(REGEX REPLACE "^[^0-9]+" "" PROJECT_VERSION "${PROJECT_VERSION}") # strip leading alphabetic
+    string(REGEX REPLACE "^.*[^0-9.].*\$" "0.0.0" PROJECT_VERSION "${PROJECT_VERSION}") # bail out if not semver
+
+    string(REGEX REPLACE "([0-9]+)\.([0-9]+)\.([0-9]+)" "\\1" PROJECT_VERSION_MAJOR "${PROJECT_VERSION}")
+    string(REGEX REPLACE "([0-9]+)\.([0-9]+)\.([0-9]+)" "\\2" PROJECT_VERSION_MINOR "${PROJECT_VERSION}")
+    string(REGEX REPLACE "([0-9]+)\.([0-9]+)\.([0-9]+)" "\\3" PROJECT_VERSION_PATCH "${PROJECT_VERSION}")
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/project_version.sh"
+            "PROJECT_VERSION=${PROJECT_VERSION}
+PROJECT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+PROJECT_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+PROJECT_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+")
 endmacro()
 #[=============================================================================[.rst
 .. cmake:command:: LibraryManager_Add
