@@ -5,7 +5,7 @@ cache:
 
 build:
   stage: build
-  image: ${CI_REGISTRY}/molpro/library-manager
+  image: ${CI_REGISTRY}/molpro/librarymanager
   script:
     - cat ~/.bashrc
     - . ~/.bashrc
