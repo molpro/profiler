@@ -4,7 +4,7 @@ include(FetchContent)
 FetchContent_Declare(
         dependency_manager
         GIT_REPOSITORY https://gitlab.com/dependencymanager/dependency-manager.git
-        GIT_TAG 0.1.3
+        GIT_TAG 0.1.4
 )
 FetchContent_MakeAvailable(dependency_manager)
 if (NOT ${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
