@@ -30,6 +30,8 @@ Define additional characteristics of the project. Must appear after the CMake ``
 Outside users will use the library as ``<nameSpace>::<target>``.
 
 ``FORTRAN_OPTION`` if specified defines a CMake ``option(FORTRAN ... ON)``, allowing a user to disable or enable Fortran support and achieve a selective build that includes or omits Fortran components. For this to be effective, Fortran source files should be included into libraries only if ``CMAKE_Fortran_Compile`` is set.
+In addition, a CMake ``option(FORTRAN_INTEGER8 ... ON)` is defined, and if the option is on at run time, Fortran compilation
+is carried out with 8-byte integers as the default, and the preprocessor symbol ``FORTRAN_INTEGER8`` is defined.
 If using this option, do not previously declare ``Fortran`` as a language in the ``project()`` command or via ``enable_language()``.
 
 ``MPI_OPTION``  if specified defines a CMake ``option(MPI ... ON)``, allowing a user to disable MPI support and achieve a serial-only build by querying the variable ``MPI``.
@@ -62,8 +64,8 @@ macro(LibraryManager_Project)
     message(DEBUG "PROJECT_VERSION_MINOR: ${PROJECT_VERSION_MINOR}")
 
     if (CMAKE_Fortran_COMPILER)
-        option(INTEGER8 "Whether to build for 64-bit fortran integers" ON)
-        if (INTEGER8)
+        option(FORTRAN_INTEGER8 "Whether to build for 64-bit fortran integers" ON)
+        if (FORTRAN_INTEGER8)
             include(CheckFortranCompilerFlag)
             foreach (f "-fdefault-integer-8" "-i8")
                 CHECK_Fortran_COMPILER_FLAG(${f} _fortran_flags)
@@ -72,6 +74,7 @@ macro(LibraryManager_Project)
                 endif ()
                 unset(_fortran_flags CACHE)
             endforeach ()
+            add_compile_definitions(FORTRAN_INTEGER8)
         endif ()
     endif ()
 
