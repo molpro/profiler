@@ -1,13 +1,7 @@
-#add_configure_file(Profiler Profiler)
-
 LibraryManager_Append(${PROJECT_NAME}
         SOURCES ProfilerSerial.cpp
         PUBLIC_HEADER ProfilerSerial.h
         )
-#LibraryManager_AppendExternal(${PROJECT_NAME}
-#        PUBLIC_HEADER ${CMAKE_CURRENT_BINARY_DIR}/Profiler-config.h
-#        INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/../../
-#        )
 target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 
 if (TARGET MPI::MPI_CXX)
