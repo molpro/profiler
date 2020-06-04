@@ -1,5 +1,5 @@
-#ifndef PROFILER_PROFILERSINGLE_H
-#define PROFILER_PROFILERSINGLE_H
+#ifndef MOLPRO_PROFILERSINGLE_H
+#define MOLPRO_PROFILERSINGLE_H
 
 #include "molpro/Profiler.h"
 
@@ -110,4 +110,4 @@ private:
 
 } // namespace molpro
 
-#endif //PROFILER_PROFILERSINGLE_H
+#endif //MOLPRO_PROFILERSINGLE_H

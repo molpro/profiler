@@ -6,11 +6,11 @@ LibraryManager_Append(${PROJECT_NAME}
         )
 
 if(TARGET MPI::MPI_CXX)
-    set(PROFILER_DEFAULT_COMMUNICATOR MPI_COMM_WORLD)
+    set(MOLPRO_PROFILER_DEFAULT_COMMUNICATOR MPI_COMM_WORLD)
     if (Molpro_SOURCE_DIR)
         target_compile_definitions(${PROJECT_NAME} PRIVATE MOLPRO)
         target_link_libraries(${PROJECT_NAME} PRIVATE ppidd::ppidd molpro::memory)
-        set(PROFILER_DEFAULT_COMMUNICATOR "MPI_Comm_f2c(PPIDD_Worker_comm())")
+        set(MOLPRO_PROFILER_DEFAULT_COMMUNICATOR "MPI_Comm_f2c(PPIDD_Worker_comm())")
         set(EXTRA_MPI_INCLUDE "#include <ppidd.h>")
     endif ()
     configure_file(ProfilerMPIConfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/ProfilerMPIConfig.h)
@@ -20,7 +20,7 @@ if(TARGET MPI::MPI_CXX)
             PUBLIC_HEADER ProfilerMPI.h ${CMAKE_CURRENT_BINARY_DIR}/ProfilerMPIConfig.h
             )
     target_link_libraries(${PROJECT_NAME} PUBLIC MPI::MPI_CXX)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC PROFILER_MPI)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC MOLPRO_PROFILER_MPI)
 endif()
 
 

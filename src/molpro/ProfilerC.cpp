@@ -5,7 +5,7 @@
 extern "C" {
 #include <stdlib.h>
 #include <string.h>
-#ifdef PROFILER_MPI
+#ifdef MOLPRO_PROFILER_MPI
  void* profilerNewMPIA(char* name, int comm) { return molpro::ProfilerSingle::create(std::string(name),molpro::Profiler::wall,INT_MAX,MPI_Comm_f2c(comm)).get(); }
  void* profilerNewMPIB(char* name, int sort, int level, int comm) { 
     molpro::Profiler::sortMethod sortBy;

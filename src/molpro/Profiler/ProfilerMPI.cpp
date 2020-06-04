@@ -7,7 +7,7 @@ namespace profiler{
 
 ProfilerMPI::ProfilerMPI(const std::string &name, sortMethod sortBy, const int level, const MPI_Comm communicator)
         : ProfilerSerial(name, sortBy, level),
-          m_communicator(communicator == MPI_COMM_WORLD ? PROFILER_DEFAULT_COMMUNICATOR : communicator)
+          m_communicator(communicator == MPI_COMM_WORLD ? MOLPRO_PROFILER_DEFAULT_COMMUNICATOR : communicator)
 {
   reset(name);
   active(level);

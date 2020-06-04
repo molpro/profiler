@@ -1,10 +1,10 @@
-#ifndef PROFILER_PROFILERC_H
-#define PROFILER_PROFILERC_H
+#ifndef MOLPRO_PROFILERC_H
+#define MOLPRO_PROFILERC_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-#ifdef PROFILER_MPI
+#ifdef MOLPRO_PROFILER_MPI
  void* profilerNewMPIA(char* name, int comm);
  void* profilerNewMPIB(char* name, int sort, int level, int comm);
 #endif
@@ -22,4 +22,4 @@ void profilerStrSubroutine(void*profiler, char* result, int maxResult, int verbo
 #endif
 
 
-#endif //PROFILER_PROFILERC_H
+#endif //MOLPRO_PROFILERC_H

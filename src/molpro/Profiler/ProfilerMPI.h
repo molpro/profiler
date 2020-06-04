@@ -1,5 +1,5 @@
-#ifndef PROFILER_MPI_H
-#define PROFILER_MPI_H
+#ifndef MOLPRO_PROFILER_PROFILER_MPI_H
+#define MOLPRO_PROFILER_PROFILER_MPI_H
 #include "molpro/Profiler/ProfilerSerial.h"
 #include "mpi.h"
 #undef PROFILER_DEFAULT_KEY
@@ -45,4 +45,4 @@ protected:
 } // namespace molpro
 
 
-#endif // PROFILER_MPI_H
+#endif // MOLPRO_PROFILER_PROFILER_MPI_H

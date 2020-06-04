@@ -59,7 +59,7 @@ MODULE ProfilerF
    INTEGER(kind=c_int), INTENT(in), VALUE ::  sort, level
    TYPE(c_ptr) :: ProfilerNewCSerB
   END FUNCTION ProfilerNewCSerB
-#ifdef PROFILER_MPI
+#ifdef MOLPRO_PROFILER_MPI
  !> \private
   FUNCTION ProfilerNewCMPIA(name, comm) BIND (C, name='profilerNewMPIA')
    USE iso_c_binding
@@ -125,23 +125,23 @@ MODULE ProfilerF
     levelC = -1 
    ENDIF
    IF (PRESENT(sort) .or. PRESENT(level)) THEN
-#ifdef PROFILER_MPI
+#ifdef MOLPRO_PROFILER_MPI
     IF (PRESENT(comm)) THEN
      ProfilerNewF%handle = ProfilerNewCMPIB((TRIM(name)//C_NULL_CHAR),sortC,levelC,INT(comm,kind=c_int))
     ELSE
 #endif
     ProfilerNewF%handle = ProfilerNewCSerB((TRIM(name)//C_NULL_CHAR),sortC,levelC)
-#ifdef PROFILER_MPI
+#ifdef MOLPRO_PROFILER_MPI
     ENDIF
 #endif
    ELSE
-#ifdef PROFILER_MPI
+#ifdef MOLPRO_PROFILER_MPI
     IF (PRESENT(comm)) THEN
      ProfilerNewF%handle = ProfilerNewCMPIA((TRIM(name)//C_NULL_CHAR),INT(comm,kind=c_int))
     ELSE
 #endif
     ProfilerNewF%handle = ProfilerNewCSerA((TRIM(name)//C_NULL_CHAR))
-#ifdef PROFILER_MPI
+#ifdef MOLPRO_PROFILER_MPI
     ENDIF
 #endif
    END IF

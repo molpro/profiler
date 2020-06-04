@@ -1,5 +1,5 @@
-#ifndef PROFILER_H
-#define PROFILER_H
+#ifndef MOLPRO_PROFILER_PROFILER_H
+#define MOLPRO_PROFILER_PROFILER_H
 #ifdef __cplusplus
 #include "molpro/Profiler/Profiler-config.h"
 #include <iostream>
@@ -271,4 +271,4 @@ std::ostream &operator<<(std::ostream &os, molpro::profiler::ProfilerSerial &obj
 
 #endif // __cplusplus
 
-#endif // PROFILER_H
+#endif // MOLPRO_PROFILER_PROFILER_H
