@@ -203,9 +203,6 @@ MODULE ProfilerF
   END SUBROUTINE ProfilerPrintF
  END MODULE ProfilerF
 
-#ifdef MOLPRO
-#define MEMORY
-#endif
 ! outside module to avoid false positives from private module elements
 SUBROUTINE profiler_module_test(printlevel)
 #ifdef MEMORY

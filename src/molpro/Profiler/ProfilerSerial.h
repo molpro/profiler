@@ -1,7 +1,6 @@
 #ifndef MOLPRO_PROFILER_PROFILER_H
 #define MOLPRO_PROFILER_PROFILER_H
 #ifdef __cplusplus
-#include "molpro/Profiler/Profiler-config.h"
 #include <iostream>
 #include <string>
 #include <map>
@@ -9,9 +8,6 @@
 #include <climits>
 #include <stdexcept>
 #include <stdint.h>
-#ifdef MOLPRO
-#include "molpro_config.h"
-#endif
 #define PROFILER_DEFAULT_KEY 0
 
 namespace molpro {

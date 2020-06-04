@@ -1,4 +1,4 @@
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_14)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
 
 LibraryManager_Append(${PROJECT_NAME}
         SOURCES ProfilerSingle.cpp ProfilerC.cpp

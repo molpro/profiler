@@ -1,11 +1,3 @@
-#ifdef MOLPRO
-#include "molpro_config.h"
-#else
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#endif
-
 #include <algorithm>
 #include <sstream>
 #include <iostream>
@@ -19,7 +11,7 @@
 #include <assert.h>
 #include <time.h>
 #include <sys/time.h>
-#if defined(MOLPRO) || defined(PROFILER_MEMORY)
+#ifdef PROFILER_MEMORY
 #include "memory.h"
 #endif
 
