@@ -229,6 +229,49 @@ macro(__LibraryManager_toAbs dir file out)
 endmacro()
 
 #[=============================================================================[.rst:
+.. cmake:command:: LibraryManager_AppendExternal
+
+.. code-block:: cmake
+
+    LibraryManager_AppendExternal(<target>
+                                  PUBLIC_HEADER <pubHead> ...
+                                  INCLUDE_DIR <includeDir>)
+
+Appends headers from outside the source tree to an existing library.
+
+``<target>`` - name of an already existing library
+
+``PUBLIC_HEADER`` is followed by a list of header files, which will be appended to
+``PUBLIC_HEADER`` property of the library.
+They can be absolute paths or relative to ``<includeDir>``.
+
+``INCLUDE_DIR`` is followed by path to the base directory for reconstructing the source tree.
+This is also the include directory of the library as part of build interface.
+During installation path to each header will remap ``<baseDir>`` to include directory
+(see ``INCLUDE_DIR`` in :cmake:command:`LibraryManager_Install`).
+During installation headers will be installed relative to the closest base directory
+which is part of their path.
+
+.. note:: Files can be specified as absolute paths, or relative to current source directory,
+    but not relative to source directory where ``add_library()`` was called.
+
+#]=============================================================================]
+function(LibraryManager_AppendExternal target)
+    cmake_parse_arguments("ARG" "" "INCLUDE_DIR" "PUBLIC_HEADER" ${ARGN})
+    if (NOT DEFINED ARG_INCLUDE_DIR)
+        message(FATAL_ERROR "Adding external headers without include base directory")
+    else ()
+        get_filename_component(ARG_INCLUDE_DIR "${ARG_INCLUDE_DIR}" ABSOLUTE)
+    endif ()
+    foreach (src IN LISTS ARG_PUBLIC_HEADER)
+        get_filename_component(srcAbs "${src}" ABSOLUTE BASE_DIR "${ARG_INCLUDE_DIR}")
+        set_property(TARGET ${target} APPEND PROPERTY PUBLIC_HEADER "${srcAbs}")
+    endforeach ()
+    target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${ARG_INCLUDE_DIR}>)
+    set_property(TARGET ${target} APPEND PROPERTY __LibraryManager_IncludeBaseDir "${ARG_INCLUDE_DIR}")
+endfunction()
+
+#[=============================================================================[.rst:
 .. cmake:command:: LibraryManager_BLAS
 
 .. code-block:: cmake
@@ -336,9 +379,10 @@ function(LibraryManager_Install target)
 
     # Install public headers one at a time
     get_property(srcDir TARGET ${target} PROPERTY SOURCE_DIR)
-    get_property(baseDir TARGET ${target} PROPERTY __LibraryManager_IncludeBaseDir)
+    get_property(baseDirs TARGET ${target} PROPERTY __LibraryManager_IncludeBaseDir)
     foreach (src IN LISTS pubHead)
-        __LibraryManager_toAbs("${srcDIr}" "${src}" src)
+        get_filename_component(src "${src}" ABSOLUTE BASE_DIR "${srcDir}")
+        __LibraryManager_chooseBaseDir("${src}" "${baseDirs}" baseDir)
         file(RELATIVE_PATH path "${baseDir}" "${src}")
         get_filename_component(path "${path}" DIRECTORY)
         install(FILES ${src} DESTINATION ${ARG_INCLUDE_DIR}/${path})
@@ -359,6 +403,31 @@ function(LibraryManager_Install target)
     endif ()
 
     # -config configuration script support TODO
+endfunction()
+
+# Chooses the base directory closest to the source file
+function(__LibraryManager_chooseBaseDir src baseDirs out)
+    set(matched "")
+    foreach (dir IN LISTS baseDirs)
+        if ("${src}" MATCHES "^${dir}")
+            list(APPEND matched "${dir}")
+        endif ()
+    endforeach ()
+    if (matched STREQUAL "")
+        message(FATAL_ERROR
+                "no matching base directories for src=${src}. Make sure all headers were added with LibraryManager.")
+    endif ()
+    set(baseDir)
+    set(n -1)
+    foreach (path IN LISTS matched)
+        string(REPLACE "/" ";" dirs "${path}")
+        list(LENGTH dirs i)
+        if ("${i}" GREATER "${n}")
+            set(baseDir "${path}")
+            set(n "${i}")
+        endif ()
+    endforeach ()
+    set("${out}" "${baseDir}" PARENT_SCOPE)
 endfunction()
 
 # Updates properties recursively
