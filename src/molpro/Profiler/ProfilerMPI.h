@@ -1,7 +1,7 @@
 #ifndef MOLPRO_PROFILER_PROFILER_MPI_H
 #define MOLPRO_PROFILER_PROFILER_MPI_H
 #include "molpro/Profiler/ProfilerSerial.h"
-#include "mpi.h"
+#include <mpi.h>
 #undef PROFILER_DEFAULT_KEY
 #define PROFILER_DEFAULT_KEY MPI_COMM_WORLD
 

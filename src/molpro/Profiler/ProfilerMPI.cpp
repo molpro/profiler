@@ -1,6 +1,6 @@
 #include "ProfilerMPI.h"
-#include "molpro/Profiler/ProfilerMPIConfig.h"
 #include <cmath>
+MPI_Fint PPIDD_Worker_comm();
 
 namespace molpro{
 namespace profiler{

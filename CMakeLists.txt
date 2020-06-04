@@ -10,9 +10,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(LibraryManager)
 
 LibraryManager_Project(FORTRAN_OPTION MPI_OPTION)
+
 if (MPI)
     message("Building parallel Profiler")
-    find_package(MPI REQUIRED COMPONENTS MPICXX)
+    find_package(MPI COMPONENTS CXX)
 endif ()
 
 add_subdirectory(src)
