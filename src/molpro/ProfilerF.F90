@@ -205,7 +205,7 @@ MODULE ProfilerF
 
 ! outside module to avoid false positives from private module elements
 SUBROUTINE profiler_module_test(printlevel)
-#ifdef MEMORY
+#ifdef PROFILER_MEMORY
  USE memory
 #endif
  USE ProfilerF
@@ -214,7 +214,7 @@ SUBROUTINE profiler_module_test(printlevel)
  TYPE(Profiler) :: p
  INTEGER, PARAMETER :: repeat=2000000
  DOUBLE PRECISION :: a
-#ifdef MEMORY
+#ifdef PROFILER_MEMORY
  DOUBLE PRECISION, POINTER, DIMENSION(:) :: x
 #endif
  INTEGER :: i,kk
@@ -233,21 +233,21 @@ SUBROUTINE profiler_module_test(printlevel)
  call p%stop('subtask')
  if (printlevel > 0) CALL p%print(6)
  if (printlevel > 0) CALL p%print(6,cumulative=.FALSE.)
-#ifdef MEMORY
+#ifdef PROFILER_MEMORY
  IF (printlevel > 0) CALL time_memory(1000000*printlevel)
  if (printlevel > 9) PRINT *, 'done',memory_used('STACK',.TRUE.),memory_used('STACK',.FALSE.)
 #endif
  CONTAINS
  SUBROUTINE worker
  CALL p%start('sqrt')
-#ifdef MEMORY
+#ifdef PROFILER_MEMORY
  x => memory_allocate(123456)
 #endif
  a=1d0
  DO i=1,repeat
   a=a*SQRT(a+i)/SQRT(a+i+1)
  END DO
-#ifdef MEMORY
+#ifdef PROFILER_MEMORY
  call memory_release(x)
 #endif
  CALL p%stop('sqrt',2*repeat)
@@ -261,7 +261,7 @@ SUBROUTINE profiler_module_test(printlevel)
  IF (printlevel > 99) PRINT *,a ! to avoid compiler optimisation
 
  CALL p%start('exp')
-#ifdef MEMORY
+#ifdef PROFILER_MEMORY
  x => memory_allocate(56789)
  call memory_release(x)
 #endif
@@ -272,7 +272,7 @@ SUBROUTINE profiler_module_test(printlevel)
  IF (printlevel > 99) PRINT *,a ! to avoid compiler optimisation
  CALL p%stop('exp',2*repeat)
  END SUBROUTINE worker
-#ifdef MEMORY
+#ifdef PROFILER_MEMORY
  SUBROUTINE time_memory(nrep)
   USE profilerF
   USE memory

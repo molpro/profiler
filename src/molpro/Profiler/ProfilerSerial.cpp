@@ -51,7 +51,7 @@ void ProfilerSerial::start(const std::string &name) {
     now.parent = this;
     if (!resourcesStack.empty())
         totalise(now, 0, 0);
-#ifdef MEMORY_MEMORY_H
+#ifdef PROFILER_MEMORY
     // memory accounting:
     // the statistic for a segment is the maximum used, ie memory_used(1) minus the actual start memory, ie memory_used(0)
     // memory_reset_maximum_stack()  is used to reset the memory manager's notion of high water
@@ -79,7 +79,7 @@ void ProfilerSerial::totalise(const struct resources now, const long operations,
     diff.name = resourcesStack.back().name;
     diff.operations = operations;
     diff.parent = this;
-#ifdef MEMORY_MEMORY_H
+#ifdef PROFILER_MEMORY
     diff.stack=memory_used(1)-memoryStack0.back();
 #endif
     std::string key;
@@ -116,7 +116,7 @@ void ProfilerSerial::stop(const std::string &name, long operations) {
         diff.name.erase(diff.name.end() - 1, diff.name.end());
     }
 
-#ifdef MEMORY_MEMORY_H
+#ifdef PROFILER_MEMORY
     memoryStack0.pop_back();
     memoryStack1.pop_back();
     if (! memoryStack1.empty()) memory_reset_maximum_stack(memoryStack1.back());
@@ -271,7 +271,7 @@ struct ProfilerSerial::resources ProfilerSerial::getResources() {
         init = 0;
         result.wall -= wallbase;
     }
-#ifdef MEMORY_MEMORY_H
+#ifdef PROFILER_MEMORY
     result.stack=(size_t) memory_used(1);
 #else
     result.stack = 0;

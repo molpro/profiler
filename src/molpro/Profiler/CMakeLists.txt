@@ -22,6 +22,7 @@ if (TARGET MPI::MPI_CXX)
     endif ()
     if (TARGET molpro::memory)
         target_link_libraries(${PROJECT_NAME} PRIVATE molpro::memory)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE "PROFILER_MEMORY")
     endif ()
 
     LibraryManager_Append(${PROJECT_NAME}
