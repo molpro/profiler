@@ -36,4 +36,4 @@ include(DependencyManagerDocs)
 DependencyManagerDocs_Add(Profiler
         FILES README.md
         DOXYFILE Doxyfile
-        DOC_URL https://knowles-group.gitlab.io/profiler/update_doxygen)
+        DOC_URL https://molpro.gitlab.io/profiler/${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
