@@ -1,19 +1,18 @@
 #include <algorithm>
-#include <sstream>
 #include <iostream>
 #include <deque>
 #include <queue>
 #include <string>
-#include <string.h>
+#include <cstring>
 #include <cmath>
 #include <iomanip>
-#include "ProfilerSerial.h"
-#include <assert.h>
-#include <time.h>
+#include <cassert>
 #include <sys/time.h>
 #ifdef PROFILER_MEMORY
-#include "memory.h"
+#include <molpro/memory.h>
 #endif
+
+#include "ProfilerSerial.h"
 
 namespace molpro {
 namespace profiler{

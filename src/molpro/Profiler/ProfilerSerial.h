@@ -7,7 +7,7 @@
 #include <vector>
 #include <climits>
 #include <stdexcept>
-#include <stdint.h>
+#include <cstdint>
 #define PROFILER_DEFAULT_KEY 0
 
 namespace molpro {

@@ -3,8 +3,8 @@
 
 // C binding
 extern "C" {
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 #ifdef MOLPRO_PROFILER_MPI
  void* profilerNewMPIA(char* name, int comm) { return molpro::ProfilerSingle::create(std::string(name),molpro::Profiler::wall,INT_MAX,MPI_Comm_f2c(comm)).get(); }
  void* profilerNewMPIB(char* name, int sort, int level, int comm) { 
