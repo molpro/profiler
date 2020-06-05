@@ -8,6 +8,7 @@
 #include <queue>
 #include <string>
 #include <sys/time.h>
+#include <sstream>
 #ifdef PROFILER_MEMORY
 #include <molpro/memory.h>
 #endif
