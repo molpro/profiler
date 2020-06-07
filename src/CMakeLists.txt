@@ -1,7 +1,6 @@
-set(NameSpace "molpro")
-LibraryManager_Add(${PROJECT_NAME} NAMESPACE ${NameSpace})
+LibraryManager_Add(${PROJECT_NAME} NAMESPACE molpro)
 
-add_subdirectory(${NameSpace})
+add_subdirectory(molpro)
 
 LibraryManager_Install(${PROJECT_NAME} PKG_CONFIG)
-LibraryManager_Export(${PROJECT_NAME} NAMESPACE ${NameSpace})
+LibraryManager_Export(${PROJECT_NAME})
