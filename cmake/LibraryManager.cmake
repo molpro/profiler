@@ -595,6 +595,9 @@ Meaning of options is the same as in ``install(EXPORT)``,
 but in most cases correct values are set based on ``<projectName>``.
 If ``NAMESPACE`` is not specified than the same one specified in :cmake:command:`LibraryManager_Add`
 will be used.
+
+.. note:: ``NAMESPACE`` will be appended with ``::`` and in most situations they should
+          not be specified explicitly
 #]=============================================================================]
 function(LibraryManager_Export project)
     set(oneValueArgs EXPORT FILE NAMESPACE DESTINATION)
@@ -618,7 +621,11 @@ function(LibraryManager_Export project)
     endif ()
     set(ARG_NAMESPACE "")
     if (NOT nameSpace STREQUAL "")
-        set(ARG_NAMESPACE "NAMESPACE;${nameSpace}")
+        if (NOT nameSpace MATCHES ".*::$")
+            set(ARG_NAMESPACE "NAMESPACE;${nameSpace}::")
+        else ()
+            set(ARG_NAMESPACE "NAMESPACE;${nameSpace}::")
+        endif ()
     endif ()
     if (NOT DEFINED ARG_DESTINATION)
         set(ARG_DESTINATION lib/cmake/${nameSpace}/${project})
