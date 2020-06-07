@@ -148,6 +148,7 @@ function(LibraryManager_Add target)
     add_library(${target})
     if (DEFINED ARG_NAMESPACE)
         add_library(${ARG_NAMESPACE}::${target} ALIAS ${target})
+        set_target_properties(${target} PROPERTIES __LibraryManager_NameSpace "${ARG_NAMESPACE}")
     endif ()
 
     if (DEFINED ARG_UNPARSED_ARGUMENTS)
@@ -328,7 +329,8 @@ endfunction()
 Installs <target> with public headers mirroing source tree structure.
 Also, creates an alias library ``molpro::<target>``.
 
-``EXPORT`` add library to specified export set.
+``EXPORT`` add library to specified export set. A Target in an export set should have the same namespace as all other
+targets in the set, or no namespace.
 
 ``RUNTIME`` argument passed to install as ``RUNTIME DESTINATION <libDir>``
 
@@ -357,6 +359,23 @@ function(LibraryManager_Install target)
         set(ARG_EXPORT ${target}-export)
     endif ()
     set(EXPORT "EXPORT;${ARG_EXPORT}")
+    get_property(nameSpace TARGET ${target} PROPERTY __LibraryManager_NameSpace)
+    if (NOT DEFINED nameSpace)
+        set(nameSpace "")
+    endif ()
+    set(prop __LibraryManager_${ARG_EXPORT}_NameSpace)
+    get_property(defined GLOBAL PROPERTY ${prop} DEFINED)
+    if (NOT defined AND NOT nameSpace STREQUAL "")
+        define_property(GLOBAL PROPERTY ${prop}
+                BRIEF_DOCS "Namespace for export set ${ARG_EXPORT}"
+                FULL_DOCS "Namespace for export set ${ARG_EXPORT}")
+        set_property(GLOBAL PROPERTY ${prop} "${nameSpace}")
+    else ()
+        get_property(exportNameSpace GLOBAL PROPERTY ${prop})
+        if (NOT exportNameSpace STREQUAL nameSpace AND NOT nameSpace STREQUAL "")
+            message(FATAL_ERROR "Attempting to install a target into an export-set with incompatible NAMESPACE")
+        endif ()
+    endif ()
     foreach (v RUNTIME LIBRARY ARCHIVE)
         set(${v} "")
         if (ARG_${v})
@@ -574,6 +593,8 @@ endfunction()
 Installs export set, creating ``<projectName>Config.cmake`` file.
 Meaning of options is the same as in ``install(EXPORT)``,
 but in most cases correct values are set based on ``<projectName>``.
+If ``NAMESPACE`` is not specified than the same one specified in :cmake:command:`LibraryManager_Add`
+will be used.
 #]=============================================================================]
 function(LibraryManager_Export project)
     set(oneValueArgs EXPORT FILE NAMESPACE DESTINATION)
@@ -586,16 +607,27 @@ function(LibraryManager_Export project)
         set(ARG_FILE ${project}Config.cmake)
     endif ()
     if (NOT DEFINED ARG_NAMESPACE)
+        set(prop __LibraryManager_${ARG_EXPORT}_NameSpace)
+        get_property(defined GLOBAL PROPERTY ${prop} DEFINED)
         set(nameSpace "")
-        set(ARG_NAMESPACE "")
+        if (defined)
+            get_property(nameSpace GLOBAL PROPERTY ${prop})
+        endif ()
     else ()
         set(nameSpace "${ARG_NAMESPACE}")
-        set(ARG_NAMESPACE "NAMESPACE;${ARG_NAMESPACE}")
+    endif ()
+    set(ARG_NAMESPACE "")
+    if (NOT nameSpace STREQUAL "")
+        set(ARG_NAMESPACE "NAMESPACE;${nameSpace}")
     endif ()
     if (NOT DEFINED ARG_DESTINATION)
         set(ARG_DESTINATION lib/cmake/${nameSpace}/${project})
     endif ()
 
+    #    message("ARG_EXPORT=${ARG_EXPORT}")
+    #    message("ARG_FILE=${ARG_FILE}")
+    #    message("ARG_DESTINATION=${ARG_DESTINATION}")
+    #    message("ARG_NAMESPACE=${ARG_NAMESPACE}")
     install(
             EXPORT ${ARG_EXPORT}
             FILE ${ARG_FILE}
