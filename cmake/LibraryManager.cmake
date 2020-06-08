@@ -13,6 +13,16 @@ Utility functions that make it easier to configure projects as part of software 
 Functions
 ^^^^^^^^^
 
+List of Functions:
+
+- :cmake:command:`LibraryManager_Project`
+- :cmake:command:`LibraryManager_Add`
+- :cmake:command:`LibraryManager_Append`
+- :cmake:command:`LibraryManager_AppendExternal`
+- :cmake:command:`LibraryManager_BLAS`
+- :cmake:command:`LibraryManager_Install`
+- :cmake:command:`LibraryManager_Export`
+
 #]=============================================================================]
 #[=============================================================================[.rst:
 .. cmake:command:: LibraryManager_Project
@@ -289,35 +299,61 @@ Finds a BLAS library and add it as a requirement for a build target.
 
 ``<target>`` - name of an already existing library
 
-<vendor1> <vendor2>... are desired BLAS library vendors, as require for variable ``BLA_VENDOR`` used by CMake ``FindBLAS()``.
-Each one is tried in turn until a match is found. If none is matched, then ``FindBLAS()`` is called without vendor specification, to get any available BLAS library.
+``<vendor1>`` ``<vendor2>...`` are desired BLAS library vendors, as required for variable
+``BLA_VENDOR`` used by CMake ``FindBLAS()``.
+If ``BLA_VENDOR`` is already defined than it is prepended to the list of vendors.
+Each one is tried in turn until a match is found.
+If none is matched, then ``FindBLAS()`` is called without vendor specification, to get any available BLAS library.
+
+Interface library ``BLAS::BLAS`` is defined in the process.
+It saves ``BLAS_LINKER_FLAGS`` and ``BLAS_LIBRARIES`` to corresponding target interface properties.
+If the library is MKL, than variable ``MKL`` is set with value ``ON`` and ``MKL_TYPE`` is created with value
+``ilp64`` or ``lp64``, depending on the library type.
 #]=============================================================================]
 function(LibraryManager_BLAS target)
-    foreach (BLA_VENDOR ${ARGN})
+    __LibraryManager_findBlas(${ARGN})
+    target_link_libraries(${target} PRIVATE BLAS::BLAS)
+endfunction()
+
+macro(__LibraryManager_findBlas)
+    if (TARGET BLAS::BLAS)
+        return()
+    endif ()
+    set(vendors "${BLA_VENDOR};${ARGN}")
+    set(MKL OFF PARENT_SCOPE)
+    unset(BLAS_FOUND)
+    foreach (BLA_VENDOR ${vendors} "")
         message(DEBUG "try BLA_VENDOR ${BLA_VENDOR}")
-        if (NOT BLAS_FOUND)
+        if (BLA_VENDOR STREQUAL "")
+            find_package(BLAS REQUIRED)
+        else ()
             find_package(BLAS)
-            if (BLAS_FOUND)
-                message(STATUS "Building with BLAS(${BLA_VENDOR})")
+        endif ()
+        if (BLAS_FOUND)
+            message(STATUS "Building with BLAS(${BLA_VENDOR})")
+            add_library(BLAS::BLAS INTERFACE IMPORTED)
+            target_link_libraries(BLAS::BLAS INTERFACE "${BLAS_LIBRARIES}")
+            target_link_options(BLAS::BLAS INTERFACE "${BLAS_LINKER_FLAGS}")
+            if ("${BLA_VENDOR}" MATCHES "^Intel10")
+                set(MKL ON PARENT_SCOPE)
                 if (APPLE)
-                    target_link_options(${target} PUBLIC "-Wl,-rpath,$ENV{MKLROOT}/lib")
+                    target_link_options(BLAS::BLAS INTERFACE "-Wl,-rpath,$ENV{MKLROOT}/lib")
                 endif ()
-                target_compile_definitions(${target} PUBLIC USE_MKL)
                 # Note: lack of include directories is an oversight of CMake and should be fixed soon.
                 # See https://gitlab.kitware.com/cmake/cmake/issues/20268
-                target_include_directories(${target} PUBLIC $ENV{MKLROOT}/include)
+                target_include_directories(BLAS::BLAS INTERFACE $ENV{MKLROOT}/include)
+                target_compile_definitions(${target} PUBLIC USE_MKL)
+                if ("${BLAS_LIBRARIES}" MATCHES "_ilp64[.]")
+                    set(MKL_TYPE "ilp64" PARENT_SCOPE)
+                endif ()
+                if ("${BLAS_LIBRARIES}" MATCHES "_lp64[.]")
+                    set(MKL_TYPE "lp64" PARENT_SCOPE)
+                endif ()
             endif ()
+            break()
         endif ()
     endforeach ()
-    if (NOT BLAS_FOUND)
-        unset(BLA_VENDOR)
-        find_package(BLAS REQUIRED)
-        message(STATUS "Building with BLAS")
-    endif ()
-    message(DEBUG "BLAS_LIBRARIES ${BLAS_LIBRARIES}")
-    target_link_options(${target} PUBLIC ${BLAS_LINKER_FLAGS})
-    target_link_libraries(${target} PUBLIC ${BLAS_LIBRARIES})
-endfunction()
+endmacro()
 #[=============================================================================[.rst:
 .. cmake:command:: LibraryManager_Install
 
