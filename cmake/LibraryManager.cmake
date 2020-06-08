@@ -20,6 +20,7 @@ List of Functions:
 - :cmake:command:`LibraryManager_Append`
 - :cmake:command:`LibraryManager_AppendExternal`
 - :cmake:command:`LibraryManager_BLAS`
+- :cmake:command:`LibraryManager_FindBLAS`
 - :cmake:command:`LibraryManager_Install`
 - :cmake:command:`LibraryManager_Export`
 
@@ -293,11 +294,28 @@ endfunction()
 
 .. code-block:: cmake
 
-    LibraryManager_BLAS(<target> <vendor1> <vendor2>...)
+    LibraryManager_BLAS(<target> [<vendor1> <vendor2> ...])
 
-Finds a BLAS library and add it as a requirement for a build target.
+Finds a BLAS library and links it as a PRIVATE requirement for a build target.
 
 ``<target>`` - name of an already existing library
+
+``[<vendor1> <vendor2> ...]`` are passed to :cmake:command:`LibraryManager_FindBLAS`
+
+#]=============================================================================]
+function(LibraryManager_BLAS target)
+    __LibraryManager_findBlas(${ARGN})
+    target_link_libraries(${target} PRIVATE BLAS::BLAS)
+endfunction()
+
+#[=============================================================================[.rst:
+.. cmake:command:: LibraryManager_FindBLAS
+
+.. code-block:: cmake
+
+    LibraryManager_BLAS(<vendor1> <vendor2>...)
+
+Finds a BLAS library and creates interface library ``BLAS::BLAS``.
 
 ``<vendor1>`` ``<vendor2>...`` are desired BLAS library vendors, as required for variable
 ``BLA_VENDOR`` used by CMake ``FindBLAS()``.
@@ -305,22 +323,17 @@ If ``BLA_VENDOR`` is already defined than it is prepended to the list of vendors
 Each one is tried in turn until a match is found.
 If none is matched, then ``FindBLAS()`` is called without vendor specification, to get any available BLAS library.
 
-Interface library ``BLAS::BLAS`` is defined in the process.
+Interface library ``BLAS::BLAS`` is defined as a result.
 It saves ``BLAS_LINKER_FLAGS`` and ``BLAS_LIBRARIES`` to corresponding target interface properties.
 If the library is MKL, than variable ``MKL`` is set with value ``ON`` and ``MKL_TYPE`` is created with value
 ``ilp64`` or ``lp64``, depending on the library type.
 #]=============================================================================]
-function(LibraryManager_BLAS target)
-    __LibraryManager_findBlas(${ARGN})
-    target_link_libraries(${target} PRIVATE BLAS::BLAS)
-endfunction()
-
-macro(__LibraryManager_findBlas)
+macro(LibraryManager_FindBLAS)
     if (TARGET BLAS::BLAS)
         return()
     endif ()
     set(vendors "${BLA_VENDOR};${ARGN}")
-    set(MKL OFF PARENT_SCOPE)
+    set(MKL OFF)
     unset(BLAS_FOUND)
     foreach (BLA_VENDOR ${vendors} "")
         message(DEBUG "try BLA_VENDOR ${BLA_VENDOR}")
@@ -335,7 +348,7 @@ macro(__LibraryManager_findBlas)
             target_link_libraries(BLAS::BLAS INTERFACE "${BLAS_LIBRARIES}")
             target_link_options(BLAS::BLAS INTERFACE "${BLAS_LINKER_FLAGS}")
             if ("${BLA_VENDOR}" MATCHES "^Intel10")
-                set(MKL ON PARENT_SCOPE)
+                set(MKL ON)
                 if (APPLE)
                     target_link_options(BLAS::BLAS INTERFACE "-Wl,-rpath,$ENV{MKLROOT}/lib")
                 endif ()
@@ -344,16 +357,17 @@ macro(__LibraryManager_findBlas)
                 target_include_directories(BLAS::BLAS INTERFACE $ENV{MKLROOT}/include)
                 target_compile_definitions(${target} PUBLIC USE_MKL)
                 if ("${BLAS_LIBRARIES}" MATCHES "_ilp64[.]")
-                    set(MKL_TYPE "ilp64" PARENT_SCOPE)
+                    set(MKL_TYPE "ilp64")
                 endif ()
                 if ("${BLAS_LIBRARIES}" MATCHES "_lp64[.]")
-                    set(MKL_TYPE "lp64" PARENT_SCOPE)
+                    set(MKL_TYPE "lp64")
                 endif ()
             endif ()
             break()
         endif ()
     endforeach ()
 endmacro()
+
 #[=============================================================================[.rst:
 .. cmake:command:: LibraryManager_Install
 
