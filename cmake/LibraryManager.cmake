@@ -21,6 +21,8 @@ List of Functions:
 - :cmake:command:`LibraryManager_AppendExternal`
 - :cmake:command:`LibraryManager_BLAS`
 - :cmake:command:`LibraryManager_FindBLAS`
+- :cmake:command:`LibraryManager_LAPACK`
+- :cmake:command:`LibraryManager_FindLAPACK`
 - :cmake:command:`LibraryManager_Install`
 - :cmake:command:`LibraryManager_Export`
 
@@ -304,7 +306,7 @@ Finds a BLAS library and links it as a PRIVATE requirement for a build target.
 
 #]=============================================================================]
 function(LibraryManager_BLAS target)
-    __LibraryManager_findBlas(${ARGN})
+    LibraryManager_FindBLAS(${ARGN})
     target_link_libraries(${target} PRIVATE BLAS::BLAS)
 endfunction()
 
@@ -313,7 +315,7 @@ endfunction()
 
 .. code-block:: cmake
 
-    LibraryManager_BLAS(<vendor1> <vendor2>...)
+    LibraryManager_FindBLAS(<vendor1> <vendor2>...)
 
 Finds a BLAS library and creates interface library ``BLAS::BLAS``.
 
@@ -327,9 +329,59 @@ Interface library ``BLAS::BLAS`` is defined as a result.
 It saves ``BLAS_LINKER_FLAGS`` and ``BLAS_LIBRARIES`` to corresponding target interface properties.
 If the library is MKL, than variable ``MKL`` is set with value ``ON`` and ``MKL_TYPE`` is created with value
 ``ilp64`` or ``lp64``, depending on the library type.
+Also, compile definition ``USE_MKL`` is defined.
 #]=============================================================================]
 macro(LibraryManager_FindBLAS)
-    if (TARGET BLAS::BLAS)
+    __LibraryManager_findBLASorLAPACK(BLAS ${ARGN})
+endmacro()
+
+#[=============================================================================[.rst:
+.. cmake:command:: LibraryManager_LAPACK
+
+.. code-block:: cmake
+
+    LibraryManager_LAPACK(<target> [<vendor1> <vendor2> ...])
+
+Finds a LAPACK library and links it as a PRIVATE requirement for a build target.
+
+``<target>`` - name of an already existing library
+
+``[<vendor1> <vendor2> ...]`` are passed to :cmake:command:`LibraryManager_FindLAPACK`
+
+#]=============================================================================]
+function(LibraryManager_LAPACK target)
+    LibraryManager_FindLAPACK(${ARGN})
+    target_link_libraries(${target} PRIVATE LAPACK::LAPACK)
+endfunction()
+
+#[=============================================================================[.rst:
+.. cmake:command:: LibraryManager_FindLAPACK
+
+.. code-block:: cmake
+
+    LibraryManager_FindLapack(<vendor1> <vendor2>...)
+
+Finds a LAPACK library and creates interface library ``LAPACK::LAPACK``.
+
+``<vendor1>`` ``<vendor2>...`` are same as in :cmake:command:`LibraryManager_FindBLAS`
+
+Interface library ``LAPACK::LAPACK`` is defined as a result.
+It saves ``LAPACK_LINKER_FLAGS`` and ``LAPACK_LIBRARIES`` to corresponding target interface properties.
+If the library is MKL, than variable ``MKL`` is set with value ``ON`` and ``MKL_TYPE`` is created with value
+``ilp64`` or ``lp64``, depending on the library type.
+Also, compile definition ``USE_MKL`` is defined.
+#]=============================================================================]
+macro(LibraryManager_FindLAPACK)
+    __LibraryManager_findBLASorLAPACK(LAPACK ${ARGN})
+endmacro()
+
+# general routine to find BLAS or LAPACK libraries
+# name - LAPACK or BLAS
+macro(__LibraryManager_findBLASorLAPACK name)
+    if (NOT (name STREQUAL "LAPACK" OR name STREQUAL "BLAS"))
+        message(FATAL_ERROR "name must be one of LAPACK or BLAS")
+    endif ()
+    if (TARGET ${name}::${name})
         return()
     endif ()
     set(vendors "${BLA_VENDOR};${ARGN}")
@@ -338,28 +390,28 @@ macro(LibraryManager_FindBLAS)
     foreach (BLA_VENDOR ${vendors} "")
         message(DEBUG "try BLA_VENDOR ${BLA_VENDOR}")
         if (BLA_VENDOR STREQUAL "")
-            find_package(BLAS REQUIRED)
+            find_package(${name} REQUIRED)
         else ()
-            find_package(BLAS)
+            find_package(${name})
         endif ()
         if (BLAS_FOUND)
-            message(STATUS "Building with BLAS(${BLA_VENDOR})")
-            add_library(BLAS::BLAS INTERFACE IMPORTED GLOBAL)
-            target_link_libraries(BLAS::BLAS INTERFACE "${BLAS_LIBRARIES}")
-            target_link_options(BLAS::BLAS INTERFACE "${BLAS_LINKER_FLAGS}")
+            message(STATUS "Found ${name} with BLA_VENDOR=${BLA_VENDOR}")
+            add_library(${name}::${name} INTERFACE IMPORTED GLOBAL)
+            target_link_libraries(${name}::${name} INTERFACE "${${name}_LIBRARIES}")
+            target_link_options(${name}::${name} INTERFACE "${${name}_LINKER_FLAGS}")
             if ("${BLA_VENDOR}" MATCHES "^Intel10")
                 set(MKL ON)
                 if (APPLE)
-                    target_link_options(BLAS::BLAS INTERFACE "-Wl,-rpath,$ENV{MKLROOT}/lib")
+                    target_link_options(${name}::${name} INTERFACE "-Wl,-rpath,$ENV{MKLROOT}/lib")
                 endif ()
                 # Note: lack of include directories is an oversight of CMake and should be fixed soon.
                 # See https://gitlab.kitware.com/cmake/cmake/issues/20268
-                target_include_directories(BLAS::BLAS INTERFACE $ENV{MKLROOT}/include)
-                target_compile_definitions(${target} PUBLIC USE_MKL)
-                if ("${BLAS_LIBRARIES}" MATCHES "_ilp64[.]")
+                target_include_directories(${name}::${name} INTERFACE $ENV{MKLROOT}/include)
+                target_compile_definitions(${name}::${name} PUBLIC USE_MKL)
+                if ("${${name}_LIBRARIES}" MATCHES "_ilp64[.]")
                     set(MKL_TYPE "ilp64")
                 endif ()
-                if ("${BLAS_LIBRARIES}" MATCHES "_lp64[.]")
+                if ("${${name}_LIBRARIES}" MATCHES "_lp64[.]")
                     set(MKL_TYPE "lp64")
                 endif ()
             endif ()
