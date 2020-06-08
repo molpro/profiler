@@ -296,18 +296,32 @@ endfunction()
 
 .. code-block:: cmake
 
-    LibraryManager_BLAS(<target> [<vendor1> <vendor2> ...])
+    LibraryManager_BLAS(<target>
+                        <PRIVATE|PUBLIC|INTERFACE>
+                       [<vendor1> <vendor2> ...])
 
 Finds a BLAS library and links it as a PRIVATE requirement for a build target.
 
 ``<target>`` - name of an already existing library
 
+The ``PUBLIC``, ``PRIVATE`` or ``INTERFACE`` options are passed on to ``target_link_libraries()``.
+
 ``[<vendor1> <vendor2> ...]`` are passed to :cmake:command:`LibraryManager_FindBLAS`
 
 #]=============================================================================]
 function(LibraryManager_BLAS target)
+    cmake_parse_arguments("ARG" "PRIVATE;INTERFACE;PUBLIC" "" "" ${ARGN})
+    set(linkType "PRIVATE")
+    if (ARG_PRIVATE)
+        set(linkType "PRIVATE")
+    elseif (ARG_PUBLIC)
+        set(linkType "PUBLIC")
+    elseif (ARG_INTERFACE)
+        set(linkType "INTERFACE")
+    endif ()
+
     LibraryManager_FindBLAS(${ARGN})
-    target_link_libraries(${target} PRIVATE BLAS::BLAS)
+    target_link_libraries(${target} ${linkType} BLAS::BLAS)
 endfunction()
 
 #[=============================================================================[.rst:
@@ -340,18 +354,32 @@ endmacro()
 
 .. code-block:: cmake
 
-    LibraryManager_LAPACK(<target> [<vendor1> <vendor2> ...])
+    LibraryManager_LAPACK(<target>
+                          <PRIVATE|PUBLIC|INTERFACE>
+                         [<vendor1> <vendor2> ...])
 
 Finds a LAPACK library and links it as a PRIVATE requirement for a build target.
 
 ``<target>`` - name of an already existing library
 
+The ``PUBLIC``, ``PRIVATE`` or ``INTERFACE`` options are passed on to ``target_link_libraries()``.
+
 ``[<vendor1> <vendor2> ...]`` are passed to :cmake:command:`LibraryManager_FindLAPACK`
 
 #]=============================================================================]
 function(LibraryManager_LAPACK target)
+    cmake_parse_arguments("ARG" "PRIVATE;INTERFACE;PUBLIC" "" "" ${ARGN})
+    set(linkType "PRIVATE")
+    if (ARG_PRIVATE)
+        set(linkType "PRIVATE")
+    elseif (ARG_PUBLIC)
+        set(linkType "PUBLIC")
+    elseif (ARG_INTERFACE)
+        set(linkType "INTERFACE")
+    endif ()
+
     LibraryManager_FindLAPACK(${ARGN})
-    target_link_libraries(${target} PRIVATE LAPACK::LAPACK)
+    target_link_libraries(${target} ${linkType} LAPACK::LAPACK)
 endfunction()
 
 #[=============================================================================[.rst:
@@ -378,8 +406,8 @@ endmacro()
 # general routine to find BLAS or LAPACK libraries
 # name - LAPACK or BLAS
 macro(__LibraryManager_findBLASorLAPACK name)
-    if (NOT (name STREQUAL "LAPACK" OR name STREQUAL "BLAS"))
-        message(FATAL_ERROR "name must be one of LAPACK or BLAS")
+    if (NOT ("${name}" STREQUAL "LAPACK" OR "${name}" STREQUAL "BLAS"))
+        message(FATAL_ERROR "name(${name}) must be one of LAPACK or BLAS")
     endif ()
     if (TARGET ${name}::${name})
         return()
@@ -407,7 +435,7 @@ macro(__LibraryManager_findBLASorLAPACK name)
                 # Note: lack of include directories is an oversight of CMake and should be fixed soon.
                 # See https://gitlab.kitware.com/cmake/cmake/issues/20268
                 target_include_directories(${name}::${name} INTERFACE $ENV{MKLROOT}/include)
-                target_compile_definitions(${name}::${name} PUBLIC USE_MKL)
+                target_compile_definitions(${name}::${name} INTERFACE USE_MKL)
                 if ("${${name}_LIBRARIES}" MATCHES "_ilp64[.]")
                     set(MKL_TYPE "ilp64")
                 endif ()
