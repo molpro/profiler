@@ -1,4 +1,4 @@
-Profiler Documentation                         {#mainpage}
+Profiler Documentation
 ======================
 
 Framework for timing code sections in serial and parallel using Fortran90, C or C++.
