@@ -79,7 +79,7 @@ public:
    * @param communicator mpi communicator
    */
   static void destroy(const std::string &name, Profiler::key_t communicator = PROFILER_DEFAULT_KEY) {
-    auto key = key_t{name, communicator};
+    auto key = _key(name, communicator);
     m_profilers.erase(key);
   }
 
