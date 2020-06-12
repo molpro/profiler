@@ -323,6 +323,7 @@ function(LibraryManager_BLAS target)
     LibraryManager_FindBLAS(${ARGN})
     set(MKL "${MKL}" PARENT_SCOPE)
     set(MKL_TYPE "${MKL_TYPE}" PARENT_SCOPE)
+    set(BLA_VENDOR_FOUND "${BLA_VENDOR_FOUND}" PARENT_SCOPE)
     target_link_libraries(${target} ${linkType} BLAS::BLAS)
 endfunction()
 
@@ -340,6 +341,7 @@ Finds a BLAS library and creates interface library ``BLAS::BLAS``.
 If ``BLA_VENDOR`` is already defined than it is prepended to the list of vendors.
 Each one is tried in turn until a match is found.
 If none is matched, then ``FindBLAS()`` is called without vendor specification, to get any available BLAS library.
+The value of ``BLA_VENDOR`` that was actually found is stored in ``BLA_VENDOR_FOUND``.
 
 Interface library ``BLAS::BLAS`` is defined as a result.
 It saves ``BLAS_LINKER_FLAGS`` and ``BLAS_LIBRARIES`` to corresponding target interface properties.
@@ -383,6 +385,7 @@ function(LibraryManager_LAPACK target)
     LibraryManager_FindLAPACK(${ARGN})
     set(MKL "${MKL}" PARENT_SCOPE)
     set(MKL_TYPE "${MKL_TYPE}" PARENT_SCOPE)
+    set(BLA_VENDOR_FOUND "${BLA_VENDOR_FOUND}" PARENT_SCOPE)
     target_link_libraries(${target} ${linkType} LAPACK::LAPACK)
 endfunction()
 
@@ -395,7 +398,8 @@ endfunction()
 
 Finds a LAPACK library and creates interface library ``LAPACK::LAPACK``.
 
-``<vendor1>`` ``<vendor2>...`` are same as in :cmake:command:`LibraryManager_FindBLAS`
+``<vendor1>`` ``<vendor2>...`` are same as in :cmake:command:`LibraryManager_FindBLAS`.
+The value of ``BLA_VENDOR`` that was actually found is stored in ``BLA_VENDOR_FOUND``.
 
 Interface library ``LAPACK::LAPACK`` is defined as a result.
 It saves ``LAPACK_LINKER_FLAGS`` and ``LAPACK_LIBRARIES`` to corresponding target interface properties.
@@ -419,6 +423,7 @@ macro(__LibraryManager_findBLASorLAPACK name)
     set(vendors "${BLA_VENDOR};${ARGN}")
     set(MKL OFF)
     set(MKL_TYPE)
+    set(BLA_VENDOR_FOUND)
     unset(BLAS_FOUND)
     foreach (BLA_VENDOR ${vendors} "")
         message(DEBUG "try BLA_VENDOR ${BLA_VENDOR}")
@@ -429,6 +434,7 @@ macro(__LibraryManager_findBLASorLAPACK name)
         endif ()
         if (BLAS_FOUND)
             message(STATUS "Found ${name} with BLA_VENDOR=${BLA_VENDOR}")
+            set(BLA_VENDOR_FOUND "${BLA_VENDOR}")
             add_library(${name}::${name} INTERFACE IMPORTED GLOBAL)
             target_link_libraries(${name}::${name} INTERFACE "${${name}_LIBRARIES}")
             target_link_options(${name}::${name} INTERFACE "${${name}_LINKER_FLAGS}")
