@@ -6,4 +6,5 @@ Table of Contents
    :maxdepth: 2
 
    library_manager
+   library_manager_utils
 
