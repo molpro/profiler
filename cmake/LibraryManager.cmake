@@ -794,6 +794,25 @@ function(LibraryManager_Export project)
 endfunction()
 
 #[=============================================================================[.rst:
+.. cmake:command:: print_variable
+
+.. code-block:: cmake
+
+    print_variable(<variable> [<mode>])
+
+Prints a message giving the value of ``<variable>`` using ``message(<mode> ....)``.
+``<mode>`` defaults to ``STATUS``.
+#]=============================================================================]
+function(print_variable variable)
+    if (ARGN)
+        set(MODE ${ARGN})
+    else ()
+        set(MODE STATUS)
+    endif ()
+    message(${MODE} "${variable} = ${${variable}}")
+endfunction()
+
+#[=============================================================================[.rst:
 .. cmake:command:: print_target_properties
 
 .. code-block:: cmake
