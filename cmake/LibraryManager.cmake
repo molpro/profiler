@@ -578,10 +578,12 @@ function(LibraryManager_Install target)
     endforeach ()
 
     # install fortran module directory
-    get_property(path TARGET ${target} PROPERTY Fortran_MODULE_DIRECTORY)
-    if (NOT "${path}" STREQUAL "")
+    if (NOT type STREQUAL "INTERFACE_LIBRARY")
         get_property(path TARGET ${target} PROPERTY Fortran_MODULE_DIRECTORY)
-        install(DIRECTORY ${path} DESTINATION include OPTIONAL)
+        if (NOT "${path}" STREQUAL "")
+            get_property(path TARGET ${target} PROPERTY Fortran_MODULE_DIRECTORY)
+            install(DIRECTORY ${path} DESTINATION include OPTIONAL)
+        endif ()
     endif ()
 
     if (ARG_PKG_CONFIG)
