@@ -128,6 +128,7 @@ endmacro()
 .. code-block:: cmake
 
     LibraryManager_Add(<target>
+                       [INTERFACE]
                        [INCLUDE_DIR <baseDir>]
                        [NAMESPACE <nameSpace>]
                        [SOURCES <sources> ...]
@@ -137,6 +138,9 @@ endmacro()
 Create a library with specified source files.
 
 ``<target>`` - name of the library
+
+``INTERFACE`` creates an interface library. Only public headers can be specified which will be stored as interface
+headers.
 
 ``INCLUDE_DIR`` is followed by path to the base directory for reconstructing the source tree.
 This is also the include directory of the library as part of build interface.
@@ -162,9 +166,11 @@ Default:  no namespacing is used.
 
 #]=============================================================================]
 function(LibraryManager_Add target)
-    cmake_parse_arguments("ARG" "" "NAMESPACE;INCLUDE_DIR" "" ${ARGN})
+    cmake_parse_arguments("ARG" "INTERFACE" "NAMESPACE;INCLUDE_DIR" "" ${ARGN})
 
-    add_library(${target})
+    if (ARG_INTERFACE)
+        add_library(${target} INTERFACE)
+    endif ()
     if (DEFINED ARG_NAMESPACE)
         add_library(${ARG_NAMESPACE}::${target} ALIAS ${target})
         set_target_properties(${target} PROPERTIES __LibraryManager_NameSpace "${ARG_NAMESPACE}")
