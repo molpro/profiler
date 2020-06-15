@@ -170,6 +170,8 @@ function(LibraryManager_Add target)
 
     if (ARG_INTERFACE)
         add_library(${target} INTERFACE)
+    else ()
+        add_library(${target})
     endif ()
     if (DEFINED ARG_NAMESPACE)
         add_library(${ARG_NAMESPACE}::${target} ALIAS ${target})
