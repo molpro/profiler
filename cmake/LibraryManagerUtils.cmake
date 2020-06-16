@@ -59,6 +59,12 @@ function(print_target_properties tgt)
         message(${MODE} "There is no target named '${tgt}'")
         return()
     endif ()
+    # Get all propreties that cmake supports
+    execute_process(COMMAND cmake --help-property-list OUTPUT_VARIABLE CMAKE_PROPERTY_LIST)
+
+    # Convert command output into a CMake list
+    STRING(REGEX REPLACE ";" "\\\\;" CMAKE_PROPERTY_LIST "${CMAKE_PROPERTY_LIST}")
+    STRING(REGEX REPLACE "\n" ";" CMAKE_PROPERTY_LIST "${CMAKE_PROPERTY_LIST}")
 
     # build whitelist by filtering down from CMAKE_PROPERTY_LIST in case cmake is
     # a different version, and one of our hardcoded whitelisted properties
@@ -78,12 +84,15 @@ function(print_target_properties tgt)
     endif ()
 
     foreach (prop ${PROP_LIST})
-        string(REPLACE "<CONFIG>" "${CMAKE_BUILD_TYPE}" prop ${prop})
-        # message ("Checking ${prop}")
-        get_property(propval TARGET ${tgt} PROPERTY ${prop} SET)
-        if (propval)
-            get_target_property(propval ${tgt} ${prop})
-            message(${MODE} "${tgt} ${prop} = ${propval}")
+        if (prop MATCHES "^.*LOCATION.*$")
+        else ()
+            string(REPLACE "<CONFIG>" "${CMAKE_BUILD_TYPE}" prop ${prop})
+#            message("Checking ${prop}")
+            get_property(propval TARGET ${tgt} PROPERTY ${prop} SET)
+            if (propval)
+                get_target_property(propval ${tgt} ${prop})
+                message(${MODE} "${tgt} ${prop} = ${propval}")
+            endif ()
         endif ()
     endforeach (prop)
 endfunction(print_target_properties)
