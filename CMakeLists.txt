@@ -7,6 +7,11 @@ FetchContent_Declare(
         GIT_REPOSITORY https://gitlab+deploy-token-178345:RQZa2rmdwnV7Hdwg8XEq@gitlab.com/molpro/LibraryManager.git
         GIT_TAG master
 )
+FetchContent_Declare(
+        dependency_manager
+        GIT_REPOSITORY https://gitlab.com/dependencymanager/dependency-manager.git
+        GIT_TAG master
+)
 FetchContent_MakeAvailable(LibraryManager)
 
 LibraryManager_Project(FORTRAN_OPTION MPI_OPTION)
@@ -24,12 +29,6 @@ endif ()
 
 ########## Documentation ##########
 
-include(FetchContent)
-FetchContent_Declare(
-        dependency_manager
-        GIT_REPOSITORY https://gitlab.com/dependencymanager/dependency-manager.git
-        GIT_TAG master
-)
 FetchContent_MakeAvailable(dependency_manager)
 
 include(DependencyManagerDocs)
