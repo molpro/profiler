@@ -1,7 +1,7 @@
 add_custom_target(profiler-examples ALL COMMENT "Builds all profiler examples")
 
 list(APPEND srcs profiler-example.cpp profiler-singleton-example.cpp)
-if (CMAKE_Fortran_COMPILER)
+if (FORTRAN)
     list(APPEND srcs profiler-fortran-example.F90)
 endif ()
 # Fortran is either serial or parallel

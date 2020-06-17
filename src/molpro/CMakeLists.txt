@@ -7,7 +7,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXTENSIONS OFF)
 
 add_subdirectory(${PROJECT_NAME})
 
-if (CMAKE_Fortran_COMPILER)
+if (FORTRAN)
     LibraryManager_Append(${PROJECT_NAME} SOURCES ProfilerF.F90)
 endif ()
 
