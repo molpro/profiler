@@ -237,7 +237,7 @@ SUBROUTINE profiler_module_test(printlevel)
     if (printlevel > 0) CALL p%print(6, cumulative = .FALSE.)
 #ifdef PROFILER_MEMORY
  IF (printlevel > 0) CALL time_memory(1000000*printlevel)
- if (printlevel > 9) PRINT *, 'done',memory_used('STACK',.TRUE.),memory_used('STACK',.FALSE.)
+ if (printlevel > 9) PRINT *, 'done',memory_maximum_stack_used(),memory_used('STACK')
 #endif
 CONTAINS
     SUBROUTINE worker
