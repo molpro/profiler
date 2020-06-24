@@ -88,8 +88,8 @@ public:
    * @param prof  managed pointer to profiler to be erased, does not invalidate prof
    */
   static void destroy(const std::shared_ptr<Profiler> &prof) {
-    auto it =
-        std::find_if(m_profilers.begin(), m_profilers.end(), [&prof](const auto &el) { return el.second == prof; });
+    auto it = std::find_if(m_profilers.begin(), m_profilers.end(),
+                           [&prof](profilers_t::const_reference el) { return el.second == prof; });
     m_profilers.erase(it);
   }
 
