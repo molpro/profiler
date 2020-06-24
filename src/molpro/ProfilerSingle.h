@@ -3,6 +3,7 @@
 
 #include "molpro/Profiler.h"
 
+#include <algorithm>
 #include <map>
 #include <memory>
 
@@ -81,6 +82,15 @@ public:
   static void destroy(const std::string &name, Profiler::key_t communicator = PROFILER_DEFAULT_KEY) {
     auto key = _key(name, communicator);
     m_profilers.erase(key);
+  }
+  /*!
+   * @brief Destroys a global instance of an input profiler.
+   * @param prof  managed pointer to profiler to be erased, does not invalidate prof
+   */
+  static void destroy(const std::shared_ptr<Profiler> &prof) {
+    auto it =
+        std::find_if(m_profilers.begin(), m_profilers.end(), [&prof](const auto &el) { return el.second == prof; });
+    m_profilers.erase(it);
   }
 
   //! access profiler objects
