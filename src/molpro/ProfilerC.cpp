@@ -55,7 +55,6 @@ void* profilerNewSerialB(char* name, int sort, int level) {
     level = INT_MAX;
   return molpro::ProfilerSingle::create(std::string(name), sortBy, level).get();
 }
-void profilerDelete(char* name) { molpro::ProfilerSingle::destroy(std::string(name)); }
 void profilerReset(void* profiler, char* name) {
   molpro::Profiler* obj = (molpro::Profiler*)profiler;
   obj->reset(std::string(name));

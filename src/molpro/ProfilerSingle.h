@@ -3,8 +3,6 @@
 
 #include "molpro/Profiler.h"
 
-#include <algorithm>
-#include <map>
 #include <memory>
 
 namespace molpro {
@@ -23,9 +21,8 @@ class ProfilerSingle {
 public:
   ProfilerSingle() = delete;
   using key_t = std::pair<std::string, size_t>;
-  using profilers_t = std::map<key_t, std::shared_ptr<Profiler>>;
+  using profilers_t = std::map<key_t, std::weak_ptr<Profiler>>;
 
-public:
   /*!
    * @brief Creates an instance of a profiler identified by its name and communicator if compiled with mpi
    *
@@ -41,11 +38,12 @@ public:
                                           int level = INT_MAX, Profiler::key_t communicator = PROFILER_DEFAULT_KEY,
                                           bool set_default = true, bool replace = false) {
     auto key = _key(name, communicator);
-    if (replace || m_profilers.count(key) == 0)
-      m_profilers[key] = std::make_shared<Profiler>(name, sortBy, level, communicator);
+    auto p = (replace || m_profilers.count(key) == 0) ? std::make_shared<Profiler>(name, sortBy, level, communicator)
+                                                      : m_profilers[key].lock();
+    m_profilers[key] = p;
     if (set_default)
       default_key = key;
-    return m_profilers[key];
+    return p;
   }
 
   static std::shared_ptr<Profiler> create(const std::string &name, Profiler::key_t communicator, bool set_default,
@@ -74,25 +72,6 @@ public:
   //! Return the default global profiler
   static std::shared_ptr<Profiler> instance() { return instance(default_key); }
 
-  /*!
-   * @brief Destroys a global instance
-   * @param name  name of the Profiler
-   * @param communicator mpi communicator
-   */
-  static void destroy(const std::string &name, Profiler::key_t communicator = PROFILER_DEFAULT_KEY) {
-    auto key = _key(name, communicator);
-    m_profilers.erase(key);
-  }
-  /*!
-   * @brief Destroys a global instance of an input profiler.
-   * @param prof  managed pointer to profiler to be erased, does not invalidate prof
-   */
-  static void destroy(const std::shared_ptr<Profiler> &prof) {
-    auto it = std::find_if(m_profilers.begin(), m_profilers.end(),
-                           [&prof](profilers_t::const_reference el) { return el.second == prof; });
-    m_profilers.erase(it);
-  }
-
   //! access profiler objects
   static const profilers_t &profilers() { return m_profilers; }
 
@@ -102,7 +81,7 @@ private:
     return {name, std::hash<Profiler::key_t>{}(key)};
   }
 
-  static std::shared_ptr<Profiler> instance(const key_t &key) { return m_profilers.at(key); }
+  static std::shared_ptr<Profiler> instance(const key_t &key) { return m_profilers.at(key).lock(); }
 
   /*!
    * @brief collection of global m_profilers

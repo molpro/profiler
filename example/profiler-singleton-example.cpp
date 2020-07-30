@@ -13,9 +13,8 @@ void sleep_milliseconds(const std::string &name, int repeats) {
   p += repeats;
 }
 
-void run(const std::string &name) {
+void run() {
   // initial call to create the profiler with necessary settings
-  molpro::ProfilerSingle::create("Singleton Example: " + name, molpro::Profiler::wall);
   sleep_milliseconds("fast", 200);
   sleep_milliseconds("medium", 300);
   sleep_milliseconds("slow", 500);
@@ -25,7 +24,6 @@ void run(const std::string &name) {
 int main(int argc, char *argv[]) {
 #ifdef HAVE_MPI_H
   MPI_Init(&argc, &argv);
-#else
 #endif
   {
     auto p = molpro::ProfilerSingle::create("", false, false);
@@ -35,11 +33,14 @@ int main(int argc, char *argv[]) {
     auto p2 = molpro::ProfilerSingle::create("", 0, false, false);
 #endif
   }
-  run("job 1");
-  run("job 2");
-  for (const auto &profiler : molpro::ProfilerSingle::profilers()) {
-    std::cout << *profiler.second;
-  }
+  auto p1 = molpro::ProfilerSingle::create("Singleton Example: job 1", molpro::Profiler::wall);
+  run();
+  auto p2 = molpro::ProfilerSingle::create("Singleton Example: job 2", molpro::Profiler::wall);
+  run();
+  std::cout << *p1;
+  std::cout << *p2;
+  p1.reset();
+  p2.reset();
 #ifdef HAVE_MPI_H
   MPI_Finalize();
 #endif
