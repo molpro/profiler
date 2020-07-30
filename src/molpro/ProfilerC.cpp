@@ -1,13 +1,31 @@
 #include "ProfilerC.h"
 #include "molpro/ProfilerSingle.h"
 
+#include <algorithm>
+#include <list>
+namespace {
+std::list<std::shared_ptr<molpro::Profiler>> global_prof;
+void register_prof(const std::shared_ptr<molpro::Profiler>& p) {
+  if (std::find(global_prof.begin(), global_prof.end(), p) == global_prof.end())
+    global_prof.push_back(p);
+}
+void destroy_prof(molpro::Profiler* p) {
+  auto f = std::find_if(global_prof.begin(), global_prof.end(),
+                     [p](const std::shared_ptr<molpro::Profiler>& el) -> bool { return el.get() == p; });
+  if (f != global_prof.end())
+    global_prof.erase(f);
+}
+} // namespace
+
 // C binding
 extern "C" {
 #include <cstdlib>
 #include <cstring>
 #ifdef MOLPRO_PROFILER_MPI
 void* profilerNewMPIA(char* name, int comm) {
-  return molpro::ProfilerSingle::create(std::string(name), molpro::Profiler::wall, INT_MAX, MPI_Comm_f2c(comm)).get();
+  auto p = molpro::ProfilerSingle::create(std::string(name), molpro::Profiler::wall, INT_MAX, MPI_Comm_f2c(comm));
+  register_prof(p);
+  return p.get();
 }
 void* profilerNewMPIB(char* name, int sort, int level, int comm) {
   molpro::Profiler::sortMethod sortBy;
@@ -29,10 +47,16 @@ void* profilerNewMPIB(char* name, int sort, int level, int comm) {
   }
   if (level == -1)
     level = INT_MAX;
-  return molpro::ProfilerSingle::create(std::string(name), sortBy, level, MPI_Comm_f2c(comm)).get();
+  auto p = molpro::ProfilerSingle::create(std::string(name), sortBy, level, MPI_Comm_f2c(comm));
+  register_prof(p);
+  return p.get();
 }
 #endif
-void* profilerNewSerialA(char* name) { return molpro::ProfilerSingle::create(std::string(name)).get(); }
+void* profilerNewSerialA(char* name) {
+  auto p = molpro::ProfilerSingle::create(std::string(name));
+  register_prof(p);
+  return p.get();
+}
 void* profilerNewSerialB(char* name, int sort, int level) {
   molpro::Profiler::sortMethod sortBy;
   switch (sort) {
@@ -53,8 +77,11 @@ void* profilerNewSerialB(char* name, int sort, int level) {
   }
   if (level == -1)
     level = INT_MAX;
-  return molpro::ProfilerSingle::create(std::string(name), sortBy, level).get();
+  auto p = molpro::ProfilerSingle::create(std::string(name), sortBy, level);
+  register_prof(p);
+  return p.get();
 }
+void profilerDestroy(void* profiler) { destroy_prof(static_cast<molpro::Profiler*>(profiler)); }
 void profilerReset(void* profiler, char* name) {
   molpro::Profiler* obj = (molpro::Profiler*)profiler;
   obj->reset(std::string(name));

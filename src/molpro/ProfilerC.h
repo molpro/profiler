@@ -10,6 +10,7 @@ void* profilerNewMPIB(char* name, int sort, int level, int comm);
 #endif
 void* profilerNewSerialB(char* name, int sort, int level);
 void* profilerNewSerialA(char* name);
+void profilerDestroy(void* profiler);
 void profilerReset(void* profiler, char* name);
 void profilerActive(void* profiler, int level, int stopPrint);
 void profilerStart(void* profiler, char* name);

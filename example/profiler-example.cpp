@@ -108,6 +108,7 @@ int main(int argc, char* argv[]) {
       profilerStop(profilerC, (char*)"profiler", 1);
     }
     std::cout << profilerStr(profilerC, 0, 0, 3) << std::endl;
+    profilerDestroy(profilerC);
   }
 #ifdef HAVE_MPI_H
   MPI_Finalize();
