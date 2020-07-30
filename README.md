@@ -1,4 +1,4 @@
-Profiler Documentation                         {#mainpage}
+Profiler Documentation
 ======================
 
 Framework for timing code sections in serial and parallel using Fortran90, C or C++.
@@ -17,25 +17,24 @@ Framework for timing code sections in serial and parallel using Fortran90, C or 
     - ON/OFF: whether to build Fortran90 bindings
     
 ### Using Profiler in your project
+Name of CMake library target is **molpro::Profiler**
+
 Profiler is intended to be used by adding it to your CMake build with FetchContent,
 and linking it with target_link_libraries().
-
-There are two targets,
-  * Profiler::serial
-    - serial library, where Profiler in Profiler.h is an alias to ProfilerSerial
-  * Profiler::mpi
-    - parallel library, where Profiler in Profiler.h is an alias to ProfilerMPI
-    - ProfilerSerial class is still accessible through ProfilerSerial.h
 
 CMake options do not need to be set and the correct targets will be built
 based on whether MPI package was already found and 
 whether Fortran compilers are available.
+
+If Profiler is built with MPI, than default Profiler class can still be made serial
+by unsetting compiler definition *PROFILER_MPI*.
 
 ### Author
 Peter Knowles
 
 ### Contributors
 Marat Sibaev
+
 Iakov Polyak
 
 ### License
