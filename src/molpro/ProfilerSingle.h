@@ -8,14 +8,15 @@
 namespace molpro {
 
 /*!
- * @brief Access to a single profiler for a given name and communicator if compiled with MPI
+ * @brief A non-owning interface to Profiler
  *
- * This is a utility to avoid creation of a global object for a profiler that is used through out the application.
+ * This is a utility that helps avoid the need to pass an instance of Profiler through the call stack by
+ * keeping a weak_ptr to all created objects. At least one of the objects returned by create() must be alive,
+ * otherwise ProfilerSingle will return a nullptr.
  *
- * For local profilers which might be used only within a particular class composition should still be preferred
- * instead of creating a global instance.
- * @todo Merge create and instance into one function
- * @todo add set_default(Profiler&) and set_default(name, key) functions
+ * The primary purpose is for quick debugging with minimal changes. In production code the Profiler object
+ * should be passed around directly.
+ *
  */
 class ProfilerSingle {
 public:
