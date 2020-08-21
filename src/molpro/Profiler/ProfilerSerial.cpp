@@ -6,9 +6,9 @@
 #include <iomanip>
 #include <iostream>
 #include <queue>
+#include <sstream>
 #include <string>
 #include <sys/time.h>
-#include <sstream>
 #ifdef PROFILER_MEMORY
 #include <molpro/memory.h>
 #endif
@@ -338,9 +338,6 @@ struct ProfilerSerial::resources ProfilerSerial::resources::operator-(const stru
 
 ProfilerSerial::Push ProfilerSerial::push(const std::string &name) { return Push(*this, name); }
 
+std::ostream &operator<<(std::ostream &os, ProfilerSerial &obj) { return os << obj.str() << std::endl; }
 } // namespace profiler
 } // namespace molpro
-
-std::ostream &operator<<(std::ostream &os, molpro::profiler::ProfilerSerial &obj) {
-  return os << obj.str() << std::endl;
-}

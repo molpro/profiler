@@ -272,11 +272,11 @@ public:
     ProfilerSerial &m_profiler;
     uint64_t m_operations;
   };
+  //! Writes summary of profile to the stream, with end of line
+  friend std::ostream &operator<<(std::ostream &os, ProfilerSerial &obj);
 };
 } //  namespace profiler
 } // namespace molpro
-//! Writes summary of profile to the stream, with end of line
-std::ostream &operator<<(std::ostream &os, molpro::profiler::ProfilerSerial &obj);
 
 #endif // __cplusplus
 
