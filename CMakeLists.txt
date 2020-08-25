@@ -25,6 +25,7 @@ add_subdirectory(src)
 if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
     enable_testing()
     add_subdirectory(example)
+    add_subdirectory(benchmark)
 endif ()
 
 ########## Documentation ##########
