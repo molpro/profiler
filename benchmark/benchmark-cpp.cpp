@@ -1,9 +1,9 @@
 #include <memory>
 #include <chrono>
 #include <molpro/Profiler.h>
+#include <sys/time.h>
 #ifdef MOLPRO_PROFILER_MPI
 #include <mpi.h>
-#include <sys/time.h>
 #endif
 int main(int argc, char* argv[]) {
 #ifdef MOLPRO_PROFILER_MPI
