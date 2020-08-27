@@ -1,13 +1,11 @@
 #include "ProfilerMPI.h"
 #include <cmath>
-extern "C" MPI_Fint PPIDD_Worker_comm();
 
 namespace molpro {
 namespace profiler {
 
 ProfilerMPI::ProfilerMPI(const std::string &name, sortMethod sortBy, const int level, const MPI_Comm communicator)
-    : ProfilerSerial(name, sortBy, level),
-      m_communicator(communicator == MPI_COMM_WORLD ? MOLPRO_PROFILER_DEFAULT_COMMUNICATOR : communicator) {
+    : ProfilerSerial(name, sortBy, level), m_communicator(communicator) {
   reset(name);
   active(level);
 }
