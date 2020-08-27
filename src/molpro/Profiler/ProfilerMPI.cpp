@@ -4,8 +4,12 @@
 namespace molpro {
 namespace profiler {
 
-ProfilerMPI::ProfilerMPI(const std::string &name, sortMethod sortBy, const int level, const MPI_Comm communicator)
-    : ProfilerSerial(name, sortBy, level), m_communicator(communicator) {
+ProfilerMPI::ProfilerMPI(const std::string& name,
+                         sortMethod sortBy,
+                         int level,
+                         MPI_Comm communicator,
+                         bool cpu)
+    : ProfilerSerial(name, sortBy, level, false, cpu), m_communicator(communicator) {
   reset(name);
   active(level);
 }

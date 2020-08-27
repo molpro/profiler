@@ -33,7 +33,6 @@ int main(int argc, char* argv[]) {
     if (!gettimeofday(&time, NULL))
       wall = (double)time.tv_sec + (double)time.tv_usec * .000001;
   }
-  std::cout << p << std::endl;
   std::cout << "Elapsed time: " << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count()
             << std::endl;
   std::cout << "Elapsed time per call: "
@@ -47,7 +46,6 @@ int main(int argc, char* argv[]) {
   for (auto i = 0; i < repeat; i++) {
     result += std::chrono::system_clock::now() - std::chrono::system_clock::now();
   }
-  std::cout << p << std::endl;
   std::cout << "Elapsed time: " << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count()
             << std::endl;
   std::cout << "Elapsed time per call: "

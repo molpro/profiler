@@ -14,7 +14,7 @@ namespace profiler {
  * All process in the communicator must create Profiler instance collectively.
  */
 class ProfilerMPI : public ProfilerSerial {
-public:
+ public:
   using key_t = MPI_Comm; //!< extra key to provide consistent interface with ProfilerMPI. No purpose
   /*!
    * \brief Profiler construct a named instance.
@@ -24,9 +24,13 @@ public:
    * \param level
    * A large value means that data will always be accumulated; zero means that calls to start and stop do nothing.
    * \param communicator The MPI communicator over which statistics should be aggregated.
+   * \param cpu Whether to poll CPU time
    */
-  ProfilerMPI(const std::string &name, sortMethod sortBy = wall, int level = INT_MAX,
-              MPI_Comm communicator = PROFILER_DEFAULT_KEY);
+  ProfilerMPI(const std::string& name,
+              sortMethod sortBy = wall,
+              int level = INT_MAX,
+              MPI_Comm communicator = PROFILER_DEFAULT_KEY,
+              bool cpu = false);
 
   /*!
    * \brief Obtain a summary of the resources used for each category.
@@ -36,9 +40,9 @@ public:
   virtual resultMap totals() const override;
 
   //! Writes summary of profile to the stream, with end of line
-  friend std::ostream &operator<<(std::ostream &os, ProfilerMPI &obj);
+  friend std::ostream& operator<<(std::ostream& os, ProfilerMPI& obj);
 
-protected:
+ protected:
   const MPI_Comm m_communicator;
 };
 

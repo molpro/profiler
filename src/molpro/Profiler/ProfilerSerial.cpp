@@ -17,13 +17,17 @@
 
 namespace molpro {
 namespace profiler {
-ProfilerSerial::ProfilerSerial(const std::string &name, sortMethod sortBy, const int level, ProfilerSerial::key_t key)
-    : m_sortBy(sortBy) {
+ProfilerSerial::ProfilerSerial(const std::string& name,
+                               sortMethod sortBy,
+                               const int level,
+                               key_t key,
+                               bool cpu)
+    : m_sortBy(sortBy), m_cpu(cpu) {
   reset(name);
   active(level);
 }
 
-void ProfilerSerial::reset(const std::string &name) {
+void ProfilerSerial::reset(const std::string& name) {
   Name = name;
   stopall();
   results.clear();
@@ -37,13 +41,13 @@ void ProfilerSerial::active(const int level, const int stopPrint) {
   stopPrint_ = stopPrint;
 }
 
-static char colon_replace = (char)30;
+static char colon_replace = (char) 30;
 
-void ProfilerSerial::start(const std::string &name) {
+void ProfilerSerial::start(const std::string& name) {
   level++;
   if (level > activeLevel)
     return;
-  assert(level == (int)resourcesStack.size() + 1);
+  assert(level == (int) resourcesStack.size() + 1);
   struct resources now = getResources();
   now.name = name;
   //  std::cout << "Profiler::start "<<name<<" wall="<<now.wall<<std::endl;
@@ -94,11 +98,11 @@ void ProfilerSerial::totalise(const struct resources now, const long operations,
   results[key].calls += calls;
 }
 
-void ProfilerSerial::stop(const std::string &name, long operations) {
+void ProfilerSerial::stop(const std::string& name, long operations) {
   level--;
   if (level > 0 && level >= activeLevel)
     return;
-  assert(level == (int)resourcesStack.size() - 1);
+  assert(level == (int) resourcesStack.size() - 1);
 #ifndef NDEBUG
   std::string nam(name);
   for (auto c = nam.begin(); c != nam.end(); c++)
@@ -144,9 +148,8 @@ ProfilerSerial::resultMap ProfilerSerial::totals() const {
   ProfilerSerial thiscopy =
       *this; // take a copy so that we can run stopall yet be const, and so that we can sum globally
   thiscopy.stopall();
-  while (thiscopy.results.erase(""))
-    ;
-  for (auto &x : thiscopy.results)
+  while (thiscopy.results.erase(""));
+  for (auto& x : thiscopy.results)
     x.second.parent = this;
   thiscopy.accumulate(thiscopy.results);
   return thiscopy.results;
@@ -165,7 +168,7 @@ std::string ProfilerSerial::resources::str(const int width, const int verbosity,
   prefixes.push_back("E");
   prefixes.push_back("Z");
   prefixes.push_back("Y");
-  const struct resources *r = this;
+  const struct resources* r = this;
   std::string name = r->name;
   if (cumulative)
     r = (r->cumulative);
@@ -195,19 +198,20 @@ std::string ProfilerSerial::resources::str(const int width, const int verbosity,
   ss << (cumulative ? std::left : std::right) << std::setw(wid) << name << ":";
   if (r->calls > 0)
     ss << " calls=" << r->calls << ",";
-  ss << " cpu=" << std::fixed << r->cpu << ","
-     << " wall=" << r->wall;
+  if (r->cpu != 0)
+    ss << " cpu=" << std::fixed << r->cpu << ",";
+  ss << " wall=" << r->wall;
   double ops = r->operations;
   double wall = r->wall;
-  if (ops > (double)0 && wall > (double)0) {
+  if (ops > (double) 0 && wall > (double) 0) {
     ops /= wall;
-    int shifter = ops > 1 ? (int)(log10(ops) / 3) : 0;
-    shifter = shifter >= (int)prefixes.size() ? (int)prefixes.size() - 1 : shifter;
-    ops *= pow((double)10, -shifter * 3);
+    int shifter = ops > 1 ? (int) (log10(ops) / 3) : 0;
+    shifter = shifter >= (int) prefixes.size() ? (int) prefixes.size() - 1 : shifter;
+    ops *= pow((double) 10, -shifter * 3);
     ss << ", " << ops << " " << prefixes[shifter] << "op/s";
   }
   size_t stack = r->stack;
-  if (stack > (size_t)0) {
+  if (stack > (size_t) 0) {
     ss << ", stack=" << stack;
   }
   return ss.str();
@@ -255,7 +259,7 @@ std::string ProfilerSerial::str(const int verbosity, const bool cumulative, cons
   return ss.str();
 }
 
-void ProfilerSerial::accumulate(resultMap &results) {
+void ProfilerSerial::accumulate(resultMap& results) {
   for (resultMap::iterator r = results.begin(); r != results.end(); ++r)
     r->second.name = r->first;
   for (resultMap::iterator parent = results.begin(); parent != results.end(); ++parent) {
@@ -264,7 +268,7 @@ void ProfilerSerial::accumulate(resultMap &results) {
     // nb 'child' includes the parent itself
     for (resultMap::iterator child = results.begin(); child != results.end(); ++child) {
       if (parent->first == child->first || (parent->first.size() <= child->first.size() &&
-                                            parent->first + ":" == child->first.substr(0, parent->first.size() + 1))) {
+          parent->first + ":" == child->first.substr(0, parent->first.size() + 1))) {
         *parent->second.cumulative += child->second;
         if (parent->first != child->first)
           parent->second.cumulative->stack =
@@ -283,11 +287,11 @@ struct ProfilerSerial::resources ProfilerSerial::getResources() {
   struct ProfilerSerial::resources result;
   result.operations = 0;
   result.calls = 0;
-  result.cpu = (double)clock() / CLOCKS_PER_SEC;
+  result.cpu = m_cpu ? (double) clock() / CLOCKS_PER_SEC : 0;
   struct timeval time;
-  result.wall = (double)0;
+  result.wall = (double) 0;
   if (!gettimeofday(&time, NULL)) {
-    result.wall = (double)time.tv_sec + (double)time.tv_usec * .000001;
+    result.wall = (double) time.tv_sec + (double) time.tv_usec * .000001;
     if (init)
       wallbase = result.wall;
     init = 0;
@@ -307,7 +311,7 @@ struct ProfilerSerial::resources ProfilerSerial::getResources() {
  * \param w2 object to add
  * \return a copy of the object
  */
-struct ProfilerSerial::resources &ProfilerSerial::resources::operator+=(const struct ProfilerSerial::resources &w2) {
+struct ProfilerSerial::resources& ProfilerSerial::resources::operator+=(const struct ProfilerSerial::resources& w2) {
   cpu += w2.cpu;
   wall += w2.wall;
   operations += w2.operations;
@@ -316,13 +320,13 @@ struct ProfilerSerial::resources &ProfilerSerial::resources::operator+=(const st
   return *this;
 }
 
-struct ProfilerSerial::resources ProfilerSerial::resources::operator+(const struct ProfilerSerial::resources &w2) {
+struct ProfilerSerial::resources ProfilerSerial::resources::operator+(const struct ProfilerSerial::resources& w2) {
   struct ProfilerSerial::resources result = *this;
   result += w2;
   return result;
 }
 
-struct ProfilerSerial::resources &ProfilerSerial::resources::operator-=(const struct ProfilerSerial::resources &w2) {
+struct ProfilerSerial::resources& ProfilerSerial::resources::operator-=(const struct ProfilerSerial::resources& w2) {
   cpu -= w2.cpu;
   wall -= w2.wall;
   operations -= w2.operations;
@@ -330,14 +334,14 @@ struct ProfilerSerial::resources &ProfilerSerial::resources::operator-=(const st
   return *this;
 }
 
-struct ProfilerSerial::resources ProfilerSerial::resources::operator-(const struct ProfilerSerial::resources &w2) {
+struct ProfilerSerial::resources ProfilerSerial::resources::operator-(const struct ProfilerSerial::resources& w2) {
   struct ProfilerSerial::resources result = *this;
   result -= w2;
   return result;
 }
 
-ProfilerSerial::Push ProfilerSerial::push(const std::string &name) { return Push(*this, name); }
+ProfilerSerial::Push ProfilerSerial::push(const std::string& name) { return Push(*this, name); }
 
-std::ostream &operator<<(std::ostream &os, ProfilerSerial &obj) { return os << obj.str() << std::endl; }
+std::ostream& operator<<(std::ostream& os, ProfilerSerial& obj) { return os << obj.str() << std::endl; }
 } // namespace profiler
 } // namespace molpro
