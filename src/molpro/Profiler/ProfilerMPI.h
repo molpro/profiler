@@ -18,6 +18,7 @@ public:
   using key_t = MPI_Comm; //!< extra key to provide consistent interface with ProfilerMPI. No purpose
   /*!
    * \brief Profiler construct a named instance.
+   * @warning If using GA or PPIDD than you should pass the communicator from them manually.
    * \param name the title of this object.
    * \param sortBy Criterion for sorting printed result table.
    * \param level
