@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <ctime>
+#include <chrono>
 #ifdef PROFILER_MEMORY
 #include <molpro/memory.h>
 #endif
