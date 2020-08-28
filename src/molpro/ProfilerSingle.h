@@ -31,15 +31,18 @@ public:
    * @param sortBy passed to Profiler() constructor
    * @param level passed to Profiler() constructor
    * @param communicator name of communicator, if not using MPI than it is irrelevant, passed to Profiler() constructor
+   * \param cpu Whether to poll CPU time
    * @param set_default sets this profiler as default, allows access with ProfilerSingle::instance() without arguments
    * @param replace if a profiler with the same key already exists replace it with a new on
    * @return the new profiler instance
    */
   static std::shared_ptr<Profiler> create(const std::string &name, Profiler::sortMethod sortBy = Profiler::wall,
-                                          int level = INT_MAX, Profiler::key_t communicator = PROFILER_DEFAULT_KEY,
+                                          int level = INT_MAX,
+                                          Profiler::key_t communicator = PROFILER_DEFAULT_KEY,
+                                          bool cpu = false,
                                           bool set_default = true, bool replace = false) {
     auto key = _key(name, communicator);
-    auto p = (replace || m_profilers.count(key) == 0) ? std::make_shared<Profiler>(name, sortBy, level, communicator)
+    auto p = (replace || m_profilers.count(key) == 0) ? std::make_shared<Profiler>(name, sortBy, level, communicator, cpu)
                                                       : m_profilers[key].lock();
     m_profilers[key] = p;
     if (set_default)
@@ -47,13 +50,13 @@ public:
     return p;
   }
 
-  static std::shared_ptr<Profiler> create(const std::string &name, Profiler::key_t communicator, bool set_default,
+  static std::shared_ptr<Profiler> create(const std::string &name, Profiler::key_t communicator, bool cpu, bool set_default,
                                           bool replace) {
-    return create(name, Profiler::wall, INT_MAX, communicator, set_default, replace);
+    return create(name, Profiler::wall, INT_MAX, communicator, cpu, set_default, replace);
   }
 
-  static std::shared_ptr<Profiler> create(const std::string &name, bool set_default, bool replace) {
-    return create(name, Profiler::wall, INT_MAX, PROFILER_DEFAULT_KEY, set_default, replace);
+  static std::shared_ptr<Profiler> create(const std::string &name, bool cpu, bool set_default, bool replace) {
+    return create(name, Profiler::wall, INT_MAX, PROFILER_DEFAULT_KEY, cpu, set_default, replace);
   }
 
   /*!

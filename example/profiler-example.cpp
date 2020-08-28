@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
   }
 
   {
-    void* profilerC = profilerNewSerialA((char*)"C");
+    void* profilerC = profilerNewSerialA((char*)"C", 0);
     auto a = (double)0;
     profilerStart(profilerC, (char*)"sqrt");
     for (size_t i = 0; i < repeat; i++)

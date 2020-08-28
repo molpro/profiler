@@ -1,14 +1,12 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <cstring>
 #include <deque>
 #include <iomanip>
-#include <iostream>
 #include <queue>
 #include <sstream>
 #include <string>
-#include <sys/time.h>
+#include <ctime>
 #ifdef PROFILER_MEMORY
 #include <molpro/memory.h>
 #endif
@@ -280,23 +278,24 @@ void ProfilerSerial::accumulate(resultMap& results) {
   }
 }
 
-static int init = 1;
+static bool init = true;
 static double wallbase;
+using clock_type = typename std::conditional<std::chrono::high_resolution_clock::is_steady,
+                                             std::chrono::high_resolution_clock,
+                                             std::chrono::steady_clock>::type;
+static std::chrono::time_point<clock_type> start_time;
 
 struct ProfilerSerial::resources ProfilerSerial::getResources() {
   struct ProfilerSerial::resources result;
   result.operations = 0;
   result.calls = 0;
   result.cpu = m_cpu ? (double) clock() / CLOCKS_PER_SEC : 0;
-  struct timeval time;
-  result.wall = (double) 0;
-  if (!gettimeofday(&time, NULL)) {
-    result.wall = (double) time.tv_sec + (double) time.tv_usec * .000001;
-    if (init)
-      wallbase = result.wall;
-    init = 0;
-    result.wall -= wallbase;
+  auto now = clock_type::now();
+  if (init) {
+    start_time = now;
+    init = false;
   }
+  result.wall = std::chrono::duration<double>(now - start_time).count();
 #ifdef PROFILER_MEMORY
   result.stack = (size_t)memory_used(1);
 #else

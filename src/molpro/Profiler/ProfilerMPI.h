@@ -35,7 +35,7 @@ class ProfilerMPI : public ProfilerSerial {
   /*!
    * \brief Obtain a summary of the resources used for each category.
    * Must be called by all MPI processes collectively.
-   * \return std::map of \ref ProfilerSerial::resources
+   * \return std::map of ProfilerSerial::resources
    */
   virtual resultMap totals() const override;
 

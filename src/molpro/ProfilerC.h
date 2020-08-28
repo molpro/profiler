@@ -5,11 +5,11 @@
 extern "C" {
 #endif
 #ifdef MOLPRO_PROFILER_MPI
-void* profilerNewMPIA(char* name, int comm);
-void* profilerNewMPIB(char* name, int sort, int level, int comm);
+void* profilerNewMPIA(char* name, int comm, int cpu);
+void* profilerNewMPIB(char* name, int sort, int level, int comm, int cpu);
 #endif
-void* profilerNewSerialB(char* name, int sort, int level);
-void* profilerNewSerialA(char* name);
+void* profilerNewSerialB(char* name, int sort, int level, int cpu);
+void* profilerNewSerialA(char* name, int cpu);
 void profilerDestroy(void* profiler);
 void profilerReset(void* profiler, char* name);
 void profilerActive(void* profiler, int level, int stopPrint);

@@ -47,31 +47,32 @@ MODULE ProfilerF
 
     INTERFACE
         !> \private
-        FUNCTION ProfilerNewCSerA(name) BIND (C, name = 'profilerNewSerialA')
+        FUNCTION ProfilerNewCSerA(name, cpu) BIND (C, name = 'profilerNewSerialA')
             USE iso_c_binding
             CHARACTER(kind = c_char, len = 1), DIMENSION(*), INTENT(in) :: name
+            INTEGER(kind = c_int), INTENT(in), VALUE :: cpu
             TYPE(c_ptr) :: ProfilerNewCSerA
         END FUNCTION ProfilerNewCSerA
         !> \private
-        FUNCTION ProfilerNewCSerB(name, sort, level) BIND (C, name = 'profilerNewSerialB')
+        FUNCTION ProfilerNewCSerB(name, sort, level, cpu) BIND (C, name = 'profilerNewSerialB')
             USE iso_c_binding
             CHARACTER(kind = c_char, len = 1), DIMENSION(*), INTENT(in) :: name
-            INTEGER(kind = c_int), INTENT(in), VALUE :: sort, level
+            INTEGER(kind = c_int), INTENT(in), VALUE :: sort, level, cpu
             TYPE(c_ptr) :: ProfilerNewCSerB
         END FUNCTION ProfilerNewCSerB
 #ifdef MOLPRO_PROFILER_MPI
  !> \private
-  FUNCTION ProfilerNewCMPIA(name, comm) BIND (C, name='profilerNewMPIA')
+  FUNCTION ProfilerNewCMPIA(name, comm, cpu) BIND (C, name='profilerNewMPIA')
    USE iso_c_binding
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
-   INTEGER(kind=c_int), INTENT(in), VALUE ::  comm
+   INTEGER(kind=c_int), INTENT(in), VALUE ::  comm, cpu
    TYPE(c_ptr) :: ProfilerNewCMPIA
   END FUNCTION ProfilerNewCMPIA
  !> \private
-  FUNCTION ProfilerNewCMPIB(name, sort, level, comm) BIND (C, name='profilerNewMPIB')
+  FUNCTION ProfilerNewCMPIB(name, sort, level, comm, cpu) BIND (C, name='profilerNewMPIB')
    USE iso_c_binding
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
-   INTEGER(kind=c_int), INTENT(in), VALUE ::  sort, level, comm
+   INTEGER(kind=c_int), INTENT(in), VALUE ::  sort, level, comm, cpu
    TYPE(c_ptr) :: ProfilerNewCMPIB
   END FUNCTION ProfilerNewCMPIB
 #endif
@@ -109,12 +110,20 @@ MODULE ProfilerF
 CONTAINS
     !> \public Construct a new instance.
     !! Should be called through object construction.
-    FUNCTION ProfilerNewF(name, sort, level, comm)
+    !! @warning If using anything other than the default MPI communicator MPI_COMM_WORLD, for example from use of GA or PPIDD, then you must pass the communicator explicitly.
+    !! \param name the title of this object.
+    !! \param sort Criterion for sorting printed result table.
+    !! \param level
+    !! A large value means that data will always be accumulated; zero means that calls to start and stop do nothing.
+    !! \param comm The MPI communicator over which statistics should be aggregated.
+    !! \param cpu Whether to poll CPU time
+    FUNCTION ProfilerNewF(name, sort, level, comm, cpu)
         USE iso_c_binding
         TYPE(Profiler) :: ProfilerNewF
         CHARACTER(len = *), INTENT(in) :: name !< Title of this object
         INTEGER, INTENT(in), OPTIONAL :: sort, level, comm
-        INTEGER(kind = c_int) :: sortC, levelC, commC
+        LOGICAL, INTENT(in), OPTIONAL :: cpu
+        INTEGER(kind = c_int) :: sortC, levelC, commC, cpuC
         IF (PRESENT(sort)) THEN
             sortC = INT(sort, kind = c_int)
         ELSE
@@ -125,23 +134,27 @@ CONTAINS
         ELSE
             levelC = -1
         ENDIF
+        cpuC = 0
+        IF (PRESENT(cpu)) THEN
+            IF (cpu) cpuC = 1
+        ENDIF
         IF (PRESENT(sort) .or. PRESENT(level)) THEN
 #ifdef MOLPRO_PROFILER_MPI
     IF (PRESENT(comm)) THEN
-     ProfilerNewF%handle = ProfilerNewCMPIB((TRIM(name)//C_NULL_CHAR),sortC,levelC,INT(comm,kind=c_int))
+     ProfilerNewF%handle = ProfilerNewCMPIB((TRIM(name)//C_NULL_CHAR),sortC,levelC,INT(comm,kind=c_int),cpuC)
     ELSE
 #endif
-            ProfilerNewF%handle = ProfilerNewCSerB((TRIM(name) // C_NULL_CHAR), sortC, levelC)
+            ProfilerNewF%handle = ProfilerNewCSerB((TRIM(name) // C_NULL_CHAR), sortC, levelC,cpuC)
 #ifdef MOLPRO_PROFILER_MPI
     ENDIF
 #endif
         ELSE
 #ifdef MOLPRO_PROFILER_MPI
     IF (PRESENT(comm)) THEN
-     ProfilerNewF%handle = ProfilerNewCMPIA((TRIM(name)//C_NULL_CHAR),INT(comm,kind=c_int))
+     ProfilerNewF%handle = ProfilerNewCMPIA((TRIM(name)//C_NULL_CHAR),INT(comm,kind=c_int),cpuC)
     ELSE
 #endif
-            ProfilerNewF%handle = ProfilerNewCSerA((TRIM(name) // C_NULL_CHAR))
+            ProfilerNewF%handle = ProfilerNewCSerA((TRIM(name) // C_NULL_CHAR),cpuC)
 #ifdef MOLPRO_PROFILER_MPI
     ENDIF
 #endif
