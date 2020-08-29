@@ -21,4 +21,5 @@ if (TARGET MPI::MPI_CXX)
     target_compile_definitions(${PROJECT_NAME} PUBLIC MOLPRO_PROFILER_MPI)
 endif ()
 
+add_subdirectory(Tree)
 

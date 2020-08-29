@@ -1,6 +1,7 @@
-#include <memory>
 #include <chrono>
+#include <memory>
 #include <molpro/Profiler.h>
+#include <molpro/Profiler/Tree/Profiler.h>
 #include <sys/time.h>
 #ifdef MOLPRO_PROFILER_MPI
 #include <mpi.h>
@@ -22,13 +23,26 @@ int main(int argc, char* argv[]) {
   std::cout << "Elapsed time: " << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count()
             << std::endl;
   std::cout << "Elapsed time per call: "
-            << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count() / repeat
+            << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count() / repeat << std::endl;
+
+  std::cout << std::endl;
+  auto tp = molpro::profiler::tree::Profiler{"test tree profiler"};
+  start = std::chrono::system_clock::now();
+  for (auto i = 0; i < repeat; i++) {
+    tp.start("test");
+    tp.stop();
+  }
+  tp.stop();
+  report(tp);
+  std::cout << "Elapsed time: " << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count()
             << std::endl;
+  std::cout << "Elapsed time per call: "
+            << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count() / repeat << std::endl;
 
   std::cout << repeat << " instances of 2*gettimeofday()" << std::endl;
   start = std::chrono::system_clock::now();
   auto wall = (double)0;
-  for (auto i = 0; i < repeat*2; i++) {
+  for (auto i = 0; i < repeat * 2; i++) {
     struct timeval time;
     if (!gettimeofday(&time, NULL))
       wall = (double)time.tv_sec + (double)time.tv_usec * .000001;
@@ -36,9 +50,7 @@ int main(int argc, char* argv[]) {
   std::cout << "Elapsed time: " << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count()
             << std::endl;
   std::cout << "Elapsed time per call: "
-            << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count() / repeat
-            << std::endl;
-
+            << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count() / repeat << std::endl;
 
   std::cout << repeat << " instances of 2*chrono::system_clock::now()" << std::endl;
   start = std::chrono::system_clock::now();
@@ -49,8 +61,7 @@ int main(int argc, char* argv[]) {
   std::cout << "Elapsed time: " << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count()
             << std::endl;
   std::cout << "Elapsed time per call: "
-            << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count() / repeat
-            << std::endl;
+            << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count() / repeat << std::endl;
 
 #ifdef MOLPRO_PROFILER_MPI
   MPI_Finalize();
