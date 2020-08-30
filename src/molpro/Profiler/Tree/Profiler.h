@@ -71,9 +71,20 @@ struct Profiler {
   //! Stop timing current leaf and traverse up to its parent
   Profiler& stop() {
     leaf->counter.stop();
-    leaf = leaf->parent;
+    if (leaf->parent)
+      leaf = leaf->parent;
     return *this;
   }
+
+  //! Stop timing all nodes up to and including name, and traverse to its parent
+  Profiler& stop(const std::string& name) {
+    while (leaf->parent and leaf->name != name) {
+      stop();
+    }
+    return stop();
+  }
+  //! Stop all nodes and traverse up to the root
+  Profiler& stop_all(const std::string& name) { return stop(root->name); }
 
   //! Access leaf counter
   Counter& counter() { return leaf->counter; }
