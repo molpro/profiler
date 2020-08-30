@@ -88,6 +88,20 @@ struct Profiler {
 
   //! Access leaf counter
   Counter& counter() { return leaf->counter; }
+
+protected:
+  //! Proxy object that calls start() on creation and stop() on destruction
+  struct Proxy {
+    Proxy(Profiler& prof, const std::string& name) : prof(prof) { prof.start(name); }
+    ~Proxy() { prof.stop(); }
+    //! Push a new proxy
+    Proxy push(const std::string& name) { return Proxy(prof, name); }
+    Profiler& prof;
+  };
+
+public:
+  //! Returns a proxy object which will start() on constrction and stop on destruction.
+  Proxy push(const std::string& name) { return Proxy(*this, name); }
 };
 
 } // namespace tree

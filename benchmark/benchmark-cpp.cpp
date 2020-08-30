@@ -41,8 +41,7 @@ int main(int argc, char* argv[]) {
     auto tp = molpro::profiler::tree::Profiler{"test tree profiler: depth = 1"};
     auto et = ElapsedTime(repeat);
     for (auto i = 0; i < repeat; i++) {
-      tp.start("test");
-      tp.stop();
+      tp.push("test");
     }
     tp.stop_all();
     report(tp);
@@ -71,24 +70,19 @@ int main(int argc, char* argv[]) {
     auto tp = molpro::profiler::tree::Profiler{"test tree profiler: depth = 1"};
     auto et = ElapsedTime(repeat);
     for (auto i = 0; i < repeat / 10000; i++) {
-      tp.start("test1");
+      auto p1 = tp.push("test1");
       for (auto ii = 0; ii < 10; ii++) {
-        tp.start("test2");
+        auto p2 = tp.push("test2");
         for (auto iii = 0; iii < 10; iii++) {
-          tp.start("test3");
+          auto p3 = tp.push("test3");
           for (auto iiii = 0; iiii < 10; iiii++) {
-            tp.start("test4");
+            auto p4 = tp.push("test4");
             for (auto iiiii = 0; iiiii < 10; iiiii++) {
-              tp.start("test5");
-              tp.stop();
+              auto p5 = tp.push("test5");
             }
-            tp.stop();
           }
-          tp.stop();
         }
-        tp.stop();
       }
-      tp.stop();
     }
     tp.stop_all();
     report(tp);
