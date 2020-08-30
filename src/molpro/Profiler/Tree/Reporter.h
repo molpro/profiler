@@ -52,7 +52,9 @@ void extract_counters(const std::shared_ptr<CounterNode>& node, std::map<Counter
 
 void report(Profiler& prof) {
   struct Compare {
-    bool operator()(const Counter& x, const Counter& y) { return x.wall.cumulative_time() > y.wall.cumulative_time(); }
+    bool operator()(const Counter& x, const Counter& y) const {
+      return x.wall.cumulative_time() > y.wall.cumulative_time();
+    }
   };
   auto paths = std::map<Counter, std::string, Compare>{};
   extract_counters(prof.root, paths);
