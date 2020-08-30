@@ -2,6 +2,7 @@
 #include <memory>
 #include <molpro/Profiler.h>
 #include <molpro/Profiler/Tree/Profiler.h>
+#include <molpro/Profiler/Tree/Reporter.h>
 #include <sys/time.h>
 #ifdef MOLPRO_PROFILER_MPI
 #include <mpi.h>
@@ -32,7 +33,7 @@ int main(int argc, char* argv[]) {
     tp.start("test");
     tp.stop();
   }
-  tp.stop();
+  tp.stop_all();
   report(tp);
   std::cout << "Elapsed time: " << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count()
             << std::endl;

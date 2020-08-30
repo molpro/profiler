@@ -84,52 +84,11 @@ struct Profiler {
     return stop();
   }
   //! Stop all nodes and traverse up to the root
-  Profiler& stop_all(const std::string& name) { return stop(root->name); }
+  Profiler& stop_all() { return stop(root->name); }
 
   //! Access leaf counter
   Counter& counter() { return leaf->counter; }
 };
-
-std::shared_ptr<CounterNode> remove_first_leaf(std::shared_ptr<CounterNode>& node) {
-  auto leaf = node;
-  if (leaf->children.empty())
-    return nullptr;
-  while (!leaf->children.empty()) {
-    leaf = leaf->children.begin()->second;
-  }
-  auto it = leaf->parent->children.begin();
-  leaf->parent->children.erase(it);
-  return leaf;
-}
-
-std::string tree_path(const std::shared_ptr<CounterNode>& leaf) {
-  std::string path;
-  auto node = leaf;
-  while (node) {
-    path = node->name + "." + path;
-    node = node->parent;
-  }
-  path.erase(prev(path.end()));
-  return path;
-}
-
-void report(Profiler& prof) {
-  struct Compare {
-    bool operator()(const Counter& x, const Counter& y) { return x.wall.cumulative_time() > y.wall.cumulative_time(); }
-  };
-  auto paths = std::map<Counter, std::string, Compare>{};
-  while (auto leaf = remove_first_leaf(prof.root)) {
-    paths[leaf->counter] = tree_path(leaf);
-  }
-  std::cout << "Profiler " << '"' << prof.description << '"' << std::endl;
-  std::for_each(begin(paths), end(paths), [](decltype(paths)::value_type& node) {
-    std::cout << node.second;
-    std::cout << "    calls=" << node.first.call_count << ", ";
-    std::cout << " wall=" << node.first.wall.cumulative_time();
-    std::cout << std::endl;
-    std::cout << std::endl;
-  });
-}
 
 } // namespace tree
 } // namespace profiler
