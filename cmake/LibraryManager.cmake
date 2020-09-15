@@ -232,7 +232,7 @@ function(LibraryManager_Append target)
         # Are this sensible defaults?
         set_target_properties(${target} PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fortran)
         target_include_directories(${target}
-                PUBLIC $<INSTALL_INTERFACE:include/fortran>
+                PUBLIC $<INSTALL_INTERFACE:include>
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fortran>)
     endif ()
 endfunction()
