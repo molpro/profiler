@@ -1,5 +1,5 @@
 namespace molpro{
-namespace linalg{
+namespace profiler{
 /*!
 @page TopicProfiler Profiler Structure
 
