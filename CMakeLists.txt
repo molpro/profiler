@@ -5,12 +5,12 @@ include(FetchContent)
 FetchContent_Declare(
         LibraryManager
         GIT_REPOSITORY https://gitlab+deploy-token-178345:RQZa2rmdwnV7Hdwg8XEq@gitlab.com/molpro/LibraryManager.git
-        GIT_TAG master
+        GIT_TAG 0.6.9
 )
 FetchContent_Declare(
         dependency_manager
         GIT_REPOSITORY https://gitlab.com/dependencymanager/dependency-manager.git
-        GIT_TAG master
+        GIT_TAG 0.1.5
 )
 FetchContent_MakeAvailable(LibraryManager)
 
