@@ -7,6 +7,8 @@ Framework for timing code sections in serial and parallel implemented in C++ wit
 The profiler works by constructing a call tree and accumulating call count, operation count, and timing
 duration in each node. This profile tree can be analysed and printed.
 
+![Alt Text](doc/profiler.gif)*Profiler call tree*
+
 **NOTE** we are transitioning to a new structure, and the interface is about to change.
 
 # Features
