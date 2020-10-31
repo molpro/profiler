@@ -1,0 +1,10 @@
+namespace molpro{
+namespace linalg{
+/*!
+@page TopicProfiler Profiler Structure
+
+This page explains how the Profiler is structured and some of its key features.
+
+*/
+}
+}

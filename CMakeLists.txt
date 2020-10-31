@@ -28,12 +28,5 @@ if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
     add_subdirectory(benchmark)
 endif ()
 
-########## Documentation ##########
-
 FetchContent_MakeAvailable(dependency_manager)
-
-include(DependencyManagerDocs)
-DependencyManagerDocs_Add(Profiler
-        FILES README.md
-        DOXYFILE Doxyfile
-        DOC_URL https://molpro.gitlab.io/profiler/${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
+add_subdirectory(doc)
