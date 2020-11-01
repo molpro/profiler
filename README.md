@@ -1,6 +1,9 @@
 Welcome to Profiler!
 ====================
 
+Full documentation can be found here 
+[https://molpro.gitlab.io/profiler/latest/](https://molpro.gitlab.io/profiler/latest/).
+
 # Overview
 
 Framework for timing sections of code in serial and parallel, implemented in C++ with C and Fortran wrappers.
