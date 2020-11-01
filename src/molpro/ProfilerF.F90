@@ -144,7 +144,7 @@ CONTAINS
      ProfilerNewF%handle = ProfilerNewCMPIB((TRIM(name)//C_NULL_CHAR),sortC,levelC,INT(comm,kind=c_int),cpuC)
     ELSE
 #endif
-            ProfilerNewF%handle = ProfilerNewCSerB((TRIM(name) // C_NULL_CHAR), sortC, levelC,cpuC)
+            ProfilerNewF%handle = ProfilerNewCSerB((TRIM(name) // C_NULL_CHAR), sortC, levelC, cpuC)
 #ifdef MOLPRO_PROFILER_MPI
     ENDIF
 #endif
@@ -154,7 +154,7 @@ CONTAINS
      ProfilerNewF%handle = ProfilerNewCMPIA((TRIM(name)//C_NULL_CHAR),INT(comm,kind=c_int),cpuC)
     ELSE
 #endif
-            ProfilerNewF%handle = ProfilerNewCSerA((TRIM(name) // C_NULL_CHAR),cpuC)
+            ProfilerNewF%handle = ProfilerNewCSerA((TRIM(name) // C_NULL_CHAR), cpuC)
 #ifdef MOLPRO_PROFILER_MPI
     ENDIF
 #endif

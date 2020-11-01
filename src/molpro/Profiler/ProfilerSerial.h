@@ -52,7 +52,7 @@ namespace profiler {
  * \endcode
  */
 class ProfilerSerial {
- public:
+public:
   ProfilerSerial() = delete;
   /*!
    * \brief Sorting criteria for categories in report.
@@ -78,11 +78,8 @@ class ProfilerSerial {
    * \param key currently has no purpose. Gives consistent interface with ProfilerMPI
    * \param cpu Whether to poll CPU time
    */
-  ProfilerSerial(const std::string& name,
-                 sortMethod sortBy = wall,
-                 const int level = INT_MAX,
-                 key_t key = PROFILER_DEFAULT_KEY,
-                 bool cpu = false);
+  ProfilerSerial(const std::string& name, sortMethod sortBy = wall, const int level = INT_MAX,
+                 key_t key = PROFILER_DEFAULT_KEY, bool cpu = false);
   /*!
    * \brief Reset the object.
    * \param name The title of this object.
@@ -116,10 +113,10 @@ class ProfilerSerial {
    */
   std::string str(const int verbosity = 0, const bool cumulative = true, const int precision = 3) const;
 
- public:
+public:
   class Push;
 
- public:
+public:
   /*!
    * \brief Push to a new level on the stack of a Profiler object.
    * \param name The name of the code segment to be profiled.
@@ -127,7 +124,7 @@ class ProfilerSerial {
    */
   Push push(const std::string& name = "");
 
- public:
+public:
   struct resources {
     double cpu;
     double wall;
@@ -166,10 +163,10 @@ class ProfilerSerial {
    */
   virtual resultMap totals() const;
 
- protected:
+protected:
   void totalise(const struct resources now, const long operations, const int calls = 1);
 
-  template<class T>
+  template <class T>
   struct compareResources : std::binary_function<T, T, bool> {
     inline bool operator()(const T& _left, const T& _right) {
       if (_left.first.rfind(':') == std::string::npos)
@@ -189,7 +186,8 @@ class ProfilerSerial {
       std::ptrdiff_t o;
       for (o = 0;
            o < static_cast<std::ptrdiff_t>(std::max(leftname.size(), rightname.size())) && leftname[o] == rightname[o];
-           o++);
+           o++)
+        ;
       while ((leftname[o] != ':' || rightname[o] != ':') && o >= 0)
         o--;
       auto oL = leftname.find(':', o + 1);
@@ -222,23 +220,24 @@ class ProfilerSerial {
         }
       }
       switch (l.parent == nullptr ? wall : l.parent->m_sortBy) {
-        case wall:
-          if (l.cumulative == NULL)
-            return l.wall < r.wall;
-          return l.cumulative->wall < r.cumulative->wall;
-        case cpu:
-          if (l.cumulative == NULL)
-            return l.cpu < r.cpu;
-          return l.cumulative->cpu < r.cumulative->cpu;
-        case operations:
-          if (l.cumulative == NULL)
-            return l.operations < r.operations;
-          return l.cumulative->operations < r.cumulative->operations;
-        case calls:
-          if (l.cumulative == NULL)
-            return l.calls < r.calls;
-          return l.cumulative->calls < r.cumulative->calls;
-        case name:return l.name > r.name;
+      case wall:
+        if (l.cumulative == NULL)
+          return l.wall < r.wall;
+        return l.cumulative->wall < r.cumulative->wall;
+      case cpu:
+        if (l.cumulative == NULL)
+          return l.cpu < r.cpu;
+        return l.cumulative->cpu < r.cumulative->cpu;
+      case operations:
+        if (l.cumulative == NULL)
+          return l.operations < r.operations;
+        return l.cumulative->operations < r.cumulative->operations;
+      case calls:
+        if (l.cumulative == NULL)
+          return l.calls < r.calls;
+        return l.cumulative->calls < r.cumulative->calls;
+      case name:
+        return l.name > r.name;
       }
       throw std::logic_error("Failure to compare");
     }
@@ -257,12 +256,12 @@ class ProfilerSerial {
   void stopall();
   void accumulate(resultMap& results);
 
- public:
+public:
   /*!
    * \brief An object that will execute Profiler::start on construction, and Profiler::stop on destruction.
    */
   class Push {
-   public:
+  public:
     /*!
      * \brief Push to a new level on the stack of a Profiler object
      * \param profiler The Profiler object
@@ -285,7 +284,7 @@ class ProfilerSerial {
      */
     void operator++() { m_operations++; }
 
-   protected:
+  protected:
     Push();
     const std::string m_name;
     ProfilerSerial& m_profiler;

@@ -37,21 +37,20 @@ public:
    * @return the new profiler instance
    */
   static std::shared_ptr<Profiler> create(const std::string &name, Profiler::sortMethod sortBy = Profiler::wall,
-                                          int level = INT_MAX,
-                                          Profiler::key_t communicator = PROFILER_DEFAULT_KEY,
-                                          bool cpu = false,
-                                          bool set_default = true, bool replace = false) {
+                                          int level = INT_MAX, Profiler::key_t communicator = PROFILER_DEFAULT_KEY,
+                                          bool cpu = false, bool set_default = true, bool replace = false) {
     auto key = _key(name, communicator);
-    auto p = (replace || m_profilers.count(key) == 0) ? std::make_shared<Profiler>(name, sortBy, level, communicator, cpu)
-                                                      : m_profilers[key].lock();
+    auto p = (replace || m_profilers.count(key) == 0)
+                 ? std::make_shared<Profiler>(name, sortBy, level, communicator, cpu)
+                 : m_profilers[key].lock();
     m_profilers[key] = p;
     if (set_default)
       default_key = key;
     return p;
   }
 
-  static std::shared_ptr<Profiler> create(const std::string &name, Profiler::key_t communicator, bool cpu, bool set_default,
-                                          bool replace) {
+  static std::shared_ptr<Profiler> create(const std::string &name, Profiler::key_t communicator, bool cpu,
+                                          bool set_default, bool replace) {
     return create(name, Profiler::wall, INT_MAX, communicator, cpu, set_default, replace);
   }
 

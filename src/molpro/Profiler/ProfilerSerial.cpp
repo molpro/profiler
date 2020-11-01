@@ -1,13 +1,13 @@
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <cmath>
+#include <ctime>
 #include <deque>
 #include <iomanip>
 #include <queue>
 #include <sstream>
 #include <string>
-#include <ctime>
-#include <chrono>
 #ifdef PROFILER_MEMORY
 #include <molpro/memory.h>
 #endif
@@ -16,11 +16,7 @@
 
 namespace molpro {
 namespace profiler {
-ProfilerSerial::ProfilerSerial(const std::string& name,
-                               sortMethod sortBy,
-                               const int level,
-                               key_t key,
-                               bool cpu)
+ProfilerSerial::ProfilerSerial(const std::string& name, sortMethod sortBy, const int level, key_t key, bool cpu)
     : m_sortBy(sortBy), m_cpu(cpu) {
   reset(name);
   active(level);
@@ -40,13 +36,13 @@ void ProfilerSerial::active(const int level, const int stopPrint) {
   stopPrint_ = stopPrint;
 }
 
-static char colon_replace = (char) 30;
+static char colon_replace = (char)30;
 
 void ProfilerSerial::start(const std::string& name) {
   level++;
   if (level > activeLevel)
     return;
-  assert(level == (int) resourcesStack.size() + 1);
+  assert(level == (int)resourcesStack.size() + 1);
   struct resources now = getResources();
   now.name = name;
   //  std::cout << "Profiler::start "<<name<<" wall="<<now.wall<<std::endl;
@@ -101,7 +97,7 @@ void ProfilerSerial::stop(const std::string& name, long operations) {
   level--;
   if (level > 0 && level >= activeLevel)
     return;
-  assert(level == (int) resourcesStack.size() - 1);
+  assert(level == (int)resourcesStack.size() - 1);
 #ifndef NDEBUG
   std::string nam(name);
   for (auto c = nam.begin(); c != nam.end(); c++)
@@ -147,7 +143,8 @@ ProfilerSerial::resultMap ProfilerSerial::totals() const {
   ProfilerSerial thiscopy =
       *this; // take a copy so that we can run stopall yet be const, and so that we can sum globally
   thiscopy.stopall();
-  while (thiscopy.results.erase(""));
+  while (thiscopy.results.erase(""))
+    ;
   for (auto& x : thiscopy.results)
     x.second.parent = this;
   thiscopy.accumulate(thiscopy.results);
@@ -202,15 +199,15 @@ std::string ProfilerSerial::resources::str(const int width, const int verbosity,
   ss << " wall=" << r->wall;
   double ops = r->operations;
   double wall = r->wall;
-  if (ops > (double) 0 && wall > (double) 0) {
+  if (ops > (double)0 && wall > (double)0) {
     ops /= wall;
-    int shifter = ops > 1 ? (int) (log10(ops) / 3) : 0;
-    shifter = shifter >= (int) prefixes.size() ? (int) prefixes.size() - 1 : shifter;
-    ops *= pow((double) 10, -shifter * 3);
+    int shifter = ops > 1 ? (int)(log10(ops) / 3) : 0;
+    shifter = shifter >= (int)prefixes.size() ? (int)prefixes.size() - 1 : shifter;
+    ops *= pow((double)10, -shifter * 3);
     ss << ", " << ops << " " << prefixes[shifter] << "op/s";
   }
   size_t stack = r->stack;
-  if (stack > (size_t) 0) {
+  if (stack > (size_t)0) {
     ss << ", stack=" << stack;
   }
   return ss.str();
@@ -267,7 +264,7 @@ void ProfilerSerial::accumulate(resultMap& results) {
     // nb 'child' includes the parent itself
     for (resultMap::iterator child = results.begin(); child != results.end(); ++child) {
       if (parent->first == child->first || (parent->first.size() <= child->first.size() &&
-          parent->first + ":" == child->first.substr(0, parent->first.size() + 1))) {
+                                            parent->first + ":" == child->first.substr(0, parent->first.size() + 1))) {
         *parent->second.cumulative += child->second;
         if (parent->first != child->first)
           parent->second.cumulative->stack =
@@ -282,15 +279,14 @@ void ProfilerSerial::accumulate(resultMap& results) {
 static bool init = true;
 static double wallbase;
 using clock_type = typename std::conditional<std::chrono::high_resolution_clock::is_steady,
-                                             std::chrono::high_resolution_clock,
-                                             std::chrono::steady_clock>::type;
+                                             std::chrono::high_resolution_clock, std::chrono::steady_clock>::type;
 static std::chrono::time_point<clock_type> start_time;
 
 struct ProfilerSerial::resources ProfilerSerial::getResources() {
   struct ProfilerSerial::resources result;
   result.operations = 0;
   result.calls = 0;
-  result.cpu = m_cpu ? (double) clock() / CLOCKS_PER_SEC : 0;
+  result.cpu = m_cpu ? (double)clock() / CLOCKS_PER_SEC : 0;
   auto now = clock_type::now();
   if (init) {
     start_time = now;
