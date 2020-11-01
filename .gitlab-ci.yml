@@ -19,8 +19,8 @@ build:
 
 pages:
   stage: deploy
-#  only:
-#    - tags
+  only:
+    - tags
   script:
     - PUBLIC=$PWD/public
     - mkdir -p $PUBLIC
