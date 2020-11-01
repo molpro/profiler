@@ -6,6 +6,6 @@ foreach (f DoxygenLayout.xml)
 endforeach ()
 
 DependencyManagerDocs_Add(${PROJECT_NAME}
-        FILES ../README.md Profiler.dox
+        FILES ../README.md
         DOC_URL "https://molpro.gitlab.io/profiler/${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
         )
