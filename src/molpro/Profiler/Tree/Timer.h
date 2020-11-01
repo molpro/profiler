@@ -10,7 +10,7 @@ class Timer {
 public:
   enum Type { cpu, wall };
 
-  Timer(Type type, bool not_dummy);
+  Timer(Type type, bool is_dummy);
 
   //! start timing
   Timer& start();

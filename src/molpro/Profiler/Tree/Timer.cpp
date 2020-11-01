@@ -12,7 +12,7 @@ using clock_type = typename std::conditional<std::chrono::high_resolution_clock:
 const auto global_start_time = clock_type::now();
 } // namespace
 
-Timer::Timer(Timer::Type type, bool not_dummy) : m_type(type), m_dummy(!not_dummy) {}
+Timer::Timer(Timer::Type type, bool is_dummy) : m_type(type), m_dummy(is_dummy) {}
 
 Timer& Timer::start() {
   if (not m_dummy) {
@@ -29,7 +29,7 @@ Timer& Timer::start() {
 
 Timer& Timer::stop() {
   if (not m_stopped) {
-    m_stop = Timer{m_type, !m_dummy}.start().m_start;
+    m_stop = Timer{m_type, m_dummy}.start().m_start;
     m_cumulative += m_stop - m_start;
   }
   m_stopped = true;

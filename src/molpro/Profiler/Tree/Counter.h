@@ -17,7 +17,7 @@ struct Counter {
   Counter() = default;
 
   Counter(bool with_cpu_time, bool with_wall_time)
-      : cpu(Timer{Timer::cpu, with_cpu_time}), wall(Timer{Timer::wall, with_wall_time}) {}
+      : cpu(Timer{Timer::cpu, !with_cpu_time}), wall(Timer{Timer::wall, !with_wall_time}) {}
 
   //! Start timing, and increment call_count;
   Counter& start();
@@ -31,10 +31,10 @@ struct Counter {
   //! Accumulates all attributes
   void operator+=(const Counter& other);
 
-  size_t call_count = 0;             //!< number of times this node was merged
-  size_t operation_count = 0;        //!< number of operations performed
-  Timer cpu = {Timer::cpu, false};   //!< cpu time
-  Timer wall = {Timer::wall, false}; //!< wall time
+  size_t call_count = 0;            //!< number of times this node was merged
+  size_t operation_count = 0;       //!< number of operations performed
+  Timer cpu = {Timer::cpu, true};   //!< cpu time
+  Timer wall = {Timer::wall, true}; //!< wall time
 };
 
 /*!
