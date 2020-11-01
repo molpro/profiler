@@ -46,8 +46,8 @@ struct Profiler {
   std::shared_ptr<Node<Counter>> root; //!< root node
   std::shared_ptr<Node<Counter>> leaf; //!< The active leaf node is the last node to be started.
   explicit Profiler(std::string description_, bool with_wall = true, bool with_cpu = false)
-      : description(std::move(description_)),
-        root(std::make_shared<Node<Counter>>(root_name, Counter{with_cpu, with_wall})), leaf(root) {
+      : description(std::move(description_)), root(Node<Counter>::make_root(root_name, Counter{with_cpu, with_wall})),
+        leaf(root) {
     root->counter.start();
   }
 
@@ -59,9 +59,9 @@ struct Profiler {
   Profiler& start(const std::string& name) {
     auto ch = leaf->children.find(name);
     if (ch == leaf->children.end()) {
-      auto count = Counter{!root->counter.get_cpu().dummy(), !root->counter.get_wall().dummy()}.start();
-      leaf->children[name] = std::make_shared<Node<Counter>>(name, count, leaf);
-      leaf = leaf->children[name];
+      auto count = Counter{!root->counter.get_cpu().dummy(), !root->counter.get_wall().dummy()};
+      count.start();
+      leaf = Node<Counter>::add_child(name, count, leaf);
     } else {
       ch->second->counter.start();
       leaf = ch->second;
