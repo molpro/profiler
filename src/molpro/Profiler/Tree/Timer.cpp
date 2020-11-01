@@ -15,7 +15,7 @@ const auto global_start_time = clock_type::now();
 Timer::Timer(Timer::Type type, bool is_dummy) : type(type), m_dummy(is_dummy) {}
 
 Timer& Timer::start() {
-  if (not m_dummy) {
+  if (not m_dummy && m_start == 0) {
     if (type == cpu) {
       m_start = double(clock()) / CLOCKS_PER_SEC;
     } else if (type == wall) {
@@ -31,6 +31,8 @@ Timer& Timer::stop() {
   if (not m_stopped) {
     m_stop = Timer{type, m_dummy}.start().m_start;
     m_cumulative += m_stop - m_start;
+    m_stop = m_cumulative;
+    m_start = 0;
   }
   m_stopped = true;
   return *this;

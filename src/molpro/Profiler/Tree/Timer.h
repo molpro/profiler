@@ -22,8 +22,11 @@ public:
 
   double start_time() const { return m_start; };
   double stop_time() const { return m_stop; };
+  //! Cumulative time over all start/stop periods
   double cumulative_time() const { return m_cumulative; };
+  //! Timer is stopped and is not timing
   bool stopped() const { return m_stopped; };
+  //! Timer is dummy and does nothing
   bool dummy() const { return m_dummy; };
 
   const Type type; //!< type of timer

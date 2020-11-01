@@ -21,6 +21,21 @@ TEST(Timer, constructor) {
   }
 }
 
+TEST(Timer, start__repeated) {
+  auto t = Timer(Timer::Type::wall, false);
+  t.start();
+  const auto init_time = t.start_time();
+  std::this_thread::sleep_for(10ms);
+  t.start();
+  ASSERT_EQ(t.start_time(), init_time);
+  std::this_thread::sleep_for(10ms);
+  t.start();
+  ASSERT_EQ(t.start_time(), init_time);
+  t.stop();
+  ASSERT_NE(t.stop_time(), 0);
+  ASSERT_NE(t.cumulative_time(), 0);
+}
+
 TEST(Timer, start_stop) {
   const bool not_dummy = false;
   constexpr auto delay = 1ms;
