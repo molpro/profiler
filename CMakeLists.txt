@@ -4,7 +4,7 @@ project(Profiler VERSION 1.0 LANGUAGES CXX)
 include(FetchContent)
 FetchContent_Declare(
         LibraryManager
-        GIT_REPOSITORY https://gitlab+deploy-token-178345:RQZa2rmdwnV7Hdwg8XEq@gitlab.com/molpro/LibraryManager.git
+        GIT_REPOSITORY https://gitlab.com/molpro/librarymanager.git
         GIT_TAG 0.6.9
 )
 FetchContent_Declare(
