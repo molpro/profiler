@@ -6,7 +6,7 @@
 using molpro::profiler::tree::Counter;
 using molpro::profiler::tree::Timer;
 
-TEST(profiler_tree, Counter_constructor_default) {
+TEST(Counter, constructor_default) {
   auto c = Counter();
   ASSERT_EQ(c.get_call_count(), 0);
   ASSERT_EQ(c.get_operation_count(), 0);
@@ -16,7 +16,7 @@ TEST(profiler_tree, Counter_constructor_default) {
   ASSERT_TRUE(c.get_wall().dummy());
 }
 
-TEST(profiler_tree, Counter_constructor) {
+TEST(Counter, constructor) {
   auto check = [](bool cpu, bool wall) {
     auto c = Counter(cpu, wall);
     ASSERT_EQ(c.get_cpu().dummy(), !cpu);
@@ -28,13 +28,13 @@ TEST(profiler_tree, Counter_constructor) {
   check(false, false);
 }
 
-TEST(profiler_tree, Counter_stop) {
+TEST(Counter, stop) {
   auto c = Counter();
   c.stop();
   ASSERT_EQ(c.get_call_count(), 0);
 }
 
-TEST(profiler_tree, Counter_start_stop) {
+TEST(Counter, start_stop) {
   auto c = Counter();
   c.start();
   ASSERT_EQ(c.get_call_count(), 1);
