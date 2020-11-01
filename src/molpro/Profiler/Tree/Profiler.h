@@ -2,6 +2,7 @@
 #define PROFILER_SRC_MOLPRO_PROFILER_TREE_PROFILER_H
 
 #include <molpro/Profiler/Tree/Counter.h>
+#include <molpro/Profiler/Tree/Node.h>
 
 #include <algorithm>
 #include <iostream>
@@ -42,11 +43,11 @@ namespace tree {
 struct Profiler {
   const std::string description;       //!< name of the root node
   const std::string root_name = "All"; //!< name of the root node
-  std::shared_ptr<CounterNode> root;   //!< root node
-  std::shared_ptr<CounterNode> leaf;   //!< The active leaf node is the last node to be started.
+  std::shared_ptr<Node<Counter>> root; //!< root node
+  std::shared_ptr<Node<Counter>> leaf; //!< The active leaf node is the last node to be started.
   explicit Profiler(std::string description_, bool with_wall = true, bool with_cpu = false)
       : description(std::move(description_)),
-        root(std::make_shared<CounterNode>(root_name, Counter{with_cpu, with_wall})), leaf(root) {
+        root(std::make_shared<Node<Counter>>(root_name, Counter{with_cpu, with_wall})), leaf(root) {
     root->counter.start();
   }
 
@@ -59,7 +60,7 @@ struct Profiler {
     auto ch = leaf->children.find(name);
     if (ch == leaf->children.end()) {
       auto count = Counter{!root->counter.get_cpu().dummy(), !root->counter.get_wall().dummy()}.start();
-      leaf->children[name] = std::make_shared<CounterNode>(name, count, leaf);
+      leaf->children[name] = std::make_shared<Node<Counter>>(name, count, leaf);
       leaf = leaf->children[name];
     } else {
       ch->second->counter.start();

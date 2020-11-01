@@ -1,5 +1,6 @@
 #ifndef PROFILER_SRC_MOLPRO_PROFILER_TREE_REPORTER_H
 #define PROFILER_SRC_MOLPRO_PROFILER_TREE_REPORTER_H
+#include <molpro/Profiler/Tree/Node.h>
 #include <molpro/Profiler/Tree/Profiler.h>
 
 namespace molpro {
@@ -17,7 +18,7 @@ struct Reporter {};
  * @param node root of the subtree
  * @return
  */
-std::shared_ptr<CounterNode> remove_first_leaf(std::shared_ptr<CounterNode>& node) {
+std::shared_ptr<Node<Counter>> remove_first_leaf(std::shared_ptr<Node<Counter>>& node) {
   auto leaf = node;
   if (leaf->children.empty())
     return nullptr;
@@ -30,7 +31,7 @@ std::shared_ptr<CounterNode> remove_first_leaf(std::shared_ptr<CounterNode>& nod
 }
 
 //! Returns path to the leaf by joining names from the root to the leaf
-std::string tree_path(const std::shared_ptr<CounterNode>& leaf) {
+std::string tree_path(const std::shared_ptr<Node<Counter>>& leaf) {
   std::string path;
   auto node = leaf;
   while (node) {
@@ -43,7 +44,7 @@ std::string tree_path(const std::shared_ptr<CounterNode>& leaf) {
 
 //! Depth-first-search through the tree and store Counter and its tree_path
 template <class Compare>
-void extract_counters(const std::shared_ptr<CounterNode>& node, std::map<Counter, std::string, Compare>& paths) {
+void extract_counters(const std::shared_ptr<Node<Counter>>& node, std::map<Counter, std::string, Compare>& paths) {
   paths[node->counter] = tree_path(node);
   std::for_each(
       begin(node->children), end(node->children),

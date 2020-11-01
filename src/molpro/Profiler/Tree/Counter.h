@@ -44,19 +44,6 @@ protected:
   Timer wall = {Timer::wall, true}; //!< wall time
 };
 
-/*!
- * @brief Represents a counter object as a node in a tree.
- */
-struct CounterNode {
-  explicit CounterNode(std::string name, Counter counter, std::shared_ptr<CounterNode> parent = nullptr)
-      : name(std::move(name)), counter(std::move(counter)), parent(std::move(parent)) {}
-
-  std::string name; //!< name of the node. This is a duplicate, same name is stored in parent's map of children.
-  Counter counter;  //! resource counter
-  std::shared_ptr<CounterNode> parent;                          //!< parent node
-  std::map<std::string, std::shared_ptr<CounterNode>> children; //!< child nodes
-};
-
 } // namespace tree
 } // namespace profiler
 } // namespace molpro
