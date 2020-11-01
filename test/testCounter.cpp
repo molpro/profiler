@@ -45,3 +45,17 @@ TEST(Counter, start_stop) {
   c.stop();
   ASSERT_EQ(c.get_call_count(), 3);
 }
+
+TEST(Counter, reset) {
+  auto c = Counter(true, true);
+  c.start();
+  c.stop();
+  ASSERT_NE(c.get_call_count(), 0);
+  c.reset();
+  ASSERT_EQ(c.get_call_count(), 0);
+  ASSERT_EQ(c.get_operation_count(), 0);
+  ASSERT_TRUE(c.get_wall().stopped());
+  ASSERT_TRUE(c.get_cpu().stopped());
+  ASSERT_EQ(c.get_wall().cumulative_time(), 0);
+  ASSERT_EQ(c.get_cpu().cumulative_time(), 0);
+}

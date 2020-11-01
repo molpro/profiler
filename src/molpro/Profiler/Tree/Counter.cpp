@@ -23,6 +23,11 @@ void Counter::operator+=(const Counter& other) {
   wall += other.wall;
 }
 
+Counter& Counter::reset() {
+  *this = Counter(!cpu.dummy(), !wall.dummy());
+  return *this;
+}
+
 } // namespace tree
 } // namespace profiler
 } // namespace molpro

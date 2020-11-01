@@ -26,6 +26,9 @@ public:
   //! Stop timing
   Counter& stop();
 
+  //! Reset all counters and timers
+  Counter& reset();
+
   //! Add to the operation count
   void add_operations(size_t ops) { operation_count += ops; }
 
