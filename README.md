@@ -96,7 +96,8 @@ int main(){
     // ...
     return 0;
 }
-
+```
+```cpp
 // File: run.cpp
 #include <molpro/Profiler.h>
 void run(){
