@@ -12,7 +12,7 @@ Framework for timing sections of code in serial and parallel, implemented in C++
 This can degrade overall performance and distort real profile if attempting to time tight loops.
 
 The profiler works by constructing a call tree and accumulating call count, operation count, and timing
-duration in each node. This profile tree can be analysed and printed.
+duration in each node. Optionally, but typically with significantly greater overhead, CPU time can be recorded also. The profile tree can be analysed and printed.
 
 In the following simple example, calling *start()* on profiler moves down the call tree and starts timing and calling
 *stop()* moves up to the parent and stops timing. 
