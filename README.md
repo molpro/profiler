@@ -51,7 +51,7 @@ int main(){
 
 Here is a visual representation of the profiler call tree during execution.
 
-![Visualisation of profiler call tree](doc/profiler.gif)
+<img src="doc/profiler.gif" width="800" />
 
 At the end of calculation the profiler can be analysed and printed out.
 By default, the call tree is sorted by wall time at each level and cumulative times are used.

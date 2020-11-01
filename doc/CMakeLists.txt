@@ -9,3 +9,5 @@ DependencyManagerDocs_Add(${PROJECT_NAME}
         FILES ../README.md
         DOC_URL "https://molpro.gitlab.io/profiler/${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
         )
+
+file(COPY profiler.gif DESTINATION ${CMAKE_BINARY_DIR}/docs/${PROJECT_NAME}/html/doc/)
