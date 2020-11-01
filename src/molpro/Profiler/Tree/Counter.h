@@ -13,7 +13,8 @@ namespace tree {
 /*!
  * @brief Resource counter used for storing operation count, call count, timing information.
  */
-struct Counter {
+class Counter {
+public:
   Counter() = default;
 
   Counter(bool with_cpu_time, bool with_wall_time)
@@ -31,6 +32,12 @@ struct Counter {
   //! Accumulates all attributes
   void operator+=(const Counter& other);
 
+  size_t get_call_count() const { return call_count; }
+  size_t get_operation_count() const { return operation_count; }
+  const Timer& get_cpu() const { return cpu; }
+  const Timer& get_wall() const { return wall; }
+
+protected:
   size_t call_count = 0;            //!< number of times this node was merged
   size_t operation_count = 0;       //!< number of operations performed
   Timer cpu = {Timer::cpu, true};   //!< cpu time

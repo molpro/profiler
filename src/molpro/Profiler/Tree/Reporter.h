@@ -53,7 +53,7 @@ void extract_counters(const std::shared_ptr<CounterNode>& node, std::map<Counter
 void report(Profiler& prof) {
   struct Compare {
     bool operator()(const Counter& x, const Counter& y) const {
-      return x.wall.cumulative_time() > y.wall.cumulative_time();
+      return x.get_wall().cumulative_time() > y.get_wall().cumulative_time();
     }
   };
   auto paths = std::map<Counter, std::string, Compare>{};
@@ -64,8 +64,8 @@ void report(Profiler& prof) {
   std::cout << "Profiler " << '"' << prof.description << '"' << " cumulative " << std::endl;
   std::for_each(begin(paths), end(paths), [](decltype(paths)::value_type& node) {
     std::cout << node.second;
-    std::cout << "    calls=" << node.first.call_count << ", ";
-    std::cout << " wall=" << node.first.wall.cumulative_time();
+    std::cout << "    calls=" << node.first.get_call_count() << ", ";
+    std::cout << " wall=" << node.first.get_wall().cumulative_time();
     std::cout << std::endl;
   });
   std::cout << std::endl;
