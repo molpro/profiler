@@ -1,6 +1,6 @@
 add_custom_target(profiler-examples ALL COMMENT "Builds all profiler examples")
 
-list(APPEND srcs profiler-example.cpp profiler-singleton-example.cpp)
+list(APPEND srcs profiler-example.cpp profiler-singleton-example.cpp readme-example.cpp)
 if (FORTRAN)
     list(APPEND srcs profiler-fortran-example.F90)
 endif ()
