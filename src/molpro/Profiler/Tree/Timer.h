@@ -28,9 +28,11 @@ public:
   bool stopped() const { return m_stopped; };
   //! Timer is dummy and does nothing
   bool dummy() const { return m_dummy; };
+  //! type of timer
+  Type type() const { return m_type; }
 
-  const Type type; //!< type of timer
 private:
+  Type m_type;             //!< type of timer
   double m_start = 0;      //!< time of start
   double m_stop = 0;       //!< time of stop
   double m_cumulative = 0; //!< time from start to stop, accumulated over different timers

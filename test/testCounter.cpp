@@ -10,8 +10,8 @@ TEST(Counter, constructor_default) {
   auto c = Counter();
   ASSERT_EQ(c.get_call_count(), 0);
   ASSERT_EQ(c.get_operation_count(), 0);
-  ASSERT_EQ(c.get_cpu().type, Timer::Type::cpu);
-  ASSERT_EQ(c.get_wall().type, Timer::Type::wall);
+  ASSERT_EQ(c.get_cpu().type(), Timer::Type::cpu);
+  ASSERT_EQ(c.get_wall().type(), Timer::Type::wall);
   ASSERT_TRUE(c.get_cpu().dummy());
   ASSERT_TRUE(c.get_wall().dummy());
 }
