@@ -1,6 +1,6 @@
 add_custom_target(profiler-examples ALL COMMENT "Builds all profiler examples")
 
-list(APPEND srcs profiler-example.cpp profiler-singleton-example.cpp readme-example.cpp)
+list(APPEND srcs profiler-example.cpp profiler-singleton-example.cpp)
 if (FORTRAN)
     list(APPEND srcs profiler-fortran-example.F90)
 endif ()
@@ -40,3 +40,10 @@ foreach (example ${srcs})
         add_dependencies(profiler-examples ${name}-mpi)
     endif ()
 endforeach ()
+
+add_executable(readme-example-serial readme-example.cpp)
+target_link_libraries(readme-example-serial PUBLIC molpro::Profiler)
+target_compile_options(readme-example-serial PRIVATE -UMOLPRO_PROFILER_MPI)
+add_test(NAME readme-example-serial COMMAND readme-example-serial WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+set_tests_properties(readme-example-serial PROPERTIES TIMEOUT 60)
+add_dependencies(profiler-examples readme-example-serial)
