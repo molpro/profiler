@@ -26,7 +26,7 @@ public:
   bool stopped() const { return m_stopped; };
   bool dummy() const { return m_dummy; };
 
-  const Type m_type; //!< type of timer
+  const Type type; //!< type of timer
 private:
   double m_start = 0;      //!< time of start
   double m_stop = 0;       //!< time of stop
