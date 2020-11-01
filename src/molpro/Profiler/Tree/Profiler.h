@@ -58,7 +58,7 @@ struct Profiler {
   Profiler& start(const std::string& name) {
     auto ch = leaf->children.find(name);
     if (ch == leaf->children.end()) {
-      auto count = Counter{root->counter.cpu.not_dummy(), root->counter.wall.not_dummy()}.start();
+      auto count = Counter{!root->counter.cpu.dummy(), !root->counter.wall.dummy()}.start();
       leaf->children[name] = std::make_shared<CounterNode>(name, count, leaf);
       leaf = leaf->children[name];
     } else {

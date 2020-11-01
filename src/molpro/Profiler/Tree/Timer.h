@@ -24,7 +24,7 @@ public:
   double stop_time() const { return m_stop; };
   double cumulative_time() const { return m_cumulative; };
   bool stopped() const { return m_stopped; };
-  bool not_dummy() const { return !m_dummy; };
+  bool dummy() const { return m_dummy; };
 
   const Type m_type; //!< type of timer
 private:
