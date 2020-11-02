@@ -1,18 +1,15 @@
 #ifndef PROFILER_SRC_MOLPRO_PROFILER_TREE_PROFILER_H
 #define PROFILER_SRC_MOLPRO_PROFILER_TREE_PROFILER_H
-
-#include <molpro/Profiler/Tree/Counter.h>
-#include <molpro/Profiler/Tree/Node.h>
-
-#include <algorithm>
-#include <iostream>
-#include <map>
 #include <memory>
-#include <vector>
+#include <string>
 
 namespace molpro {
 namespace profiler {
 namespace tree {
+
+class Counter;
+template <class CounterT>
+class Node;
 
 /*!
  * @brief Profiler call graph tree, each node represents a timing section
@@ -45,50 +42,35 @@ struct Profiler {
   const std::string root_name = "All";        //!< name of the root node
   std::shared_ptr<Node<Counter>> root;        //!< root node of the profiler call tree
   std::shared_ptr<Node<Counter>> active_node; //!< the most recent active node.
-  explicit Profiler(std::string description_, bool with_wall = true, bool with_cpu = false)
-      : description(std::move(description_)), root(Node<Counter>::make_root(root_name, Counter{with_cpu, with_wall})),
-        active_node(root) {
-    root->counter.start();
-  }
+
+  /*!
+   * @brief Construct profiler and start timing
+   * @param description_ description of profiler
+   * @param with_wall whether to include wall time
+   * @param with_cpu whether to include cpu time
+   */
+  explicit Profiler(std::string description_, bool with_wall = true, bool with_cpu = false);
+  Profiler() = delete;
+  ~Profiler();
 
   /*!
    * @brief Traverse down to a child node and start timing
    * @param name name of the child node
    * @return
    */
-  Profiler& start(const std::string& name) {
-    auto ch = active_node->children.find(name);
-    if (ch == active_node->children.end()) {
-      auto count = Counter{!root->counter.get_cpu().dummy(), !root->counter.get_wall().dummy()};
-      count.start();
-      active_node = Node<Counter>::add_child(name, count, active_node);
-    } else {
-      ch->second->counter.start();
-      active_node = ch->second;
-    }
-    return *this;
-  }
+  Profiler& start(const std::string& name);
 
-  //! Stop timing current leaf and traverse up to its parent
-  Profiler& stop() {
-    active_node->counter.stop();
-    if (active_node->parent)
-      active_node = active_node->parent;
-    return *this;
-  }
+  //! Stop the active node and traverse up to its parent
+  Profiler& stop();
 
-  //! Stop timing all nodes up to and including name, and traverse to its parent
-  Profiler& stop(const std::string& name) {
-    while (active_node->parent and active_node->name != name) {
-      stop();
-    }
-    return stop();
-  }
+  //! Stop timing all nodes up to and including *name* in the call stack and traverse to its parent
+  Profiler& stop(const std::string& name);
+
   //! Stop all nodes and traverse up to the root
-  Profiler& stop_all() { return stop(root->name); }
+  Profiler& stop_all();
 
   //! Access counter at the top of the call stack
-  Counter& counter() { return active_node->counter; }
+  Counter& counter();
 
 protected:
   //! Proxy object that calls start() on creation and stop() on destruction

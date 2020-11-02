@@ -1,0 +1,53 @@
+#include "Profiler.h"
+
+#include <molpro/Profiler/Tree/Counter.h>
+#include <molpro/Profiler/Tree/Node.h>
+
+#include <algorithm>
+#include <iostream>
+
+namespace molpro {
+namespace profiler {
+namespace tree {
+
+Profiler::~Profiler() = default;
+
+Profiler::Profiler(std::string description_, const bool with_wall, const bool with_cpu)
+    : description(std::move(description_)), root(Node<Counter>::make_root(root_name, Counter{with_cpu, with_wall})),
+      active_node(root) {
+  root->counter.start();
+}
+
+Profiler& Profiler::start(const std::string& name) {
+  auto ch = active_node->children.find(name);
+  if (ch == active_node->children.end()) {
+    auto count = Counter{!root->counter.get_cpu().dummy(), !root->counter.get_wall().dummy()};
+    count.start();
+    active_node = Node<Counter>::add_child(name, count, active_node);
+  } else {
+    ch->second->counter.start();
+    active_node = ch->second;
+  }
+  return *this;
+}
+
+Profiler& Profiler::stop() {
+  active_node->counter.stop();
+  if (active_node->parent)
+    active_node = active_node->parent;
+  return *this;
+}
+
+Profiler& Profiler::stop(const std::string& name) {
+  while (active_node->parent and active_node->name != name) {
+    stop();
+  }
+  return stop();
+}
+
+Profiler& Profiler::stop_all() { return stop(root->name); }
+
+Counter& Profiler::counter() { return active_node->counter; }
+} // namespace tree
+} // namespace profiler
+} // namespace molpro

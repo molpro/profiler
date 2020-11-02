@@ -1,7 +1,11 @@
 #ifndef PROFILER_SRC_MOLPRO_PROFILER_TREE_REPORTER_H
 #define PROFILER_SRC_MOLPRO_PROFILER_TREE_REPORTER_H
+#include <molpro/Profiler/Tree/Counter.h>
 #include <molpro/Profiler/Tree/Node.h>
 #include <molpro/Profiler/Tree/Profiler.h>
+
+#include <algorithm>
+#include <iostream>
 
 namespace molpro {
 namespace profiler {
