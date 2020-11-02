@@ -4,24 +4,26 @@
 #include <molpro/Profiler/Tree/Node.h>
 #include <molpro/Profiler/Tree/Profiler.h>
 
-#include <algorithm>
-#include <iostream>
+#include <list>
+#include <memory>
+#include <string>
 
 namespace molpro {
 namespace profiler {
 namespace tree {
 
-//! Returns path to the leaf by joining names from the root to the leaf
-std::string tree_path(const std::shared_ptr<Node<Counter>>& leaf);
+//! Utility for storing a node as a path from root to that node and corresponding Counter
+struct TreePath {
+  explicit TreePath(std::shared_ptr<Node<Counter>> node);
 
-//! Depth-first-search through the tree and store Counter and its tree_path
-template <class Compare>
-void extract_counters(const std::shared_ptr<Node<Counter>>& node, std::map<Counter, std::string, Compare>& paths) {
-  paths[node->counter] = tree_path(node);
-  std::for_each(
-      begin(node->children), end(node->children),
-      [&paths](const typename decltype(node->children)::value_type& ch) { extract_counters(ch.second, paths); });
-}
+  static std::list<TreePath> convert_subtree_to_paths(const std::shared_ptr<Node<Counter>>& root);
+
+  //! convert path to a formatted string
+  std::string format_path() const;
+
+  Counter counter;             //!< copy of the counter object
+  std::list<std::string> path; //!< concatenation of names from root to the node
+};
 
 void report(Profiler& prof);
 
