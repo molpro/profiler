@@ -9,7 +9,7 @@ using molpro::profiler::tree::Profiler;
 
 TEST(Profiler, constructor) {
   const auto description = "test";
-  auto p = Profiler(description);
+  Profiler p(description);
   ASSERT_EQ(p.description, description);
   ASSERT_FALSE(p.counter().get_wall().dummy());
   ASSERT_TRUE(p.counter().get_cpu().dummy());
@@ -37,7 +37,7 @@ void test_stop(Profiler& p) {
 } // namespace
 
 TEST(Profiler, start_stop) {
-  auto p = Profiler("test");
+  Profiler p("test");
   const auto name = "level 1";
   p.start(name);
   test_start(p, name);
@@ -46,7 +46,7 @@ TEST(Profiler, start_stop) {
 }
 
 TEST(Profiler, push) {
-  auto prof = Profiler("test");
+  Profiler prof("test");
   {
     const auto name = "level 1";
     auto proxy = prof.push(name);
@@ -74,7 +74,7 @@ int measure_depth(const Profiler& p) {
 
 TEST(Profiler, start__stop_all__stack) {
   constexpr int depth = 4;
-  auto p = Profiler("");
+  Profiler p("");
   construct_stack(p, depth);
   ASSERT_EQ(p.get_current_depth(), depth);
   ASSERT_EQ(measure_depth(p), depth);
@@ -85,7 +85,7 @@ TEST(Profiler, start__stop_all__stack) {
 
 TEST(Profiler, max_depth) {
   constexpr int max_depth = 2, depth = max_depth + 2;
-  auto p = Profiler("");
+  Profiler p("");
   p.set_max_depth(max_depth);
   ASSERT_EQ(p.get_max_depth(), max_depth);
   construct_stack(p, depth);
@@ -94,7 +94,7 @@ TEST(Profiler, max_depth) {
 }
 
 TEST(Profiler, counter) {
-  auto p = Profiler("");
+  Profiler p("");
   ASSERT_NO_FATAL_FAILURE(p.counter());
   auto& c = p.counter();
   ASSERT_FALSE(c.get_wall().stopped());
