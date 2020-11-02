@@ -37,7 +37,7 @@ std::string format_path_not_cumulative(const std::list<std::string>& path);
  * @param out output stream to write to
  * @param cumulative whether cumulative timings should be used or only time spend by the node and not its children
  */
-void report(Profiler& prof, std::ostream& out, bool cumulative = true);
+void report(const Profiler& prof, std::ostream& out, bool cumulative = true);
 
 } // namespace tree
 } // namespace profiler

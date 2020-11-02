@@ -55,7 +55,7 @@ std::list<TreePath> TreePath::convert_subtree_to_paths(const std::shared_ptr<Nod
   return paths;
 }
 
-void report(Profiler& prof, std::ostream& out, bool cumulative) {
+void report(const Profiler& prof, std::ostream& out, bool cumulative) {
   auto paths = TreePath::convert_subtree_to_paths(prof.root);
   bool with_wall = !prof.root->counter.get_wall().dummy();
   bool with_cpu = !prof.root->counter.get_cpu().dummy();
