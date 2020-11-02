@@ -1,6 +1,5 @@
 #include "report.h"
 
-#include <iostream>
 #include <queue>
 
 namespace molpro {
@@ -41,7 +40,7 @@ std::list<TreePath> TreePath::convert_subtree_to_paths(const std::shared_ptr<Nod
   return paths;
 }
 
-void report(Profiler& prof) {
+void report(Profiler& prof, std::ostream& out) {
   auto paths = TreePath::convert_subtree_to_paths(prof.root);
   bool with_wall = !prof.root->counter.get_wall().dummy();
   bool with_cpu = !prof.root->counter.get_cpu().dummy();
@@ -64,16 +63,16 @@ void report(Profiler& prof) {
       path_name += " ";
     path_name += " : ";
   }
-  std::cout << "Profiler " << '"' << prof.description << '"' << " cumulative " << std::endl;
+  out << "Profiler " << '"' << prof.description << '"' << " cumulative " << std::endl;
   auto path_name = formatted_path_names.begin();
   for (size_t i = 0; i < formatted_path_names.size(); ++i, ++path_name) {
-    std::cout << *path_name;
-    std::cout << "    calls=" << calls[i] << ", ";
+    out << *path_name;
+    out << "    calls=" << calls[i] << ", ";
     if (with_wall)
-      std::cout << " wall=" << wall_times[i];
+      out << " wall=" << wall_times[i];
     if (with_cpu)
-      std::cout << " cpu=" << cpu_times[i];
-    std::cout << std::endl;
+      out << " cpu=" << cpu_times[i];
+    out << std::endl;
   }
 }
 

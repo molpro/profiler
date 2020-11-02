@@ -6,6 +6,7 @@
 
 #include <list>
 #include <memory>
+#include <ostream>
 #include <string>
 
 namespace molpro {
@@ -16,6 +17,7 @@ namespace tree {
 struct TreePath {
   explicit TreePath(std::shared_ptr<Node<Counter>> node);
 
+  //! Performs Depth-First-Search and converts the whole tree to a list of TreePath objects
   static std::list<TreePath> convert_subtree_to_paths(const std::shared_ptr<Node<Counter>>& root);
 
   //! convert path to a formatted string
@@ -25,7 +27,7 @@ struct TreePath {
   std::list<std::string> path; //!< concatenation of names from root to the node
 };
 
-void report(Profiler& prof);
+void report(Profiler& prof, std::ostream& out);
 
 } // namespace tree
 } // namespace profiler

@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
       tp.push("test");
     }
     tp.stop_all();
-    report(tp);
+    report(tp, std::cout);
   }
   {
     molpro::Profiler p{"test: depth = 5"};
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
       }
     }
     tp.stop_all();
-    report(tp);
+    report(tp, std::cout);
   }
 
   std::cout << repeat << " instances of 2*gettimeofday()" << std::endl;
