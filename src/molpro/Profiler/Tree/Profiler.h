@@ -50,8 +50,13 @@ struct Profiler {
    * @param with_cpu whether to include cpu time
    */
   explicit Profiler(std::string description_, bool with_wall = true, bool with_cpu = false);
-  Profiler() = delete;
+  Profiler(Profiler&&) noexcept = default;
   ~Profiler();
+
+  Profiler() = delete;
+  Profiler(const Profiler&) = delete;
+  Profiler& operator=(const Profiler&) = delete;
+  Profiler& operator=(Profiler&&) = delete;
 
   /*!
    * @brief Traverse down to a child node and start timing
