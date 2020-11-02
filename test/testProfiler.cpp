@@ -55,6 +55,48 @@ TEST(Profiler, push) {
   test_stop(prof);
 }
 
+TEST(Profiler, Proxy_addition_assignment) {
+  const size_t n_op = 11;
+  Profiler prof("test");
+  {
+    const auto name = "level 1";
+    auto proxy = prof.push(name);
+    const auto n_init = prof.counter().get_operation_count();
+    proxy += n_op;
+    ASSERT_EQ(prof.counter().get_operation_count(), n_init + n_op);
+    proxy += n_op;
+    ASSERT_EQ(prof.counter().get_operation_count(), n_init + 2 * n_op);
+  }
+}
+
+TEST(Profiler, Proxy_pre_increment) {
+  Profiler prof("test");
+  {
+    const auto name = "level 1";
+    auto proxy = prof.push(name);
+    const auto n_init = prof.counter().get_operation_count();
+    ++proxy;
+    ASSERT_EQ(prof.counter().get_operation_count(), n_init + 1);
+    ++proxy;
+    ASSERT_EQ(prof.counter().get_operation_count(), n_init + 2);
+  }
+}
+
+TEST(Profiler, Proxy_post_increment) {
+  Profiler prof("test");
+  {
+    const auto name = "level 1";
+    auto proxy = prof.push(name);
+    auto n_init = prof.counter().get_operation_count();
+    auto nop = proxy++;
+    ASSERT_EQ(nop, n_init);
+    ASSERT_EQ(prof.counter().get_operation_count(), n_init + 1);
+    nop = proxy++;
+    ASSERT_EQ(nop, n_init + 1);
+    ASSERT_EQ(prof.counter().get_operation_count(), n_init + 2);
+  }
+}
+
 namespace {
 void construct_stack(Profiler& p, int n) {
   for (size_t i = 0; i < n; ++i)

@@ -69,7 +69,17 @@ Profiler& Profiler::stop_all() {
 
 Counter& Profiler::counter() { return active_node->counter; }
 
-std::string Profiler::str(bool cumulative,SortBy sort_by) const {
+void Profiler::Proxy::operator+=(size_t operations) { prof.counter().add_operations(operations); }
+
+void Profiler::Proxy::operator++() { prof.counter().add_operations(1); }
+
+size_t Profiler::Proxy::operator++(int) {
+  auto temp = prof.counter().get_operation_count();
+  ++(*this);
+  return temp;
+}
+
+std::string Profiler::str(bool cumulative, SortBy sort_by) const {
   std::stringstream out;
   report(*this, out, cumulative, sort_by);
   return out.str();

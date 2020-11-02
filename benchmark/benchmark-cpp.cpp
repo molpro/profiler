@@ -88,6 +88,24 @@ int main(int argc, char* argv[]) {
     report(tp, std::cout, true);
     report(tp, std::cout, false);
   }
+  {
+    molpro::Profiler p{"test: operations "};
+    auto et = ElapsedTime(repeat);
+    for (auto i = 0; i < repeat; i++) {
+      auto proxy = p.push("test");
+      proxy += 7;
+    }
+    std::cout << p << std::endl;
+  }
+  {
+    molpro::profiler::tree::Profiler p{"tree profiler: operations "};
+    auto et = ElapsedTime(repeat);
+    for (auto i = 0; i < repeat; i++) {
+      auto proxy = p.push("test");
+      proxy += 7;
+    }
+    std::cout << p << std::endl;
+  }
 
   std::cout << repeat << " instances of 2*gettimeofday()" << std::endl;
   auto start = std::chrono::system_clock::now();

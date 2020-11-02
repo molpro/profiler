@@ -96,11 +96,26 @@ public:
 protected:
   //! Proxy object that calls start() on creation and stop() on destruction
   struct Proxy {
+    Profiler& prof; //!< reference to the underlying profiler
+
     Proxy(Profiler& prof, const std::string& name) : prof(prof) { prof.start(name); }
     ~Proxy() { prof.stop(); }
+
     //! Push a new proxy
     Proxy push(const std::string& name) { return Proxy(prof, name); }
-    Profiler& prof;
+
+    /*!
+     * \brief Advance the counter holding the notional number of operations executed in the code segment.
+     * \param operations The number of additional operations.
+     */
+    void operator+=(size_t operations);
+
+    /*!
+     * \brief Advance the counter holding the notional number of operations executed in the code segment.
+     */
+    void operator++();
+
+    size_t operator++(int);
   };
 
 public:
