@@ -19,12 +19,22 @@ TreePath::TreePath(std::shared_ptr<Node<Counter>> node) {
     node = node->parent;
   }
 }
-std::string TreePath::format_path() const {
+std::string format_path_cumulative(const std::list<std::string>& path) {
   auto result = std::string();
   for (size_t i = 1; i < path.size(); ++i) {
     result += ".";
   }
   result += path.back();
+  return result;
+}
+
+std::string format_path_not_cumulative(const std::list<std::string>& path) {
+  auto result = std::string();
+  for (const auto& p : path) {
+    result += p + ":";
+  }
+  if (!result.empty())
+    result.erase(prev(end(result)));
   return result;
 }
 
@@ -53,12 +63,13 @@ void report(Profiler& prof, std::ostream& out, bool cumulative) {
   std::vector<size_t> calls;
   std::vector<double> cpu_times, wall_times;
   for (const auto& path : paths) {
-    formatted_path_names.emplace_back(path.format_path());
     calls.push_back(path.counter.get_call_count());
     if (cumulative) {
+      formatted_path_names.emplace_back(format_path_cumulative(path.path));
       wall_times.push_back(path.counter.get_wall().cumulative_time());
       cpu_times.push_back(path.counter.get_cpu().cumulative_time());
     } else {
+      formatted_path_names.emplace_back(format_path_not_cumulative(path.path));
       wall_times.push_back(path.counter.get_wall().cumulative_time() - path.wall_time_children);
       cpu_times.push_back(path.counter.get_cpu().cumulative_time() - path.cpu_time_children);
     }
@@ -69,8 +80,13 @@ void report(Profiler& prof, std::ostream& out, bool cumulative) {
       max_path_size = path_name.size();
   for (auto& path_name : formatted_path_names) {
     auto n_blank = max_path_size - path_name.size();
+    std::string blank;
     for (size_t i = 0; i < n_blank; ++i)
-      path_name += " ";
+      blank += " ";
+    if (cumulative)
+      path_name += blank;
+    else
+      path_name = blank + path_name;
     path_name += " : ";
   }
   out << "Profiler " << '"' << prof.description << '"' << " cumulative " << std::endl;

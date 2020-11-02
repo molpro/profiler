@@ -46,6 +46,22 @@ TEST_F(TreePath_Fixture, convert_subtree_to_paths) {
     ASSERT_THAT(it_path->path, ::testing::Pointwise(::testing::Eq(), it_ref_path->path));
 }
 
+TEST_F(TreePath_Fixture, format_path_cumulative) {
+  auto tp = TreePath(c);
+  auto s = molpro::profiler::tree::format_path_cumulative(tp.path);
+  auto ref = std::string{"...C"};
+  ASSERT_FALSE(s.empty());
+  ASSERT_EQ(s, ref);
+}
+
+TEST_F(TreePath_Fixture, format_path_not_cumulative) {
+  auto tp = TreePath(c);
+  auto s = molpro::profiler::tree::format_path_not_cumulative(tp.path);
+  auto ref = std::string{"All:A:B:C"};
+  ASSERT_FALSE(s.empty());
+  ASSERT_EQ(s, ref);
+}
+
 TEST_F(TreePath_Fixture, report) {
   std::stringstream out;
   report(prof, out);

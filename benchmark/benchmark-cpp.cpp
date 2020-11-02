@@ -85,7 +85,8 @@ int main(int argc, char* argv[]) {
       }
     }
     tp.stop_all();
-    report(tp, std::cout);
+    report(tp, std::cout, true);
+    report(tp, std::cout, false);
   }
 
   std::cout << repeat << " instances of 2*gettimeofday()" << std::endl;

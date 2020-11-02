@@ -20,14 +20,16 @@ struct TreePath {
   //! Performs Depth-First-Search and converts the whole tree to a list of TreePath objects
   static std::list<TreePath> convert_subtree_to_paths(const std::shared_ptr<Node<Counter>>& root);
 
-  //! convert path to a formatted string
-  std::string format_path() const;
-
   Counter counter;               //!< copy of the counter object
   std::list<std::string> path;   //!< concatenation of names from root to the node
   double wall_time_children = 0; //!< wall time spent by children
   double cpu_time_children = 0;  //!< cpu time spent by children
 };
+
+//! convert path to a formatted string
+std::string format_path_cumulative(const std::list<std::string>& path);
+//! convert path to a formatted string
+std::string format_path_not_cumulative(const std::list<std::string>& path);
 
 /*!
  * @brief Reports content of Profiler
