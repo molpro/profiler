@@ -1,7 +1,7 @@
 #include "Profiler.h"
-
-#include <molpro/Profiler/Tree/Counter.h>
-#include <molpro/Profiler/Tree/Node.h>
+#include "Counter.h"
+#include "Node.h"
+#include "WeakSingleton.h"
 
 #include <algorithm>
 
@@ -16,6 +16,15 @@ Profiler::Profiler(std::string description_, const bool with_wall, const bool wi
       active_node(root), m_max_depth{std::numeric_limits<int>::max()} {
   root->counter.start();
 }
+
+template <>
+std::list<std::pair<std::string, std::weak_ptr<Profiler>>> WeakSingleton<Profiler>::m_register = {};
+
+std::shared_ptr<Profiler> Profiler::single(const std::string& description_, bool with_wall, bool with_cpu) {
+  return WeakSingleton<Profiler>::single(description_, description_, with_wall, with_cpu);
+}
+
+std::shared_ptr<Profiler> Profiler::single() { return WeakSingleton<Profiler>::single(); }
 
 int Profiler::get_max_depth() const { return m_max_depth; };
 void Profiler::set_max_depth(int new_max_depth) { m_max_depth = new_max_depth; };

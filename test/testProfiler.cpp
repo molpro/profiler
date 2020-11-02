@@ -99,3 +99,11 @@ TEST(Profiler, counter) {
   auto& c = p.counter();
   ASSERT_FALSE(c.get_wall().stopped());
 }
+
+TEST(Profiler, single) {
+  auto prof = Profiler::single("test");
+  {
+    auto prof_single = Profiler::single();
+    ASSERT_EQ(prof_single, prof);
+  }
+}

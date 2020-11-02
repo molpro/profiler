@@ -48,6 +48,13 @@ public:
   Profiler& operator=(const Profiler&) = delete;
   Profiler& operator=(Profiler&&) = delete;
 
+  //! Access a Profiler registered with the WeakSingleton creating a new one if a Profiler instance with that
+  //! description does not exist
+  static std::shared_ptr<Profiler> single(const std::string& description_, bool with_wall = true,
+                                          bool with_cpu = false);
+  //! Access the last registered Profiler
+  static std::shared_ptr<Profiler> single();
+
   /*!
    * @brief Get the maximum depth the profiler tree is allowed to reach
    *
