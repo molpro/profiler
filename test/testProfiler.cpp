@@ -107,3 +107,17 @@ TEST(Profiler, single) {
     ASSERT_EQ(prof_single, prof);
   }
 }
+
+TEST(Profiler, str) {
+  Profiler p("test");
+  auto s = p.str();
+  ASSERT_FALSE(s.empty());
+}
+
+TEST(Profiler, ostream_operator) {
+  Profiler p("test");
+  std::stringstream os;
+  os << p;
+  auto s = os.str();
+  ASSERT_FALSE(s.empty());
+}

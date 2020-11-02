@@ -1,6 +1,7 @@
 #ifndef PROFILER_SRC_MOLPRO_PROFILER_TREE_PROFILER_H
 #define PROFILER_SRC_MOLPRO_PROFILER_TREE_PROFILER_H
 #include <memory>
+#include <ostream>
 #include <string>
 
 namespace molpro {
@@ -99,6 +100,12 @@ protected:
 public:
   //! Returns a proxy object which will start() on construction and stop on destruction.
   Proxy push(const std::string& name) { return Proxy(*this, name); }
+
+  //! Produce a report on profiler as a string
+  //! @param cumulative whether to use cumulative times or subtract the time spend by children
+  std::string str(bool cumulative = true) const;
+
+  friend std::ostream& operator<<(std::ostream& os, const Profiler& obj);
 };
 
 } // namespace tree

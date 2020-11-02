@@ -2,8 +2,10 @@
 #include "Counter.h"
 #include "Node.h"
 #include "WeakSingleton.h"
+#include "report.h"
 
 #include <algorithm>
+#include <sstream>
 
 namespace molpro {
 namespace profiler {
@@ -66,6 +68,18 @@ Profiler& Profiler::stop_all() {
 }
 
 Counter& Profiler::counter() { return active_node->counter; }
+
+std::string Profiler::str(bool cumulative) const {
+  std::stringstream out;
+  report(*this, out, cumulative);
+  return out.str();
+}
+
+std::ostream& operator<<(std::ostream& os, const Profiler& obj) {
+  os << obj.str() << std::endl;
+  return os;
+}
+
 } // namespace tree
 } // namespace profiler
 } // namespace molpro
