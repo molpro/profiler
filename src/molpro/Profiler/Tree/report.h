@@ -23,11 +23,19 @@ struct TreePath {
   //! convert path to a formatted string
   std::string format_path() const;
 
-  Counter counter;             //!< copy of the counter object
-  std::list<std::string> path; //!< concatenation of names from root to the node
+  Counter counter;               //!< copy of the counter object
+  std::list<std::string> path;   //!< concatenation of names from root to the node
+  double wall_time_children = 0; //!< wall time spent by children
+  double cpu_time_children = 0;  //!< cpu time spent by children
 };
 
-void report(Profiler& prof, std::ostream& out);
+/*!
+ * @brief Reports content of Profiler
+ * @param prof profiler to analyse and write
+ * @param out output stream to write to
+ * @param cumulative whether cumulative timings should be used or only time spend by the node and not its children
+ */
+void report(Profiler& prof, std::ostream& out, bool cumulative = true);
 
 } // namespace tree
 } // namespace profiler

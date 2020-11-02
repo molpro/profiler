@@ -7,8 +7,13 @@ namespace profiler {
 namespace tree {
 
 TreePath::TreePath(std::shared_ptr<Node<Counter>> node) {
-  if (node)
+  if (node) {
     counter = node->counter;
+    for (const auto& child : node->children) {
+      wall_time_children += child.second->counter.get_wall().cumulative_time();
+      cpu_time_children += child.second->counter.get_wall().cumulative_time();
+    }
+  }
   while (node) {
     path.push_front(node->name);
     node = node->parent;
@@ -40,7 +45,7 @@ std::list<TreePath> TreePath::convert_subtree_to_paths(const std::shared_ptr<Nod
   return paths;
 }
 
-void report(Profiler& prof, std::ostream& out) {
+void report(Profiler& prof, std::ostream& out, bool cumulative) {
   auto paths = TreePath::convert_subtree_to_paths(prof.root);
   bool with_wall = !prof.root->counter.get_wall().dummy();
   bool with_cpu = !prof.root->counter.get_cpu().dummy();
@@ -50,8 +55,13 @@ void report(Profiler& prof, std::ostream& out) {
   for (const auto& path : paths) {
     formatted_path_names.emplace_back(path.format_path());
     calls.push_back(path.counter.get_call_count());
-    wall_times.push_back(path.counter.get_wall().cumulative_time());
-    cpu_times.push_back(path.counter.get_cpu().cumulative_time());
+    if (cumulative) {
+      wall_times.push_back(path.counter.get_wall().cumulative_time());
+      cpu_times.push_back(path.counter.get_cpu().cumulative_time());
+    } else {
+      wall_times.push_back(path.counter.get_wall().cumulative_time() - path.wall_time_children);
+      cpu_times.push_back(path.counter.get_cpu().cumulative_time() - path.cpu_time_children);
+    }
   }
   size_t max_path_size = 0;
   for (const auto& path_name : formatted_path_names)
