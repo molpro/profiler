@@ -4,7 +4,6 @@
 #include <molpro/Profiler/Tree/Node.h>
 
 #include <algorithm>
-#include <iostream>
 
 namespace molpro {
 namespace profiler {
@@ -39,16 +38,21 @@ Profiler& Profiler::start(const std::string& name) {
 }
 
 Profiler& Profiler::stop() {
-  active_node->counter.stop();
-  if (active_node->parent)
-    active_node = active_node->parent;
-  --m_current_depth;
+  if (m_current_depth <= m_max_depth) {
+    active_node->counter.stop();
+    if (active_node->parent) {
+      active_node = active_node->parent;
+      --m_current_depth;
+    }
+  } else
+    --m_current_depth;
   return *this;
 }
 
 Profiler& Profiler::stop_all() {
-  while (active_node->parent)
+  while (active_node != root)
     stop();
+  stop();
   return *this;
 }
 
