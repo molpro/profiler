@@ -1,14 +1,18 @@
 #ifndef PROFILER_SRC_MOLPRO_PROFILER_TREE_REPORT_H
 #define PROFILER_SRC_MOLPRO_PROFILER_TREE_REPORT_H
+#ifdef MOLPRO_PROFILER_MPI
+#include <mpi.h>
+#endif
+
 #include <molpro/Profiler/Tree/Counter.h>
 #include <molpro/Profiler/Tree/Node.h>
 #include <molpro/Profiler/Tree/Profiler.h>
 
 #include <list>
-#include <vector>
 #include <memory>
 #include <ostream>
 #include <string>
+#include <vector>
 
 namespace molpro {
 namespace profiler {
@@ -21,6 +25,10 @@ namespace tree {
  * @param cumulative whether cumulative timings should be used or only time spend by the node and not its children
  */
 void report(const Profiler& prof, std::ostream& out, bool cumulative = true);
+
+#ifdef MOLPRO_PROFILER_MPI
+void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool cumulative = true);
+#endif
 
 namespace detail {
 //! Utility for storing a node as a path from root to that node and corresponding Counter

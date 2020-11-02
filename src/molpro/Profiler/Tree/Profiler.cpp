@@ -75,6 +75,14 @@ std::string Profiler::str(bool cumulative) const {
   return out.str();
 }
 
+#ifdef MOLPRO_PROFILER_MPI
+std::string Profiler::str(MPI_Comm communicator, bool cumulative) const {
+  std::stringstream out;
+  report(*this, out, communicator, cumulative);
+  return out.str();
+}
+#endif
+
 std::ostream& operator<<(std::ostream& os, const Profiler& obj) {
   os << obj.str() << std::endl;
   return os;

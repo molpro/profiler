@@ -156,6 +156,21 @@ void report(const Profiler& prof, std::ostream& out, bool cumulative) {
   detail::write_report(prof, out, data, cumulative);
 }
 
+#ifdef MOLPRO_PROFILER_MPI
+void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool cumulative) {
+  auto paths = detail::TreePath::convert_subtree_to_paths(prof.root);
+  auto data = detail::get_report_data(paths, cumulative);
+  MPI_Request requests[2];
+  MPI_Iallreduce(&data.wall_times[0], MPI_IN_PLACE, data.wall_times.size(), MPI_DOUBLE, MPI_SUM, communicator,
+                 &requests[0]);
+  MPI_Iallreduce(&data.cpu_times[0], MPI_IN_PLACE, data.wall_times.size(), MPI_DOUBLE, MPI_SUM, communicator,
+                 &requests[0]);
+  MPI_Waitall(2, requests, MPI_STATUSES_IGNORE);
+  detail::format_paths(data.formatted_path_names, cumulative);
+  detail::write_report(prof, out, data, cumulative);
+}
+#endif
+
 } // namespace tree
 } // namespace profiler
 } // namespace molpro
