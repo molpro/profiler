@@ -40,7 +40,7 @@ public:
    * @param with_cpu whether to include cpu time
    */
   explicit Profiler(std::string description_, bool with_wall = true, bool with_cpu = false);
-  Profiler(Profiler&&) noexcept = default;
+  Profiler(Profiler&&) = default;
   ~Profiler();
 
   Profiler() = delete;

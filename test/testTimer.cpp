@@ -6,7 +6,6 @@
 #include <thread>
 
 using molpro::profiler::tree::Timer;
-using namespace std::literals::chrono_literals;
 
 TEST(Timer, constructor) {
   for (auto type : {Timer::Type::cpu, Timer::Type::wall}) {
@@ -22,13 +21,14 @@ TEST(Timer, constructor) {
 }
 
 TEST(Timer, start__repeated) {
+  const auto delay = std::chrono::milliseconds{10};
   auto t = Timer(Timer::Type::wall, false);
   t.start();
   const auto init_time = t.start_time();
-  std::this_thread::sleep_for(10ms);
+  std::this_thread::sleep_for(delay);
   t.start();
   ASSERT_EQ(t.start_time(), init_time);
-  std::this_thread::sleep_for(10ms);
+  std::this_thread::sleep_for(delay);
   t.start();
   ASSERT_EQ(t.start_time(), init_time);
   t.stop();
@@ -38,7 +38,7 @@ TEST(Timer, start__repeated) {
 
 TEST(Timer, start_stop) {
   const bool not_dummy = false;
-  constexpr auto delay = 1ms;
+  constexpr auto delay = std::chrono::milliseconds{1};
   for (auto type : {Timer::Type::wall, Timer::Type::cpu}) {
     auto t = Timer(type, not_dummy);
     t.start();
@@ -52,7 +52,7 @@ TEST(Timer, start_stop) {
 
 TEST(Timer, start_stop_dummy) {
   const bool is_dummy = true;
-  constexpr auto delay = 1ms;
+  constexpr auto delay = std::chrono::milliseconds{1};
   for (auto type : {Timer::Type::wall, Timer::Type::cpu}) {
     auto t = Timer(type, is_dummy);
     t.start();

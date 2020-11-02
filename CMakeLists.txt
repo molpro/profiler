@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(Profiler LANGUAGES CXX)
+project(Profiler CXX)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -21,6 +21,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(LibraryManager)
 
 LibraryManager_Project(FORTRAN_OPTION MPI_OPTION)
+
+if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
+    set(CMAKE_CXX_STANDARD 11)
+endif ()
 
 if (MPI)
     message("Building parallel Profiler")

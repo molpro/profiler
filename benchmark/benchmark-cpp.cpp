@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
     std::cout << p << std::endl;
   }
   {
-    auto tp = molpro::profiler::tree::Profiler{"test tree profiler: depth = 1"};
+    molpro::profiler::tree::Profiler tp{"test tree profiler: depth = 1"};
     auto et = ElapsedTime(repeat);
     for (auto i = 0; i < repeat; i++) {
       tp.push("test");
@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
     std::cout << p << std::endl;
   }
   {
-    auto tp = molpro::profiler::tree::Profiler{"test tree profiler: depth = 1"};
+    molpro::profiler::tree::Profiler tp{"test tree profiler: depth = 1"};
     auto et = ElapsedTime(repeat);
     for (auto i = 0; i < repeat / 10000; i++) {
       auto p1 = tp.push("test1");
