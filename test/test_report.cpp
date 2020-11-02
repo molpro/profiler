@@ -11,6 +11,7 @@ using molpro::profiler::tree::Counter;
 using molpro::profiler::tree::Node;
 using molpro::profiler::tree::Profiler;
 using molpro::profiler::tree::report;
+using molpro::profiler::tree::SortBy;
 using molpro::profiler::tree::detail::format_path_cumulative;
 using molpro::profiler::tree::detail::format_path_not_cumulative;
 using molpro::profiler::tree::detail::format_paths;
@@ -88,7 +89,7 @@ TEST(report_detail, format_paths__not_cumulative) {
   ASSERT_EQ(path_names, reference);
 }
 
-TEST(report_detail, sort_data) {
+TEST(report_detail, sort_data__wall) {
   auto data = ReportData{{{"A"}, {"B"}, {"C"}, {"D"}}, //
                          {1, 0, 2, 1},                 //
                          {1, 2, 3, 4},                 //
@@ -99,7 +100,45 @@ TEST(report_detail, sort_data) {
                              {2, 4, 1, 3},                 //
                              {6, 5.2, 5.1, 7},             //
                              {10, 12, 9, 11}};
-  auto sorted_data = sort_data(data);
+  auto sorted_data = sort_data(data, SortBy::wall);
+  ASSERT_EQ(sorted_data.formatted_path_names, ref_data.formatted_path_names);
+  ASSERT_EQ(sorted_data.depth, ref_data.depth);
+  ASSERT_EQ(sorted_data.calls, ref_data.calls);
+  ASSERT_EQ(sorted_data.wall_times, ref_data.wall_times);
+  ASSERT_EQ(sorted_data.cpu_times, ref_data.cpu_times);
+}
+
+TEST(report_detail, sort_data__cpu) {
+  auto data = ReportData{{{"A"}, {"B"}, {"C"}, {"D"}}, //
+                         {1, 0, 2, 1},                 //
+                         {1, 2, 3, 4},                 //
+                         {12, 10, 11, 9},              //
+                         {5.1, 6, 7, 5.2}};
+  auto ref_data = ReportData{{{"B"}, {"D"}, {"A"}, {"C"}}, //
+                             {0, 1, 1, 2},                 //
+                             {2, 4, 1, 3},                 //
+                             {10, 9, 12, 11},              //
+                             {6, 5.2, 5.1, 7}};
+  auto sorted_data = sort_data(data, SortBy::cpu);
+  ASSERT_EQ(sorted_data.formatted_path_names, ref_data.formatted_path_names);
+  ASSERT_EQ(sorted_data.depth, ref_data.depth);
+  ASSERT_EQ(sorted_data.calls, ref_data.calls);
+  ASSERT_EQ(sorted_data.wall_times, ref_data.wall_times);
+  ASSERT_EQ(sorted_data.cpu_times, ref_data.cpu_times);
+}
+
+TEST(report_detail, sort_data__calls) {
+  auto data = ReportData{{{"A"}, {"B"}, {"C"}, {"D"}}, //
+                         {1, 0, 2, 1},                 //
+                         {1, 2, 3, 4},                 //
+                         {5, 6, 7, 8},                 //
+                         {9, 10, 11, 12}};
+  auto ref_data = ReportData{{{"B"}, {"D"}, {"A"}, {"C"}}, //
+                             {0, 1, 1, 2},                 //
+                             {2, 4, 1, 3},                 //
+                             {6, 8, 5, 7},                 //
+                             {10, 12, 9, 11}};
+  auto sorted_data = sort_data(data, SortBy::calls);
   ASSERT_EQ(sorted_data.formatted_path_names, ref_data.formatted_path_names);
   ASSERT_EQ(sorted_data.depth, ref_data.depth);
   ASSERT_EQ(sorted_data.calls, ref_data.calls);

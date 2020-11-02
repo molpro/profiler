@@ -7,6 +7,7 @@
 #include <molpro/Profiler/Tree/Counter.h>
 #include <molpro/Profiler/Tree/Node.h>
 #include <molpro/Profiler/Tree/Profiler.h>
+#include <molpro/Profiler/Tree/SortBy.h>
 
 #include <list>
 #include <memory>
@@ -22,12 +23,14 @@ namespace tree {
  * @brief Reports content of Profiler
  * @param prof profiler to analyse and write
  * @param out output stream to write to
+ * @param sort_by what parameter to use for sorting. Sorting is done on the same level only.
  * @param cumulative whether cumulative timings should be used or only time spend by the node and not its children
  */
-void report(const Profiler& prof, std::ostream& out, bool cumulative = true);
+void report(const Profiler& prof, std::ostream& out, bool cumulative = true, SortBy sort_by = SortBy::wall);
 
 #ifdef MOLPRO_PROFILER_MPI
-void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool cumulative = true);
+void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool cumulative = true,
+            SortBy sort_by = SortBy::wall);
 #endif
 
 namespace detail {
@@ -60,8 +63,8 @@ struct ReportData {
 //! extracts data from TreePath objects
 ReportData get_report_data(const std::list<TreePath>& paths, bool cumulative);
 
-//! Sorts the data based on depth (ascending) and wall time (descending)
-ReportData sort_data(const ReportData& data);
+//! Sorts the data based on depth (ascending) and sort_by parameter (descending)
+ReportData sort_data(const ReportData& data, SortBy sort_by);
 
 void format_paths(std::list<std::string>& path_names, bool cumulative);
 

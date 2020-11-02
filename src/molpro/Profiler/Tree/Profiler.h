@@ -4,6 +4,8 @@
 #include <mpi.h>
 #endif
 
+#include <molpro/Profiler/Tree/SortBy.h>
+
 #include <memory>
 #include <ostream>
 #include <string>
@@ -107,10 +109,10 @@ public:
 
   //! Produce a report on profiler as a string
   //! @param cumulative whether to use cumulative times or subtract the time spend by children
-  std::string str(bool cumulative = true) const;
+  std::string str(bool cumulative = true, SortBy sort_by = SortBy::wall) const;
 
 #ifdef MOLPRO_PROFILER_MPI
-  std::string str(MPI_Comm communicator, bool cumulative = true) const;
+  std::string str(MPI_Comm communicator, bool cumulative = true, SortBy sort_by = SortBy::wall) const;
 #endif
 
   friend std::ostream& operator<<(std::ostream& os, const Profiler& obj);

@@ -113,7 +113,7 @@ void write_report(const Profiler& prof, std::ostream& out, const ReportData& dat
   }
 }
 
-ReportData sort_data(const ReportData& data) {
+ReportData sort_data(const ReportData& data, const SortBy sort_by) {
   struct DataWrapper {
     std::reference_wrapper<const std::string> path_name;
     std::reference_wrapper<const int> depth;
@@ -130,12 +130,19 @@ ReportData sort_data(const ReportData& data) {
   struct Compare {
     bool operator()(const DataWrapper& l, const DataWrapper& r) {
       bool result = l.depth < r.depth;
-      if (l.depth == r.depth)
-        result = l.wall_times > r.wall_times;
+      if (l.depth == r.depth) {
+        if (sortBy == SortBy::wall)
+          result = l.wall_times > r.wall_times;
+        else if (sortBy == SortBy::cpu)
+          result = l.cpu_times > r.cpu_times;
+        else if (sortBy == SortBy::calls)
+          result = l.calls > r.calls;
+      }
       return result;
     }
+    SortBy sortBy;
   };
-  std::sort(begin(wdata), end(wdata), Compare{});
+  std::sort(begin(wdata), end(wdata), Compare{sort_by});
   auto sorted_data = ReportData{};
   for (const auto& d : wdata) {
     sorted_data.formatted_path_names.emplace_back(d.path_name);
@@ -149,15 +156,16 @@ ReportData sort_data(const ReportData& data) {
 
 } // namespace detail
 
-void report(const Profiler& prof, std::ostream& out, bool cumulative) {
+void report(const Profiler& prof, std::ostream& out, bool cumulative, SortBy sort_by) {
   auto paths = detail::TreePath::convert_subtree_to_paths(prof.root);
   auto data = detail::get_report_data(paths, cumulative);
+  data = detail::sort_data(data, sort_by);
   detail::format_paths(data.formatted_path_names, cumulative);
   detail::write_report(prof, out, data, cumulative);
 }
 
 #ifdef MOLPRO_PROFILER_MPI
-void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool cumulative) {
+void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool cumulative, SortBy sort_by) {
   auto paths = detail::TreePath::convert_subtree_to_paths(prof.root);
   auto data = detail::get_report_data(paths, cumulative);
   MPI_Request requests[2];
@@ -166,6 +174,7 @@ void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool
   MPI_Iallreduce(&data.cpu_times[0], MPI_IN_PLACE, data.wall_times.size(), MPI_DOUBLE, MPI_SUM, communicator,
                  &requests[0]);
   MPI_Waitall(2, requests, MPI_STATUSES_IGNORE);
+  data = detail::sort_data(data, sort_by);
   detail::format_paths(data.formatted_path_names, cumulative);
   detail::write_report(prof, out, data, cumulative);
 }

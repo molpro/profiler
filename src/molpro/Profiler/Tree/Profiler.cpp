@@ -69,16 +69,16 @@ Profiler& Profiler::stop_all() {
 
 Counter& Profiler::counter() { return active_node->counter; }
 
-std::string Profiler::str(bool cumulative) const {
+std::string Profiler::str(bool cumulative,SortBy sort_by) const {
   std::stringstream out;
-  report(*this, out, cumulative);
+  report(*this, out, cumulative, sort_by);
   return out.str();
 }
 
 #ifdef MOLPRO_PROFILER_MPI
-std::string Profiler::str(MPI_Comm communicator, bool cumulative) const {
+std::string Profiler::str(MPI_Comm communicator, bool cumulative, SortBy sort_by) const {
   std::stringstream out;
-  report(*this, out, communicator, cumulative);
+  report(*this, out, communicator, cumulative, sort_by);
   return out.str();
 }
 #endif
