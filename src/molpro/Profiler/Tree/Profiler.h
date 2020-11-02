@@ -12,29 +12,15 @@ template <class CounterT>
 class Node;
 
 /*!
- * @brief Profiler call graph tree, each node represents a timing section
+ * @brief Instrumental profiler for timing sections of code
  *
- * Profiler is just a call tree. A node is created on the first start() identified by its name, and is added to the
- * currently active leaf. The tree is traversed in a depth-first manner. Calling start() goes down the tree, and
- * stop moves you up the tree
- *
- * @code{c++}
- *  auto t = Profiler{"Test"};
- *  for (size_t i = 0; i < n; ++i){
- *      t.start("c"); // First node is created
- *          t.start("cc"); // First child, "c" is the currently active parent
- *              t.start("ccc"); // "cc" is now the currently active parent
- *              t.stop("ccc"); // all children of "cc" are now closed. "c" is the active parent again
- *          t.stop("cc"); // all children of "c" are now closed, but it is root, so it remains the active parent
- *          t.start("cc"); // "cc" is started again
- *          t.start("cc2"); // "cc2" is child of "cc"
- *          t.stop("cc"); // "cc" is not the name of the active leaf node, so it finds a parent called "cc" and stops it
- *                        // stopping a parent also stops all it's children
- *          t.start("cc2"); //
- *      t.stop()
- *  }
- *
- * @endcode
+ * Profiler constructs and navigates the call tree using start() and stop() to move between nodes or create them on
+ * first run.
+ * The profiler uses wall clock by default, but could also use cpu time, or do no timing at all and simply
+ * accumulate number of calls to each node.
+ * The maximum depth of profiler tree can be set using set_max_depth(), any nodes below max_depth are not created.
+ * This allow for profiler calls to be used in Production code without degrading the performance
+ * See README.md and examples for usage.
  *
  */
 class Profiler {
