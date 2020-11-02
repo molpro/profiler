@@ -12,6 +12,7 @@
 namespace molpro {
 namespace profiler {
 namespace tree {
+namespace detail {
 
 //! Utility for storing a node as a path from root to that node and corresponding Counter
 struct TreePath {
@@ -30,6 +31,7 @@ struct TreePath {
 std::string format_path_cumulative(const std::list<std::string>& path);
 //! convert path to a formatted string
 std::string format_path_not_cumulative(const std::list<std::string>& path);
+} // namespace detail
 
 /*!
  * @brief Reports content of Profiler

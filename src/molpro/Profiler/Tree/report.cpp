@@ -5,6 +5,7 @@
 namespace molpro {
 namespace profiler {
 namespace tree {
+namespace detail {
 
 TreePath::TreePath(std::shared_ptr<Node<Counter>> node) {
   if (node) {
@@ -54,9 +55,10 @@ std::list<TreePath> TreePath::convert_subtree_to_paths(const std::shared_ptr<Nod
   }
   return paths;
 }
+} // namespace detail
 
 void report(const Profiler& prof, std::ostream& out, bool cumulative) {
-  auto paths = TreePath::convert_subtree_to_paths(prof.root);
+  auto paths = detail::TreePath::convert_subtree_to_paths(prof.root);
   bool with_wall = !prof.root->counter.get_wall().dummy();
   bool with_cpu = !prof.root->counter.get_cpu().dummy();
   std::list<std::string> formatted_path_names;
@@ -65,11 +67,11 @@ void report(const Profiler& prof, std::ostream& out, bool cumulative) {
   for (const auto& path : paths) {
     calls.push_back(path.counter.get_call_count());
     if (cumulative) {
-      formatted_path_names.emplace_back(format_path_cumulative(path.path));
+      formatted_path_names.emplace_back(detail::format_path_cumulative(path.path));
       wall_times.push_back(path.counter.get_wall().cumulative_time());
       cpu_times.push_back(path.counter.get_cpu().cumulative_time());
     } else {
-      formatted_path_names.emplace_back(format_path_not_cumulative(path.path));
+      formatted_path_names.emplace_back(detail::format_path_not_cumulative(path.path));
       wall_times.push_back(path.counter.get_wall().cumulative_time() - path.wall_time_children);
       cpu_times.push_back(path.counter.get_cpu().cumulative_time() - path.cpu_time_children);
     }
