@@ -37,12 +37,16 @@ class Node;
  * @endcode
  *
  */
-struct Profiler {
+class Profiler {
+public:
   const std::string description;              //!< name of the root node
   const std::string root_name = "All";        //!< name of the root node
   std::shared_ptr<Node<Counter>> root;        //!< root node of the profiler call tree
   std::shared_ptr<Node<Counter>> active_node; //!< the most recent active node.
-
+protected:
+  int m_max_depth;         //!< max depth level of profiler tree counting root as 0. Defaults to largest possible value.
+  int m_current_depth = 0; //!< current depth of the active node
+public:
   /*!
    * @brief Construct profiler and start timing
    * @param description_ description of profiler
@@ -57,6 +61,21 @@ struct Profiler {
   Profiler(const Profiler&) = delete;
   Profiler& operator=(const Profiler&) = delete;
   Profiler& operator=(Profiler&&) = delete;
+
+  /*!
+   * @brief Get the maximum depth the profiler tree is allowed to reach
+   *
+   * Any calls to start() that would lead to profiler tree growing above max depth do nothing.
+   * The corresponding stop() still needs to be posted, since the virtual depth of the tree
+   * is still being tracked.
+   *
+   */
+  int get_max_depth() const;
+  //! Set the maximum depth the profiler tree is allowed to reach
+  void set_max_depth(int new_max_depth);
+  //! Get the current depth of the call stack from root to the active node. This tracks virtual nodes beyond max_depth,
+  //! even though they are not constructed.
+  int get_current_depth() const;
 
   /*!
    * @brief Traverse down to a child node and start timing
