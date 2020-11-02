@@ -1,5 +1,7 @@
 #include "report.h"
 
+#include <algorithm>
+#include <functional>
 #include <queue>
 
 namespace molpro {
@@ -55,32 +57,31 @@ std::list<TreePath> TreePath::convert_subtree_to_paths(const std::shared_ptr<Nod
   }
   return paths;
 }
-} // namespace detail
 
-void report(const Profiler& prof, std::ostream& out, bool cumulative) {
-  auto paths = detail::TreePath::convert_subtree_to_paths(prof.root);
-  bool with_wall = !prof.root->counter.get_wall().dummy();
-  bool with_cpu = !prof.root->counter.get_cpu().dummy();
-  std::list<std::string> formatted_path_names;
-  std::vector<size_t> calls;
-  std::vector<double> cpu_times, wall_times;
+ReportData get_report_data(const std::list<TreePath>& paths, bool cumulative) {
+  auto data = ReportData();
   for (const auto& path : paths) {
-    calls.push_back(path.counter.get_call_count());
+    data.depth.push_back(path.path.size());
+    data.calls.push_back(path.counter.get_call_count());
     if (cumulative) {
-      formatted_path_names.emplace_back(detail::format_path_cumulative(path.path));
-      wall_times.push_back(path.counter.get_wall().cumulative_time());
-      cpu_times.push_back(path.counter.get_cpu().cumulative_time());
+      data.formatted_path_names.emplace_back(detail::format_path_cumulative(path.path));
+      data.wall_times.push_back(path.counter.get_wall().cumulative_time());
+      data.cpu_times.push_back(path.counter.get_cpu().cumulative_time());
     } else {
-      formatted_path_names.emplace_back(detail::format_path_not_cumulative(path.path));
-      wall_times.push_back(path.counter.get_wall().cumulative_time() - path.wall_time_children);
-      cpu_times.push_back(path.counter.get_cpu().cumulative_time() - path.cpu_time_children);
+      data.formatted_path_names.emplace_back(detail::format_path_not_cumulative(path.path));
+      data.wall_times.push_back(path.counter.get_wall().cumulative_time() - path.wall_time_children);
+      data.cpu_times.push_back(path.counter.get_cpu().cumulative_time() - path.cpu_time_children);
     }
   }
+  return data;
+}
+
+void format_paths(std::list<std::string>& path_names, bool cumulative) {
   size_t max_path_size = 0;
-  for (const auto& path_name : formatted_path_names)
+  for (const auto& path_name : path_names)
     if (path_name.size() > max_path_size)
       max_path_size = path_name.size();
-  for (auto& path_name : formatted_path_names) {
+  for (auto& path_name : path_names) {
     auto n_blank = max_path_size - path_name.size();
     std::string blank;
     for (size_t i = 0; i < n_blank; ++i)
@@ -91,17 +92,68 @@ void report(const Profiler& prof, std::ostream& out, bool cumulative) {
       path_name = blank + path_name;
     path_name += " : ";
   }
-  out << "Profiler " << '"' << prof.description << '"' << " cumulative " << std::endl;
-  auto path_name = formatted_path_names.begin();
-  for (size_t i = 0; i < formatted_path_names.size(); ++i, ++path_name) {
+}
+
+void write_report(const Profiler& prof, std::ostream& out, const ReportData& data, bool cumulative) {
+  bool with_wall = !prof.root->counter.get_wall().dummy();
+  bool with_cpu = !prof.root->counter.get_cpu().dummy();
+  out << "Profiler " << '"' << prof.description << '"';
+  if (cumulative)
+    out << " (cumulative) ";
+  out << std::endl;
+  auto path_name = data.formatted_path_names.begin();
+  for (size_t i = 0; i < data.formatted_path_names.size(); ++i, ++path_name) {
     out << *path_name;
-    out << "    calls=" << calls[i] << ", ";
+    out << "    calls=" << data.calls[i] << ", ";
     if (with_wall)
-      out << " wall=" << wall_times[i];
+      out << " wall=" << data.wall_times[i];
     if (with_cpu)
-      out << " cpu=" << cpu_times[i];
+      out << " cpu=" << data.cpu_times[i];
     out << std::endl;
   }
+}
+
+ReportData sort_data(const ReportData& data) {
+  struct DataWrapper {
+    std::reference_wrapper<const std::string> path_name;
+    std::reference_wrapper<const int> depth;
+    std::reference_wrapper<const size_t> calls;
+    std::reference_wrapper<const double> wall_times;
+    std::reference_wrapper<const double> cpu_times;
+  };
+  auto n = data.formatted_path_names.size();
+  auto wdata = std::vector<DataWrapper>{};
+  auto it_path = data.formatted_path_names.begin();
+  for (size_t i = 0; i < n; ++i, ++it_path)
+    wdata.push_back(
+        DataWrapper{*it_path, data.depth.at(i), data.calls.at(i), data.wall_times.at(i), data.cpu_times.at(i)});
+  struct Compare {
+    bool operator()(const DataWrapper& l, const DataWrapper& r) {
+      bool result = l.depth < r.depth;
+      if (l.depth == r.depth)
+        result = l.wall_times > r.wall_times;
+      return result;
+    }
+  };
+  std::sort(begin(wdata), end(wdata), Compare{});
+  auto sorted_data = ReportData{};
+  for (const auto& d : wdata) {
+    sorted_data.formatted_path_names.emplace_back(d.path_name);
+    sorted_data.depth.push_back(d.depth);
+    sorted_data.calls.push_back(d.calls);
+    sorted_data.wall_times.push_back(d.wall_times);
+    sorted_data.cpu_times.push_back(d.cpu_times);
+  }
+  return sorted_data;
+}
+
+} // namespace detail
+
+void report(const Profiler& prof, std::ostream& out, bool cumulative) {
+  auto paths = detail::TreePath::convert_subtree_to_paths(prof.root);
+  auto data = detail::get_report_data(paths, cumulative);
+  detail::format_paths(data.formatted_path_names, cumulative);
+  detail::write_report(prof, out, data, cumulative);
 }
 
 } // namespace tree
