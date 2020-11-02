@@ -87,9 +87,6 @@ public:
   //! Stop the active node and traverse up to its parent
   Profiler& stop();
 
-  //! Stop timing all nodes up to and including *name* in the call stack and traverse to its parent
-  Profiler& stop(const std::string& name);
-
   //! Stop all nodes and traverse up to the root
   Profiler& stop_all();
 

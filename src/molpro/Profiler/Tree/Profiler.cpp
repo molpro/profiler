@@ -46,14 +46,11 @@ Profiler& Profiler::stop() {
   return *this;
 }
 
-Profiler& Profiler::stop(const std::string& name) {
-  while (active_node->parent and active_node->name != name) {
+Profiler& Profiler::stop_all() {
+  while (active_node->parent)
     stop();
-  }
-  return stop();
+  return *this;
 }
-
-Profiler& Profiler::stop_all() { return stop(root->name); }
 
 Counter& Profiler::counter() { return active_node->counter; }
 } // namespace tree
