@@ -2,7 +2,7 @@
 #include <memory>
 #include <molpro/Profiler.h>
 #include <molpro/Profiler/Tree/Profiler.h>
-#include <molpro/Profiler/Tree/Reporter.h>
+#include <molpro/Profiler/Tree/report.h>
 #include <sys/time.h>
 #ifdef MOLPRO_PROFILER_MPI
 #include <mpi.h>

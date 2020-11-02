@@ -1,5 +1,5 @@
-#ifndef PROFILER_SRC_MOLPRO_PROFILER_TREE_REPORTER_H
-#define PROFILER_SRC_MOLPRO_PROFILER_TREE_REPORTER_H
+#ifndef PROFILER_SRC_MOLPRO_PROFILER_TREE_REPORT_H
+#define PROFILER_SRC_MOLPRO_PROFILER_TREE_REPORT_H
 #include <molpro/Profiler/Tree/Counter.h>
 #include <molpro/Profiler/Tree/Node.h>
 #include <molpro/Profiler/Tree/Profiler.h>
@@ -10,12 +10,6 @@
 namespace molpro {
 namespace profiler {
 namespace tree {
-
-/*!
- * @brief Navigates the Profiler tree to access, accumulate and report its content
- * @todo for now this can be done with free functions
- */
-struct Reporter {};
 
 /*!
  * @brief Removes the first leaf from the tree and returns it
@@ -80,4 +74,4 @@ void report(Profiler& prof) {
 } // namespace profiler
 } // namespace molpro
 
-#endif // PROFILER_SRC_MOLPRO_PROFILER_TREE_REPORTER_H
+#endif // PROFILER_SRC_MOLPRO_PROFILER_TREE_REPORT_H
