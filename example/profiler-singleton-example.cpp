@@ -1,12 +1,14 @@
-#include <molpro/ProfilerSingle.h>
+#include <molpro/Profiler/Tree/Profiler.h>
 #ifdef HAVE_MPI_H
 #include "mpi.h"
 #endif
 #include <chrono>
+#include <iostream>
 #include <thread>
+using molpro::profiler::tree::Profiler;
 
 void sleep_milliseconds(const std::string &name, int repeats) {
-  auto p = molpro::ProfilerSingle::instance()->push(name);
+  auto p = Profiler::single()->push(name);
   for (size_t i = 0; i < repeats; ++i) {
     std::this_thread::sleep_for(std::chrono::milliseconds{1});
   }
@@ -17,16 +19,16 @@ void run() {
   sleep_milliseconds("fast", 200);
   sleep_milliseconds("medium", 300);
   sleep_milliseconds("slow", 500);
-  molpro::ProfilerSingle::instance()->stop();
+  Profiler::single()->stop();
 }
 
 int main(int argc, char *argv[]) {
 #ifdef HAVE_MPI_H
   MPI_Init(&argc, &argv);
 #endif
-  auto p1 = molpro::ProfilerSingle::create("Singleton Example: job 1", molpro::Profiler::wall);
+  auto p1 = Profiler::single("Singleton Example: job 1");
   run();
-  auto p2 = molpro::ProfilerSingle::create("Singleton Example: job 2", molpro::Profiler::wall);
+  auto p2 = Profiler::single("Singleton Example: job 2");
   run();
   std::cout << *p1;
   std::cout << *p2;
