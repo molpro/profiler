@@ -139,7 +139,7 @@ void write_report(const Profiler& prof, const std::list<TreePath>& paths, std::o
   format_paths(path_names, cumulative);
   bool with_wall = !prof.root->counter.get_wall().dummy();
   bool with_cpu = !prof.root->counter.get_cpu().dummy();
-  out << "Profiler " << '"' << prof.description << '"';
+  out << "Profiler " << '"' << prof.description() << '"';
   if (cumulative)
     out << " (cumulative) ";
   out << std::endl;

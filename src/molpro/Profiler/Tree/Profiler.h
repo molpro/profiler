@@ -31,15 +31,14 @@ class Node;
  *
  */
 class Profiler {
-public:
-  const std::string description;              //!< name of the root node
-  const std::string root_name = "All";        //!< name of the root node
-  std::shared_ptr<Node<Counter>> root;        //!< root node of the profiler call tree
-  std::shared_ptr<Node<Counter>> active_node; //!< the most recent active node.
 protected:
+  std::string m_description;       //!< name of the root node
+  std::string m_root_name = "All"; //!< name of the root node
   int m_max_depth;         //!< max depth level of profiler tree counting root as 0. Defaults to largest possible value.
   int m_current_depth = 0; //!< current depth of the active node
 public:
+  std::shared_ptr<Node<Counter>> root;        //!< root node of the profiler call tree
+  std::shared_ptr<Node<Counter>> active_node; //!< the most recent active node.
   /*!
    * @brief Construct profiler and start timing
    * @param description_ description of profiler
@@ -48,12 +47,14 @@ public:
    */
   explicit Profiler(std::string description_, bool with_wall = true, bool with_cpu = false);
   Profiler(Profiler&&) = default;
+  Profiler& operator=(Profiler&&) = default;
   ~Profiler();
 
   Profiler() = delete;
   Profiler(const Profiler&) = delete;
   Profiler& operator=(const Profiler&) = delete;
-  Profiler& operator=(Profiler&&) = delete;
+
+  const std::string& description() const { return m_description; }
 
   //! Access a Profiler registered with the WeakSingleton creating a new one if a Profiler instance with that
   //! description does not exist

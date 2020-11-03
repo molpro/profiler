@@ -216,7 +216,7 @@ TEST(report_detail, path_to_node) {
   Profiler p("test");
   p.start("A").start("B").start("C");
   auto result = path_to_node(p.active_node);
-  auto reference = std::list<std::string>{p.root_name, "A", "B", "C"};
+  auto reference = std::list<std::string>{p.root->name, "A", "B", "C"};
   ASSERT_FALSE(result.empty());
   ASSERT_EQ(result, reference);
 }

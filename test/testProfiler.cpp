@@ -10,12 +10,12 @@ using molpro::profiler::tree::Profiler;
 TEST(Profiler, constructor) {
   const auto description = "test";
   Profiler p(description);
-  ASSERT_EQ(p.description, description);
+  ASSERT_EQ(p.description(), description);
   ASSERT_FALSE(p.counter().get_wall().dummy());
   ASSERT_TRUE(p.counter().get_cpu().dummy());
   ASSERT_TRUE(p.root);
   ASSERT_EQ(p.root->parent, nullptr);
-  ASSERT_EQ(p.root->name, p.root_name);
+  ASSERT_EQ(p.root->name, p.root->name);
   ASSERT_EQ(p.root, p.active_node);
   ASSERT_EQ(p.get_max_depth(), std::numeric_limits<int>::max());
   ASSERT_EQ(p.get_current_depth(), 0);

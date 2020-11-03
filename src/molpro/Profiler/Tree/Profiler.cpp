@@ -14,8 +14,8 @@ namespace tree {
 Profiler::~Profiler() = default;
 
 Profiler::Profiler(std::string description_, const bool with_wall, const bool with_cpu)
-    : description(std::move(description_)), root(Node<Counter>::make_root(root_name, Counter{with_cpu, with_wall})),
-      active_node(root), m_max_depth{std::numeric_limits<int>::max()} {
+    : m_description(std::move(description_)), m_max_depth{std::numeric_limits<int>::max()},
+      root(Node<Counter>::make_root(m_root_name, Counter{with_cpu, with_wall})), active_node(root) {
   root->counter.start();
 }
 
