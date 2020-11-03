@@ -45,6 +45,7 @@ struct TreePath {
   std::list<std::string> path;   //!< concatenation of names from root to the node
   double wall_time_children = 0; //!< wall time spent by children
   double cpu_time_children = 0;  //!< cpu time spent by children
+  double total_operation_count = 0;  //!< cpu time spent by children
 };
 
 //! convert path to a formatted string
@@ -56,6 +57,7 @@ struct ReportData {
   std::list<std::string> formatted_path_names;
   std::vector<int> depth;
   std::vector<size_t> calls;
+  std::vector<double> operation_count;
   std::vector<double> wall_times;
   std::vector<double> cpu_times;
 };
@@ -67,6 +69,8 @@ ReportData get_report_data(const std::list<TreePath>& paths, bool cumulative);
 ReportData sort_data(const ReportData& data, SortBy sort_by);
 
 void format_paths(std::list<std::string>& path_names, bool cumulative);
+
+void write_timing(std::ostream& out, double time, size_t n_op);
 
 void write_report(const Profiler& prof, std::ostream& out, const ReportData& data, bool cumulative);
 

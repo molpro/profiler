@@ -104,6 +104,7 @@ int main(int argc, char* argv[]) {
       auto proxy = p.push("test");
       proxy += 7;
     }
+    p.stop_all();
     std::cout << p << std::endl;
   }
 

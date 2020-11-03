@@ -72,6 +72,7 @@ ReportData get_report_data(const std::list<TreePath>& paths, bool cumulative) {
       data.wall_times.push_back(path.counter.get_wall().cumulative_time() - path.wall_time_children);
       data.cpu_times.push_back(path.counter.get_cpu().cumulative_time() - path.cpu_time_children);
     }
+    data.operation_count.push_back(path.counter.get_operation_count());
   }
   return data;
 }
@@ -94,6 +95,20 @@ void format_paths(std::list<std::string>& path_names, bool cumulative) {
   }
 }
 
+void write_timing(std::ostream& out, double time, size_t n_op) {
+  out << time << ", ";
+  if (n_op) {
+    if (n_op >= 1e9)
+      out << n_op / time / 1.e9 << " Gop/s";
+    else if (n_op >= 1e6)
+      out << n_op / time / 1.e6 << " Mop/s";
+    else if (n_op >= 1e3)
+      out << n_op / time / 1.e3 << " Kop/s";
+    else
+      out << n_op / time << " op/s";
+  }
+}
+
 void write_report(const Profiler& prof, std::ostream& out, const ReportData& data, bool cumulative) {
   bool with_wall = !prof.root->counter.get_wall().dummy();
   bool with_cpu = !prof.root->counter.get_cpu().dummy();
@@ -104,11 +119,11 @@ void write_report(const Profiler& prof, std::ostream& out, const ReportData& dat
   auto path_name = data.formatted_path_names.begin();
   for (size_t i = 0; i < data.formatted_path_names.size(); ++i, ++path_name) {
     out << *path_name;
-    out << "    calls=" << data.calls[i] << ", ";
+    out << "    calls=" << data.calls[i] << "  ";
     if (with_wall)
-      out << " wall=" << data.wall_times[i];
+      write_timing(out << "wall=", data.wall_times[i], data.operation_count[i]);
     if (with_cpu)
-      out << " cpu=" << data.cpu_times[i];
+      write_timing(out << "cpu=", data.cpu_times[i], data.operation_count[i]);
     out << std::endl;
   }
 }
@@ -118,6 +133,7 @@ ReportData sort_data(const ReportData& data, const SortBy sort_by) {
     std::reference_wrapper<const std::string> path_name;
     std::reference_wrapper<const int> depth;
     std::reference_wrapper<const size_t> calls;
+    std::reference_wrapper<const double> operation_count;
     std::reference_wrapper<const double> wall_times;
     std::reference_wrapper<const double> cpu_times;
   };
@@ -125,8 +141,8 @@ ReportData sort_data(const ReportData& data, const SortBy sort_by) {
   auto wdata = std::vector<DataWrapper>{};
   auto it_path = data.formatted_path_names.begin();
   for (size_t i = 0; i < n; ++i, ++it_path)
-    wdata.push_back(
-        DataWrapper{*it_path, data.depth.at(i), data.calls.at(i), data.wall_times.at(i), data.cpu_times.at(i)});
+    wdata.push_back(DataWrapper{*it_path, data.depth.at(i), data.calls.at(i), data.operation_count.at(i),
+                                data.wall_times.at(i), data.cpu_times.at(i)});
   struct Compare {
     bool operator()(const DataWrapper& l, const DataWrapper& r) {
       bool result = l.depth < r.depth;
@@ -137,6 +153,8 @@ ReportData sort_data(const ReportData& data, const SortBy sort_by) {
           result = l.cpu_times > r.cpu_times;
         else if (sortBy == SortBy::calls)
           result = l.calls > r.calls;
+        else if (sortBy == SortBy::operations)
+          result = l.operation_count > r.operation_count;
       }
       return result;
     }
@@ -148,6 +166,7 @@ ReportData sort_data(const ReportData& data, const SortBy sort_by) {
     sorted_data.formatted_path_names.emplace_back(d.path_name);
     sorted_data.depth.push_back(d.depth);
     sorted_data.calls.push_back(d.calls);
+    sorted_data.operation_count.push_back(d.operation_count);
     sorted_data.wall_times.push_back(d.wall_times);
     sorted_data.cpu_times.push_back(d.cpu_times);
   }
@@ -168,12 +187,16 @@ void report(const Profiler& prof, std::ostream& out, bool cumulative, SortBy sor
 void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool cumulative, SortBy sort_by) {
   auto paths = detail::TreePath::convert_subtree_to_paths(prof.root);
   auto data = detail::get_report_data(paths, cumulative);
-  MPI_Request requests[2];
-  MPI_Iallreduce(&data.wall_times[0], MPI_IN_PLACE, data.wall_times.size(), MPI_DOUBLE, MPI_SUM, communicator,
-                 &requests[0]);
-  MPI_Iallreduce(&data.cpu_times[0], MPI_IN_PLACE, data.wall_times.size(), MPI_DOUBLE, MPI_SUM, communicator,
-                 &requests[0]);
-  MPI_Waitall(2, requests, MPI_STATUSES_IGNORE);
+  MPI_Request requests[3];
+  auto n = data.wall_times.size();
+  MPI_Iallreduce(&data.wall_times[0], MPI_IN_PLACE, n, MPI_DOUBLE, MPI_MAX, communicator, &requests[0]);
+  MPI_Iallreduce(&data.cpu_times[0], MPI_IN_PLACE, n, MPI_DOUBLE, MPI_SUM, communicator, &requests[1]);
+  MPI_Iallreduce(&data.operation_count[0], MPI_IN_PLACE, n, MPI_DOUBLE, MPI_SUM, communicator, &requests[2]);
+  MPI_Waitall(3, requests, MPI_STATUSES_IGNORE);
+  int np;
+  MPI_Comm_size(communicator, &np);
+  for (auto& op : data.operation_count)
+    op /= np;
   data = detail::sort_data(data, sort_by);
   detail::format_paths(data.formatted_path_names, cumulative);
   detail::write_report(prof, out, data, cumulative);
