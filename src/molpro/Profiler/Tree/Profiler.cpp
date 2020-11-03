@@ -107,6 +107,12 @@ std::ostream& operator<<(std::ostream& os, const Profiler& obj) {
   os << obj.str() << std::endl;
   return os;
 }
+Profiler& Profiler::reset(const std::string& name) {
+  auto temp = Profiler(name, !root->counter.get_wall().dummy(), !root->counter.get_cpu().dummy());
+  using std::swap;
+  swap(*this, temp);
+  return *this;
+}
 
 } // namespace tree
 } // namespace profiler

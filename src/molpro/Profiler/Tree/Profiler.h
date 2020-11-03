@@ -94,6 +94,10 @@ public:
   //! Access counter at the top of the call stack
   Counter& counter();
 
+  // FIXME Why is this even needed?
+  //! Erases all data and starts from root again
+  Profiler& reset(const std::string& name);
+
   /*!
    * \brief Advance the counter holding the notional number of operations executed in the code segment.
    * \param operations The number of additional operations.
