@@ -69,6 +69,16 @@ Profiler& Profiler::stop_all() {
 
 Counter& Profiler::counter() { return active_node->counter; }
 
+void Profiler::operator+=(size_t operations) { counter().add_operations(operations); }
+
+void Profiler::operator++() { counter().add_operations(1); }
+
+size_t Profiler::operator++(int) {
+  auto temp = counter().get_operation_count();
+  ++(*this);
+  return temp;
+}
+
 void Profiler::Proxy::operator+=(size_t operations) { prof.counter().add_operations(operations); }
 
 void Profiler::Proxy::operator++() { prof.counter().add_operations(1); }

@@ -55,6 +55,36 @@ TEST(Profiler, push) {
   test_stop(prof);
 }
 
+TEST(Profiler, addition_assignment) {
+  const size_t n_op = 11;
+  Profiler prof("test");
+  const auto n_init = prof.counter().get_operation_count();
+  prof += n_op;
+  ASSERT_EQ(prof.counter().get_operation_count(), n_init + n_op);
+  prof += n_op;
+  ASSERT_EQ(prof.counter().get_operation_count(), n_init + 2 * n_op);
+}
+
+TEST(Profiler, pre_increment) {
+  Profiler prof("test");
+  const auto n_init = prof.counter().get_operation_count();
+  ++prof;
+  ASSERT_EQ(prof.counter().get_operation_count(), n_init + 1);
+  ++prof;
+  ASSERT_EQ(prof.counter().get_operation_count(), n_init + 2);
+}
+
+TEST(Profiler, post_increment) {
+  Profiler prof("test");
+  auto n_init = prof.counter().get_operation_count();
+  auto nop = prof++;
+  ASSERT_EQ(nop, n_init);
+  ASSERT_EQ(prof.counter().get_operation_count(), n_init + 1);
+  nop = prof++;
+  ASSERT_EQ(nop, n_init + 1);
+  ASSERT_EQ(prof.counter().get_operation_count(), n_init + 2);
+}
+
 TEST(Profiler, Proxy_addition_assignment) {
   const size_t n_op = 11;
   Profiler prof("test");

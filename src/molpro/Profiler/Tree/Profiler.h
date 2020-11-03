@@ -93,6 +93,19 @@ public:
   //! Access counter at the top of the call stack
   Counter& counter();
 
+  /*!
+   * \brief Advance the counter holding the notional number of operations executed in the code segment.
+   * \param operations The number of additional operations.
+   */
+  void operator+=(size_t operations);
+
+  /*!
+   * \brief Advance the counter holding the notional number of operations executed in the code segment.
+   */
+  void operator++();
+
+  size_t operator++(int);
+
 protected:
   //! Proxy object that calls start() on creation and stop() on destruction
   struct Proxy {
