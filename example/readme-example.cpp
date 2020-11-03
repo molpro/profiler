@@ -3,7 +3,7 @@
 #include <thread>
 using molpro::Profiler;
 
-void sleep() { std::this_thread::sleep_for(std::chrono::seconds{2}); }
+void sleep() { std::this_thread::sleep_for(std::chrono::milliseconds{20}); }
 void read_input(Profiler& p) {
   p.start("read_input()");
   sleep();
