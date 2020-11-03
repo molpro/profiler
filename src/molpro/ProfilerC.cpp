@@ -1,5 +1,5 @@
 #include "ProfilerC.h"
-#include "molpro/Profiler.h"
+#include "molpro/profiler/Profiler.h"
 #include "molpro/profiler/report.h"
 
 #include <algorithm>
@@ -7,7 +7,7 @@
 #include <cstring>
 #include <list>
 #include <sstream>
-using molpro::Profiler;
+using molpro::profiler::Profiler;
 using molpro::profiler::SortBy;
 namespace {
 struct ProfilerInfo {

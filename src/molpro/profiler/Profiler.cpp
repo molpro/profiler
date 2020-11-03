@@ -8,6 +8,7 @@
 #include <sstream>
 
 namespace molpro {
+namespace profiler {
 using profiler::Counter;
 using profiler::Node;
 
@@ -114,4 +115,5 @@ Profiler& Profiler::reset(const std::string& name) {
   return *this;
 }
 
+} // namespace profiler
 } // namespace molpro

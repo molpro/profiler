@@ -1,13 +1,13 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <molpro/Profiler.h>
 #include <molpro/profiler/Counter.h>
 #include <molpro/profiler/Node.h>
+#include <molpro/profiler/Profiler.h>
 
-using molpro::Profiler;
 using molpro::profiler::Counter;
 using molpro::profiler::Node;
+using molpro::profiler::Profiler;
 
 struct DummyCounter {
   int i = 0;

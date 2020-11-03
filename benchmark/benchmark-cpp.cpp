@@ -65,12 +65,12 @@ int main(int argc, char* argv[]) {
     tp.stop_all();
 #ifdef MOLPRO_PROFILER_MPI
     std::stringstream out;
-    molpro::profiler::report(tp, std::cout, MPI_COMM_WORLD);
+    report(tp, std::cout, MPI_COMM_WORLD);
     delay();
     std::cout << out.str() << std::endl;
     delay();
 #endif
-    molpro::profiler::report(tp, std::cout);
+    report(tp, std::cout);
     delay();
   }
   {
@@ -95,16 +95,16 @@ int main(int argc, char* argv[]) {
     et.stop();
 #ifdef MOLPRO_PROFILER_MPI
     std::stringstream out;
-    molpro::profiler::report(tp, out, MPI_COMM_WORLD);
+    report(tp, out, MPI_COMM_WORLD);
     delay();
     std::cout << out.str() << std::endl;
     delay();
 #endif
-    molpro::profiler::report(tp, std::cout, true);
+    report(tp, std::cout, true);
 #ifdef MOLPRO_PROFILER_MPI
     delay();
 #endif
-    molpro::profiler::report(tp, std::cout, false);
+    report(tp, std::cout, false);
   }
   {
     molpro::Profiler p{"tree profiler: operations , rank = " + std::to_string(rank)};
@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
     p.stop_all();
 #ifdef MOLPRO_PROFILER_MPI
     std::stringstream out;
-    molpro::profiler::report(p, out, MPI_COMM_WORLD);
+    report(p, out, MPI_COMM_WORLD);
     if (rank == 0)
       std::cout << out.str() << std::endl;
     delay();

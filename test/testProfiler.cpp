@@ -1,11 +1,11 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <molpro/Profiler.h>
 #include <molpro/profiler/Counter.h>
 #include <molpro/profiler/Node.h>
+#include <molpro/profiler/Profiler.h>
 
-using molpro::Profiler;
+using molpro::profiler::Profiler;
 
 TEST(Profiler, constructor) {
   const auto description = "test";

@@ -7,7 +7,7 @@
 
 #include <sstream>
 
-using molpro::Profiler;
+using molpro::profiler::Profiler;
 using molpro::profiler::Counter;
 using molpro::profiler::Node;
 using molpro::profiler::report;

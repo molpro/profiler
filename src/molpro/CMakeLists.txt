@@ -1,5 +1,5 @@
 LibraryManager_Append(${PROJECT_NAME}
-        SOURCES Profiler.cpp ProfilerC.cpp
+        SOURCES  ProfilerC.cpp
         PUBLIC_HEADER Profiler.h ProfilerC.h
         )
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)

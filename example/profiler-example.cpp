@@ -1,8 +1,8 @@
 #include <cmath>
 #include <ctime>
 #include <iostream>
-#include <molpro/Profiler.h>
 #include <molpro/ProfilerC.h>
+#include <molpro/Profiler.h>
 #include <sys/time.h>
 #ifdef HAVE_MPI_H
 #include "mpi.h"
