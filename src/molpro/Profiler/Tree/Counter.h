@@ -16,9 +16,11 @@ namespace tree {
 class Counter {
 public:
   Counter() = default;
+  Counter(bool with_cpu_time, bool with_wall_time);
 
-  Counter(bool with_cpu_time, bool with_wall_time)
-      : cpu(Timer{Timer::cpu, !with_cpu_time}), wall(Timer{Timer::wall, !with_wall_time}) {}
+  //! Construct counter with initial values
+  Counter(size_t call_count_, size_t operation_count_, double wall_time_, double cpu_time_, bool with_cpu_time,
+          bool with_wall_time);
 
   //! Start timing, and increment call_count;
   Counter& start();

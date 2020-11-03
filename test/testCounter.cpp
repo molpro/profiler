@@ -28,6 +28,22 @@ TEST(Counter, constructor) {
   check(false, false);
 }
 
+TEST(Counter, constructor_with_initial_values) {
+  size_t initial_call_count = 3;
+  size_t initial_operation_count = 7;
+  double initial_wall_time = 11.2;
+  double initial_cpu_time = 0.3;
+  auto c = Counter(initial_call_count, initial_operation_count, initial_wall_time, initial_cpu_time, false, false);
+  ASSERT_EQ(c.get_call_count(), initial_call_count);
+  ASSERT_EQ(c.get_operation_count(), initial_operation_count);
+  ASSERT_EQ(c.get_wall().cumulative_time(), initial_wall_time);
+  ASSERT_EQ(c.get_cpu().cumulative_time(), initial_cpu_time);
+  ASSERT_EQ(c.get_cpu().type(), Timer::Type::cpu);
+  ASSERT_EQ(c.get_wall().type(), Timer::Type::wall);
+  ASSERT_TRUE(c.get_cpu().dummy());
+  ASSERT_TRUE(c.get_wall().dummy());
+}
+
 TEST(Counter, stop) {
   auto c = Counter();
   c.stop();

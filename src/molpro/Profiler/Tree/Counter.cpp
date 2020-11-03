@@ -28,6 +28,14 @@ Counter& Counter::reset() {
   return *this;
 }
 
+Counter::Counter(bool with_cpu_time, bool with_wall_time)
+    : cpu(Timer{Timer::cpu, !with_cpu_time}), wall(Timer{Timer::wall, !with_wall_time}) {}
+
+Counter::Counter(size_t call_count_, size_t operation_count_, double wall_time_, double cpu_time_, bool with_cpu_time,
+                 bool with_wall_time)
+    : call_count(call_count_), operation_count(operation_count_), cpu(Timer{cpu_time_, Timer::cpu, !with_cpu_time}),
+      wall(Timer{wall_time_, Timer::wall, !with_wall_time}) {}
+
 } // namespace tree
 } // namespace profiler
 } // namespace molpro
