@@ -147,6 +147,31 @@ void write_timing(std::ostream& out, double time, size_t n_op) {
   }
 }
 
+void write_report(const Profiler& prof, const std::list<TreePath>& paths, std::ostream& out, bool cumulative) {
+  auto path_names = std::list<std::string>{};
+  for (const auto& path : paths)
+    path_names.emplace_back(format_single_path(path.path, cumulative));
+  format_paths(path_names, cumulative);
+  bool with_wall = !prof.root->counter.get_wall().dummy();
+  bool with_cpu = !prof.root->counter.get_cpu().dummy();
+  out << "Profiler " << '"' << prof.description << '"';
+  if (cumulative)
+    out << " (cumulative) ";
+  out << std::endl;
+  auto path_name = path_names.begin();
+  auto path = paths.begin();
+  for (size_t i = 0; i < paths.size(); ++i, ++path_name, ++path) {
+    out << *path_name;
+    auto& counter = path->counter;
+    out << "    calls=" << counter.get_call_count() << "  ";
+    if (with_wall)
+      write_timing(out << "wall=", counter.get_wall().cumulative_time(), counter.get_operation_count());
+    if (with_cpu)
+      write_timing(out << "cpu=", counter.get_cpu().cumulative_time(), counter.get_operation_count());
+    out << std::endl;
+  }
+}
+
 namespace remove {
 void write_report(const Profiler& prof, std::ostream& out, const remove::ReportData& data, bool cumulative) {
   bool with_wall = !prof.root->counter.get_wall().dummy();
@@ -217,10 +242,7 @@ ReportData sort_data(const ReportData& data, const SortBy sort_by) {
 
 void report(const Profiler& prof, std::ostream& out, bool cumulative, SortBy sort_by) {
   auto paths = detail::TreePath::convert_tree_to_paths(prof.root, cumulative, sort_by);
-  auto data = detail::remove::get_report_data(paths, cumulative);
-  data = detail::remove::sort_data(data, sort_by);
-  detail::format_paths(data.formatted_path_names, cumulative);
-  detail::remove::write_report(prof, out, data, cumulative);
+  detail::write_report(prof, paths, out, cumulative);
 }
 
 #ifdef MOLPRO_PROFILER_MPI

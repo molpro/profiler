@@ -109,6 +109,7 @@ struct AccessOperations {
  * @param path list of names from root to selected node
  */
 std::string format_path_cumulative(const std::list<std::string>& path);
+
 /*!
  * @brief convert path to a formatted string
  *
@@ -118,6 +119,13 @@ std::string format_path_cumulative(const std::list<std::string>& path);
  * @param path list of names from root to selected node
  */
 std::string format_path_not_cumulative(const std::list<std::string>& path);
+
+inline std::string format_single_path(const std::list<std::string>& path, bool cumulative) {
+  if (cumulative)
+    return format_path_cumulative(path);
+  else
+    return format_path_not_cumulative(path);
+}
 
 namespace remove {
 struct ReportData {
@@ -149,6 +157,8 @@ void format_paths(std::list<std::string>& path_names, bool append);
 
 void write_timing(std::ostream& out, double time, size_t n_op);
 
+//! Writes the report to an output stream
+void write_report(const Profiler& prof, const std::list<TreePath>& paths, std::ostream& out, bool cumulative);
 namespace remove {
 void write_report(const Profiler& prof, std::ostream& out, const ReportData& data, bool cumulative);
 } // namespace remove
