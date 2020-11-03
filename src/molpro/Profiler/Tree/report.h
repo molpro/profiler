@@ -54,12 +54,51 @@ struct TreePath {
   static std::list<TreePath> convert_tree_to_paths(const std::shared_ptr<Node<Counter>>& root, bool cumulative,
                                                    SortBy sort_by);
 
+private:
+  template <class CompareTreePaths>
+  static std::list<TreePath> convert_tree_to_paths(const std::shared_ptr<Node<Counter>>& root, TreePath path,
+                                                   bool cumulative);
+
+public:
   Counter counter;             //!< copy of the counter object with cumulative effects or lack of them already accounted
   std::list<std::string> path; //!< concatenation of names from root to the node
+  size_t depth = 0;            //!< depth of the node (root is 0)
 };
+
+//! Returns path of node names from root to node
+std::list<std::string> path_to_node(std::shared_ptr<Node<Counter>> node);
 
 //! Performs depth first search through the tree and accumulates operation counter value
 size_t total_operation_count(const std::shared_ptr<Node<Counter>>& node);
+
+//! Less than comparison operator for TreePath with access to different parameters.
+//! The implicit equality condition (!Compare{}(a,b) && !Compare{}(b,a)) is false by design.
+template <class AccessParameter>
+struct Compare {
+  bool operator()(const TreePath& l, const TreePath& r) {
+    bool depth_check = l.depth < r.depth;
+    bool parameter_check = AccessParameter{}(l) > AccessParameter{}(r);
+    bool result = depth_check ? depth_check : parameter_check;
+    if (!result) {
+      if (l.depth == r.depth && AccessParameter{}(l) == AccessParameter{}(r)) {
+        result = true;
+      }
+    }
+    return result;
+  }
+};
+struct AccessWall {
+  double operator()(const TreePath& t) { return t.counter.get_wall().cumulative_time(); }
+};
+struct AccessCPU {
+  double operator()(const TreePath& t) { return t.counter.get_cpu().cumulative_time(); }
+};
+struct AccessCalls {
+  double operator()(const TreePath& t) { return t.counter.get_call_count(); }
+};
+struct AccessOperations {
+  double operator()(const TreePath& t) { return t.counter.get_operation_count(); }
+};
 
 //! convert path to a formatted string
 std::string format_path_cumulative(const std::list<std::string>& path);

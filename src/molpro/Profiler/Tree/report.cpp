@@ -1,6 +1,7 @@
 #include "report.h"
 
 #include <algorithm>
+#include <cassert>
 #include <functional>
 #include <queue>
 
@@ -11,7 +12,6 @@ namespace detail {
 
 TreePath::TreePath(std::shared_ptr<Node<Counter>> node, bool cumulative) {
   if (node) {
-    counter = node->counter;
     auto call_count = node->counter.get_call_count();
     auto operation_count = node->counter.get_operation_count();
     auto wall_time = node->counter.get_wall().cumulative_time();
@@ -26,10 +26,17 @@ TreePath::TreePath(std::shared_ptr<Node<Counter>> node, bool cumulative) {
     }
     counter = Counter(call_count, operation_count, wall_time, cpu_time, false, false);
   }
+  path = path_to_node(node);
+  depth = path.empty() ? 0 : path.size() - 1;
+}
+
+std::list<std::string> path_to_node(std::shared_ptr<Node<Counter>> node) {
+  auto path = std::list<std::string>{};
   while (node) {
     path.push_front(node->name);
     node = node->parent;
   }
+  return path;
 }
 
 size_t total_operation_count(const std::shared_ptr<Node<Counter>>& node) {
@@ -63,18 +70,32 @@ std::string format_path_not_cumulative(const std::list<std::string>& path) {
 
 std::list<TreePath> TreePath::convert_tree_to_paths(const std::shared_ptr<Node<Counter>>& root, bool cumulative,
                                                     SortBy sort_by) {
+  auto path = TreePath(root, cumulative);
+  if (sort_by == SortBy::wall) {
+    return TreePath::convert_tree_to_paths<Compare<AccessWall>>(root, path, cumulative);
+  } else if (sort_by == SortBy::cpu) {
+    return TreePath::convert_tree_to_paths<Compare<AccessCPU>>(root, path, cumulative);
+  } else if (sort_by == SortBy::calls) {
+    return TreePath::convert_tree_to_paths<Compare<AccessCalls>>(root, path, cumulative);
+  } else if (sort_by == SortBy::operations) {
+    return TreePath::convert_tree_to_paths<Compare<AccessOperations>>(root, path, cumulative);
+  } else {
+    assert(false);
+  }
+}
+
+template <class CompareTreePaths>
+std::list<TreePath> TreePath::convert_tree_to_paths(const std::shared_ptr<Node<Counter>>& root, TreePath path,
+                                                    bool cumulative) {
   auto paths = std::list<TreePath>{};
-  auto children = std::queue<std::shared_ptr<Node<Counter>>, std::list<std::shared_ptr<Node<Counter>>>>{};
-  auto add_children = [&children](const std::shared_ptr<Node<Counter>>& nd) {
-    for (const auto& ch : nd->children)
-      children.push(ch.second);
-  };
-  children.push(root);
-  while (!children.empty()) {
-    auto node = children.front();
-    children.pop();
-    //    paths.emplace_back(node);
-    add_children(node);
+  paths.emplace_back(std::move(path));
+  auto children = std::map<TreePath, std::shared_ptr<Node<Counter>>, CompareTreePaths>{};
+  // iterate in reverse to preserve ordering of equivalent nodes
+  for (auto it_child = root->children.rbegin(); it_child != root->children.rend(); ++it_child)
+    children.emplace(TreePath(it_child->second, cumulative), it_child->second);
+  for (const auto& child : children) {
+    auto child_paths = convert_tree_to_paths<CompareTreePaths>(child.second, std::move(child.first), cumulative);
+    paths.splice(paths.end(), child_paths, child_paths.begin(), child_paths.end());
   }
   return paths;
 }

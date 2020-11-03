@@ -15,6 +15,7 @@ using molpro::profiler::tree::SortBy;
 using molpro::profiler::tree::detail::format_path_cumulative;
 using molpro::profiler::tree::detail::format_path_not_cumulative;
 using molpro::profiler::tree::detail::format_paths;
+using molpro::profiler::tree::detail::path_to_node;
 using molpro::profiler::tree::detail::ReportData;
 using molpro::profiler::tree::detail::sort_data;
 using molpro::profiler::tree::detail::total_operation_count;
@@ -71,6 +72,101 @@ TEST_F(TreePath_Fixture, convert_subtree_to_paths) {
   auto it_ref_path = reference_paths.begin();
   for (size_t i = 0; i < paths.size(); ++i, ++it_path, ++it_ref_path)
     ASSERT_THAT(it_path->path, ::testing::Pointwise(::testing::Eq(), it_ref_path->path));
+}
+
+TEST(TreePath, convert_tree_to_paths__all_equal) {
+  const bool with_wall = false, with_cpu = false;
+  auto root = Node<Counter>::make_root("All", Counter(0, 0, 0, 0, with_wall, with_cpu));
+  auto a = Node<Counter>::add_child("A", Counter(0, 0, 0, 0, with_wall, with_cpu), root);
+  auto b = Node<Counter>::add_child("B", Counter(0, 0, 0, 0, with_wall, with_cpu), root);
+  auto aa = Node<Counter>::add_child("AA", Counter(0, 0, 0, 0, with_wall, with_cpu), a);
+  auto ab = Node<Counter>::add_child("AB", Counter(0, 0, 0, 0, with_wall, with_cpu), a);
+  auto ba = Node<Counter>::add_child("BA", Counter(0, 0, 0, 0, with_wall, with_cpu), b);
+  auto bb = Node<Counter>::add_child("BB", Counter(0, 0, 0, 0, with_wall, with_cpu), b);
+  auto tree_paths = TreePath::convert_tree_to_paths(root, true, SortBy::wall);
+  auto paths = std::vector<std::list<std::string>>{};
+  for (const auto& p : tree_paths)
+    paths.emplace_back(p.path);
+  auto reference_paths = std::vector<std::list<std::string>>{};
+  for (const auto& node : {root, a, aa, ab, b, ba, bb})
+    reference_paths.emplace_back(path_to_node(node));
+  ASSERT_EQ(paths, reference_paths);
+}
+
+TEST(TreePath, convert_tree_to_paths__sort_by_wall) {
+  const bool with_wall = false, with_cpu = false;
+  auto root = Node<Counter>::make_root("All", Counter(0, 0, 0, 0, with_wall, with_cpu));
+  auto a = Node<Counter>::add_child("A", Counter(0, 0, 1, 0, with_wall, with_cpu), root);
+  auto b = Node<Counter>::add_child("B", Counter(0, 0, 0, 0, with_wall, with_cpu), root);
+  auto aa = Node<Counter>::add_child("AA", Counter(0, 0, 1, 0, with_wall, with_cpu), a);
+  auto ab = Node<Counter>::add_child("AB", Counter(0, 0, 0, 0, with_wall, with_cpu), a);
+  auto ba = Node<Counter>::add_child("BA", Counter(0, 0, 0, 0, with_wall, with_cpu), b);
+  auto bb = Node<Counter>::add_child("BB", Counter(0, 0, 1, 0, with_wall, with_cpu), b);
+  auto tree_paths = TreePath::convert_tree_to_paths(root, true, SortBy::wall);
+  auto paths = std::vector<std::list<std::string>>{};
+  for (const auto& p : tree_paths)
+    paths.emplace_back(p.path);
+  auto reference_paths = std::vector<std::list<std::string>>{};
+  for (const auto& node : {root, a, aa, ab, b, bb, ba})
+    reference_paths.emplace_back(path_to_node(node));
+  ASSERT_EQ(paths, reference_paths);
+}
+
+TEST(TreePath, convert_tree_to_paths__sort_by_cpu) {
+  const bool with_wall = false, with_cpu = false;
+  auto root = Node<Counter>::make_root("All", Counter(0, 0, 0, 0, with_wall, with_cpu));
+  auto a = Node<Counter>::add_child("A", Counter(0, 0, 0, 1, with_wall, with_cpu), root);
+  auto b = Node<Counter>::add_child("B", Counter(0, 0, 0, 0, with_wall, with_cpu), root);
+  auto aa = Node<Counter>::add_child("AA", Counter(0, 0, 0, 1, with_wall, with_cpu), a);
+  auto ab = Node<Counter>::add_child("AB", Counter(0, 0, 0, 0, with_wall, with_cpu), a);
+  auto ba = Node<Counter>::add_child("BA", Counter(0, 0, 0, 0, with_wall, with_cpu), b);
+  auto bb = Node<Counter>::add_child("BB", Counter(0, 0, 0, 1, with_wall, with_cpu), b);
+  auto tree_paths = TreePath::convert_tree_to_paths(root, true, SortBy::cpu);
+  auto paths = std::vector<std::list<std::string>>{};
+  for (const auto& p : tree_paths)
+    paths.emplace_back(p.path);
+  auto reference_paths = std::vector<std::list<std::string>>{};
+  for (const auto& node : {root, a, aa, ab, b, bb, ba})
+    reference_paths.emplace_back(path_to_node(node));
+  ASSERT_EQ(paths, reference_paths);
+}
+
+TEST(TreePath, convert_tree_to_paths__sort_by_call) {
+  const bool with_wall = false, with_cpu = false;
+  auto root = Node<Counter>::make_root("All", Counter(0, 0, 0, 0, with_wall, with_cpu));
+  auto a = Node<Counter>::add_child("A", Counter(1, 0, 0, 0, with_wall, with_cpu), root);
+  auto b = Node<Counter>::add_child("B", Counter(0, 0, 0, 0, with_wall, with_cpu), root);
+  auto aa = Node<Counter>::add_child("AA", Counter(1, 0, 0, 0, with_wall, with_cpu), a);
+  auto ab = Node<Counter>::add_child("AB", Counter(0, 0, 0, 0, with_wall, with_cpu), a);
+  auto ba = Node<Counter>::add_child("BA", Counter(0, 0, 0, 0, with_wall, with_cpu), b);
+  auto bb = Node<Counter>::add_child("BB", Counter(1, 0, 0, 0, with_wall, with_cpu), b);
+  auto tree_paths = TreePath::convert_tree_to_paths(root, true, SortBy::calls);
+  auto paths = std::vector<std::list<std::string>>{};
+  for (const auto& p : tree_paths)
+    paths.emplace_back(p.path);
+  auto reference_paths = std::vector<std::list<std::string>>{};
+  for (const auto& node : {root, a, aa, ab, b, bb, ba})
+    reference_paths.emplace_back(path_to_node(node));
+  ASSERT_EQ(paths, reference_paths);
+}
+
+TEST(TreePath, convert_tree_to_paths__sort_by_operations) {
+  const bool with_wall = false, with_cpu = false;
+  auto root = Node<Counter>::make_root("All", Counter(0, 0, 0, 0, with_wall, with_cpu));
+  auto a = Node<Counter>::add_child("A", Counter(0, 1, 0, 0, with_wall, with_cpu), root);
+  auto b = Node<Counter>::add_child("B", Counter(0, 0, 0, 0, with_wall, with_cpu), root);
+  auto aa = Node<Counter>::add_child("AA", Counter(0, 1, 0, 0, with_wall, with_cpu), a);
+  auto ab = Node<Counter>::add_child("AB", Counter(0, 0, 0, 0, with_wall, with_cpu), a);
+  auto ba = Node<Counter>::add_child("BA", Counter(0, 0, 0, 0, with_wall, with_cpu), b);
+  auto bb = Node<Counter>::add_child("BB", Counter(0, 1, 0, 0, with_wall, with_cpu), b);
+  auto tree_paths = TreePath::convert_tree_to_paths(root, true, SortBy::operations);
+  auto paths = std::vector<std::list<std::string>>{};
+  for (const auto& p : tree_paths)
+    paths.emplace_back(p.path);
+  auto reference_paths = std::vector<std::list<std::string>>{};
+  for (const auto& node : {root, a, aa, ab, b, bb, ba})
+    reference_paths.emplace_back(path_to_node(node));
+  ASSERT_EQ(paths, reference_paths);
 }
 
 TEST_F(TreePath_Fixture, format_path_cumulative) {
@@ -196,6 +292,20 @@ TEST(report_detail, sort_data__operation_count) {
 TEST(report_detail, total_operation_count__nullptr) {
   auto tot_count = total_operation_count(nullptr);
   ASSERT_EQ(tot_count, 0);
+}
+
+TEST(report_detail, path_to_node__null) {
+  auto result = path_to_node(nullptr);
+  ASSERT_TRUE(result.empty());
+}
+
+TEST(report_detail, path_to_node) {
+  Profiler p("test");
+  p.start("A").start("B").start("C");
+  auto result = path_to_node(p.active_node);
+  auto reference = std::list<std::string>{p.root_name, "A", "B", "C"};
+  ASSERT_FALSE(result.empty());
+  ASSERT_EQ(result, reference);
 }
 
 TEST(report_detail, total_operation_count__root_only) {
