@@ -14,6 +14,9 @@ const auto global_start_time = clock_type::now();
 
 Timer::Timer(Timer::Type _type, bool is_dummy) : m_type(_type), m_dummy(is_dummy) {}
 
+Timer::Timer(double cumulative_time, Timer::Type type, bool is_dummy)
+    : m_type(type), m_cumulative(cumulative_time), m_dummy(is_dummy) {}
+
 Timer& Timer::start() {
   if (not m_dummy && m_start == 0) {
     if (m_type == cpu) {

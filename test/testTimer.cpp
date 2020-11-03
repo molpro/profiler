@@ -20,6 +20,20 @@ TEST(Timer, constructor) {
   }
 }
 
+TEST(Timer, constructor__with_initial_time) {
+  const double initial_time = 11.5;
+  for (auto type : {Timer::Type::cpu, Timer::Type::wall}) {
+    for (auto dummy : {true, false}) {
+      auto t = Timer(initial_time, type, dummy);
+      ASSERT_EQ(t.type(), type);
+      ASSERT_EQ(t.dummy(), dummy);
+      ASSERT_TRUE(t.stopped());
+      ASSERT_EQ(t.start_time(), t.stop_time());
+      ASSERT_EQ(t.cumulative_time(), initial_time);
+    }
+  }
+}
+
 TEST(Timer, start__repeated) {
   const auto delay = std::chrono::milliseconds{10};
   auto t = Timer(Timer::Type::wall, false);

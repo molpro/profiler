@@ -9,8 +9,9 @@ namespace tree {
 class Timer {
 public:
   enum Type { cpu, wall };
-
   Timer(Type type, bool is_dummy);
+  //! Construct Timer with initial cumulative time
+  Timer(double cumulative_time, Type type, bool is_dummy);
 
   //! start timing
   Timer& start();
