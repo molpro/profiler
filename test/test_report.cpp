@@ -17,13 +17,18 @@ using molpro::profiler::tree::detail::format_path_not_cumulative;
 using molpro::profiler::tree::detail::format_paths;
 using molpro::profiler::tree::detail::ReportData;
 using molpro::profiler::tree::detail::sort_data;
+using molpro::profiler::tree::detail::total_operation_count;
 using molpro::profiler::tree::detail::TreePath;
 using molpro::profiler::tree::detail::write_report;
 
 struct TreePath_Fixture : ::testing::Test {
   TreePath_Fixture() : prof("TreePath_Fixture") {
     prof.push("A").push("B").push("C");
-    prof.stop();
+    for (auto key : {"A", "B", "C"}) {
+      prof.start(key);
+      ++prof;
+    }
+    prof.stop_all();
     a = prof.root->children.at("A");
     b = a->children.at("B");
     c = b->children.at("C");
@@ -33,19 +38,34 @@ struct TreePath_Fixture : ::testing::Test {
   std::shared_ptr<Node<Counter>> a, b, c;
 };
 
-TEST_F(TreePath_Fixture, constructor) {
-  auto tp = TreePath(c);
-  ASSERT_EQ(tp.counter.get_call_count(), c->counter.get_call_count());
-  ASSERT_EQ(tp.counter.get_wall().cumulative_time(), c->counter.get_wall().cumulative_time());
-  ASSERT_EQ(tp.counter.get_cpu().cumulative_time(), c->counter.get_cpu().cumulative_time());
-  ASSERT_EQ(tp.path.size(), 4);
-  auto ref = std::list<std::string>{{"All"}, {"A"}, {"B"}, {"C"}};
+TEST_F(TreePath_Fixture, constructor__cumulative) {
+  auto tp = TreePath(b, true);
+  ASSERT_EQ(tp.counter.get_call_count(), b->counter.get_call_count());
+  ASSERT_EQ(tp.counter.get_wall().cumulative_time(), b->counter.get_wall().cumulative_time());
+  ASSERT_EQ(tp.counter.get_cpu().cumulative_time(), b->counter.get_cpu().cumulative_time());
+  ASSERT_EQ(tp.path.size(), 3);
+  auto ref = std::list<std::string>{{"All"}, {"A"}, {"B"}};
   ASSERT_THAT(tp.path, ::testing::Pointwise(::testing::Eq(), ref));
+  ASSERT_EQ(tp.counter.get_operation_count(), 2);
+}
+
+TEST_F(TreePath_Fixture, constructor__not_cumulative) {
+  auto tp = TreePath(b, false);
+  ASSERT_EQ(tp.counter.get_call_count(), b->counter.get_call_count());
+  ASSERT_DOUBLE_EQ(tp.counter.get_wall().cumulative_time(),
+                   b->counter.get_wall().cumulative_time() - c->counter.get_wall().cumulative_time());
+  ASSERT_DOUBLE_EQ(tp.counter.get_cpu().cumulative_time(),
+                   b->counter.get_cpu().cumulative_time() - c->counter.get_cpu().cumulative_time());
+  ASSERT_EQ(tp.path.size(), 3);
+  auto ref = std::list<std::string>{{"All"}, {"A"}, {"B"}};
+  ASSERT_THAT(tp.path, ::testing::Pointwise(::testing::Eq(), ref));
+  ASSERT_EQ(tp.counter.get_operation_count(), 1);
 }
 
 TEST_F(TreePath_Fixture, convert_subtree_to_paths) {
-  auto paths = TreePath::convert_subtree_to_paths(prof.root);
-  auto reference_paths = std::list<TreePath>{TreePath{prof.root}, TreePath{a}, TreePath{b}, TreePath{c}};
+  auto paths = TreePath::convert_tree_to_paths(prof.root, true, SortBy::wall);
+  auto reference_paths =
+      std::list<TreePath>{TreePath{prof.root, true}, TreePath{a, true}, TreePath{b, true}, TreePath{c, true}};
   ASSERT_EQ(paths.size(), reference_paths.size());
   auto it_path = paths.begin();
   auto it_ref_path = reference_paths.begin();
@@ -54,7 +74,7 @@ TEST_F(TreePath_Fixture, convert_subtree_to_paths) {
 }
 
 TEST_F(TreePath_Fixture, format_path_cumulative) {
-  auto tp = TreePath(c);
+  auto tp = TreePath(c, true);
   auto s = format_path_cumulative(tp.path);
   auto ref = std::string{"...C"};
   ASSERT_FALSE(s.empty());
@@ -62,7 +82,7 @@ TEST_F(TreePath_Fixture, format_path_cumulative) {
 }
 
 TEST_F(TreePath_Fixture, format_path_not_cumulative) {
-  auto tp = TreePath(c);
+  auto tp = TreePath(c, true);
   auto s = format_path_not_cumulative(tp.path);
   auto ref = std::string{"All:A:B:C"};
   ASSERT_FALSE(s.empty());
@@ -171,4 +191,33 @@ TEST(report_detail, sort_data__operation_count) {
   ASSERT_EQ(sorted_data.calls, ref_data.calls);
   ASSERT_EQ(sorted_data.wall_times, ref_data.wall_times);
   ASSERT_EQ(sorted_data.cpu_times, ref_data.cpu_times);
+}
+
+TEST(report_detail, total_operation_count__nullptr) {
+  auto tot_count = total_operation_count(nullptr);
+  ASSERT_EQ(tot_count, 0);
+}
+
+TEST(report_detail, total_operation_count__root_only) {
+  const size_t n_op = 3;
+  Profiler p("test");
+  p += n_op;
+  auto tot_count = total_operation_count(p.root);
+  ASSERT_EQ(tot_count, n_op);
+}
+
+TEST(report_detail, total_operation_count__tree) {
+  const size_t n_op = 3;
+  Profiler p("test");
+  p += n_op;
+  for (auto key : {"A", "B"}) {
+    auto p1 = p.push(key);
+    p1 += n_op;
+    for (auto key2 : {"C", "D"}) {
+      auto p2 = p.push(key2);
+      p2 += n_op;
+    }
+  }
+  auto tot_count = total_operation_count(p.root);
+  ASSERT_EQ(tot_count, 7 * n_op);
 }

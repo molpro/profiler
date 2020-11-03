@@ -36,17 +36,30 @@ void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool
 namespace detail {
 //! Utility for storing a node as a path from root to that node and corresponding Counter
 struct TreePath {
-  explicit TreePath(std::shared_ptr<Node<Counter>> node);
+  //! Processes path from root nodes into list of strings and copies Counter accounting for cumulative effects
+  explicit TreePath(std::shared_ptr<Node<Counter>> node, bool cumulative);
 
-  //! Performs Depth-First-Search and converts the whole tree to a list of TreePath objects
-  static std::list<TreePath> convert_subtree_to_paths(const std::shared_ptr<Node<Counter>>& root);
+  /*!
+   * @brief Performs Depth-First-Search and converts the whole tree to a list of TreePath objects
+   *
+   * The counter is processed so that all data is either cumulative or not. Particularly, wall time and operation
+   * count have to be taken care of.
+   *
+   * All children are added in an ordered fashion based on sort_by.
+   *
+   * @param root root node
+   * @param cumulative whether to use cumulative times and operation counts
+   * @param sort_by what parameter to sort by
+   */
+  static std::list<TreePath> convert_tree_to_paths(const std::shared_ptr<Node<Counter>>& root, bool cumulative,
+                                                   SortBy sort_by);
 
-  Counter counter;               //!< copy of the counter object
-  std::list<std::string> path;   //!< concatenation of names from root to the node
-  double wall_time_children = 0; //!< wall time spent by children
-  double cpu_time_children = 0;  //!< cpu time spent by children
-  double total_operation_count = 0;  //!< cpu time spent by children
+  Counter counter;             //!< copy of the counter object with cumulative effects or lack of them already accounted
+  std::list<std::string> path; //!< concatenation of names from root to the node
 };
+
+//! Performs depth first search through the tree and accumulates operation counter value
+size_t total_operation_count(const std::shared_ptr<Node<Counter>>& node);
 
 //! convert path to a formatted string
 std::string format_path_cumulative(const std::list<std::string>& path);

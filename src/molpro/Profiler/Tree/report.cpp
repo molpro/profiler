@@ -9,19 +9,39 @@ namespace profiler {
 namespace tree {
 namespace detail {
 
-TreePath::TreePath(std::shared_ptr<Node<Counter>> node) {
+TreePath::TreePath(std::shared_ptr<Node<Counter>> node, bool cumulative) {
   if (node) {
     counter = node->counter;
-    for (const auto& child : node->children) {
-      wall_time_children += child.second->counter.get_wall().cumulative_time();
-      cpu_time_children += child.second->counter.get_wall().cumulative_time();
+    auto call_count = node->counter.get_call_count();
+    auto operation_count = node->counter.get_operation_count();
+    auto wall_time = node->counter.get_wall().cumulative_time();
+    auto cpu_time = node->counter.get_cpu().cumulative_time();
+    if (cumulative) {
+      operation_count = total_operation_count(node);
+    } else {
+      for (const auto& child : node->children) {
+        wall_time -= child.second->counter.get_wall().cumulative_time();
+        cpu_time -= child.second->counter.get_cpu().cumulative_time();
+      }
     }
+    counter = Counter(call_count, operation_count, wall_time, cpu_time, false, false);
   }
   while (node) {
     path.push_front(node->name);
     node = node->parent;
   }
 }
+
+size_t total_operation_count(const std::shared_ptr<Node<Counter>>& node) {
+  size_t total_count = 0;
+  if (node) {
+    total_count += node->counter.get_operation_count();
+    for (const auto& child : node->children)
+      total_count += total_operation_count(child.second);
+  }
+  return total_count;
+}
+
 std::string format_path_cumulative(const std::list<std::string>& path) {
   auto result = std::string();
   for (size_t i = 1; i < path.size(); ++i) {
@@ -41,7 +61,8 @@ std::string format_path_not_cumulative(const std::list<std::string>& path) {
   return result;
 }
 
-std::list<TreePath> TreePath::convert_subtree_to_paths(const std::shared_ptr<Node<Counter>>& root) {
+std::list<TreePath> TreePath::convert_tree_to_paths(const std::shared_ptr<Node<Counter>>& root, bool cumulative,
+                                                    SortBy sort_by) {
   auto paths = std::list<TreePath>{};
   auto children = std::queue<std::shared_ptr<Node<Counter>>, std::list<std::shared_ptr<Node<Counter>>>>{};
   auto add_children = [&children](const std::shared_ptr<Node<Counter>>& nd) {
@@ -52,7 +73,7 @@ std::list<TreePath> TreePath::convert_subtree_to_paths(const std::shared_ptr<Nod
   while (!children.empty()) {
     auto node = children.front();
     children.pop();
-    paths.emplace_back(node);
+    //    paths.emplace_back(node);
     add_children(node);
   }
   return paths;
@@ -63,15 +84,9 @@ ReportData get_report_data(const std::list<TreePath>& paths, bool cumulative) {
   for (const auto& path : paths) {
     data.depth.push_back(path.path.size());
     data.calls.push_back(path.counter.get_call_count());
-    if (cumulative) {
-      data.formatted_path_names.emplace_back(detail::format_path_cumulative(path.path));
-      data.wall_times.push_back(path.counter.get_wall().cumulative_time());
-      data.cpu_times.push_back(path.counter.get_cpu().cumulative_time());
-    } else {
-      data.formatted_path_names.emplace_back(detail::format_path_not_cumulative(path.path));
-      data.wall_times.push_back(path.counter.get_wall().cumulative_time() - path.wall_time_children);
-      data.cpu_times.push_back(path.counter.get_cpu().cumulative_time() - path.cpu_time_children);
-    }
+    data.formatted_path_names.emplace_back(detail::format_path_cumulative(path.path));
+    data.wall_times.push_back(path.counter.get_wall().cumulative_time());
+    data.cpu_times.push_back(path.counter.get_cpu().cumulative_time());
     data.operation_count.push_back(path.counter.get_operation_count());
   }
   return data;
@@ -176,7 +191,9 @@ ReportData sort_data(const ReportData& data, const SortBy sort_by) {
 } // namespace detail
 
 void report(const Profiler& prof, std::ostream& out, bool cumulative, SortBy sort_by) {
-  auto paths = detail::TreePath::convert_subtree_to_paths(prof.root);
+  // reconstruct the tree with counters that are correctly cumulative or not
+  // paths are sorted on construction
+  auto paths = detail::TreePath::convert_tree_to_paths(prof.root, cumulative, sort_by);
   auto data = detail::get_report_data(paths, cumulative);
   data = detail::sort_data(data, sort_by);
   detail::format_paths(data.formatted_path_names, cumulative);
@@ -185,7 +202,7 @@ void report(const Profiler& prof, std::ostream& out, bool cumulative, SortBy sor
 
 #ifdef MOLPRO_PROFILER_MPI
 void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool cumulative, SortBy sort_by) {
-  auto paths = detail::TreePath::convert_subtree_to_paths(prof.root);
+  auto paths = detail::TreePath::convert_tree_to_paths(prof.root, cumulative, sort_by);
   auto data = detail::get_report_data(paths, cumulative);
   MPI_Request requests[3];
   auto n = data.wall_times.size();
