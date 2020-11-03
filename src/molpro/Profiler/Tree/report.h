@@ -119,6 +119,7 @@ std::string format_path_cumulative(const std::list<std::string>& path);
  */
 std::string format_path_not_cumulative(const std::list<std::string>& path);
 
+namespace remove {
 struct ReportData {
   std::list<std::string> formatted_path_names;
   std::vector<int> depth;
@@ -133,6 +134,7 @@ ReportData get_report_data(const std::list<TreePath>& paths, bool cumulative);
 
 //! Sorts the data based on depth (ascending) and sort_by parameter (descending)
 ReportData sort_data(const ReportData& data, SortBy sort_by);
+} // namespace remove
 
 /*!
  * @brief Format paths for output
@@ -147,7 +149,9 @@ void format_paths(std::list<std::string>& path_names, bool append);
 
 void write_timing(std::ostream& out, double time, size_t n_op);
 
+namespace remove {
 void write_report(const Profiler& prof, std::ostream& out, const ReportData& data, bool cumulative);
+} // namespace remove
 
 } // namespace detail
 } // namespace tree

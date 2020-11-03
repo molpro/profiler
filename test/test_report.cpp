@@ -16,11 +16,11 @@ using molpro::profiler::tree::detail::format_path_cumulative;
 using molpro::profiler::tree::detail::format_path_not_cumulative;
 using molpro::profiler::tree::detail::format_paths;
 using molpro::profiler::tree::detail::path_to_node;
-using molpro::profiler::tree::detail::ReportData;
-using molpro::profiler::tree::detail::sort_data;
 using molpro::profiler::tree::detail::total_operation_count;
 using molpro::profiler::tree::detail::TreePath;
-using molpro::profiler::tree::detail::write_report;
+using molpro::profiler::tree::detail::remove::ReportData;
+using molpro::profiler::tree::detail::remove::sort_data;
+using molpro::profiler::tree::detail::remove::write_report;
 
 struct TreePath_Fixture : ::testing::Test {
   TreePath_Fixture() : prof("TreePath_Fixture") {

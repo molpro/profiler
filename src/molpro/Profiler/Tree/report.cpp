@@ -100,6 +100,7 @@ std::list<TreePath> TreePath::convert_tree_to_paths(const std::shared_ptr<Node<C
   return paths;
 }
 
+namespace remove {
 ReportData get_report_data(const std::list<TreePath>& paths, bool cumulative) {
   auto data = ReportData();
   for (const auto& path : paths) {
@@ -112,8 +113,9 @@ ReportData get_report_data(const std::list<TreePath>& paths, bool cumulative) {
   }
   return data;
 }
+} // namespace remove
 
-void format_paths(std::list<std::string>& path_names, bool cumulative) {
+void format_paths(std::list<std::string>& path_names, bool append) {
   size_t max_path_size = 0;
   for (const auto& path_name : path_names)
     if (path_name.size() > max_path_size)
@@ -123,7 +125,7 @@ void format_paths(std::list<std::string>& path_names, bool cumulative) {
     std::string blank;
     for (size_t i = 0; i < n_blank; ++i)
       blank += " ";
-    if (cumulative)
+    if (append)
       path_name += blank;
     else
       path_name = blank + path_name;
@@ -145,7 +147,8 @@ void write_timing(std::ostream& out, double time, size_t n_op) {
   }
 }
 
-void write_report(const Profiler& prof, std::ostream& out, const ReportData& data, bool cumulative) {
+namespace remove {
+void write_report(const Profiler& prof, std::ostream& out, const remove::ReportData& data, bool cumulative) {
   bool with_wall = !prof.root->counter.get_wall().dummy();
   bool with_cpu = !prof.root->counter.get_cpu().dummy();
   out << "Profiler " << '"' << prof.description << '"';
@@ -208,23 +211,22 @@ ReportData sort_data(const ReportData& data, const SortBy sort_by) {
   }
   return sorted_data;
 }
+} // namespace remove
 
 } // namespace detail
 
 void report(const Profiler& prof, std::ostream& out, bool cumulative, SortBy sort_by) {
-  // reconstruct the tree with counters that are correctly cumulative or not
-  // paths are sorted on construction
   auto paths = detail::TreePath::convert_tree_to_paths(prof.root, cumulative, sort_by);
-  auto data = detail::get_report_data(paths, cumulative);
-  data = detail::sort_data(data, sort_by);
+  auto data = detail::remove::get_report_data(paths, cumulative);
+  data = detail::remove::sort_data(data, sort_by);
   detail::format_paths(data.formatted_path_names, cumulative);
-  detail::write_report(prof, out, data, cumulative);
+  detail::remove::write_report(prof, out, data, cumulative);
 }
 
 #ifdef MOLPRO_PROFILER_MPI
 void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool cumulative, SortBy sort_by) {
   auto paths = detail::TreePath::convert_tree_to_paths(prof.root, cumulative, sort_by);
-  auto data = detail::get_report_data(paths, cumulative);
+  auto data = detail::remove::get_report_data(paths, cumulative);
   MPI_Request requests[3];
   auto n = data.wall_times.size();
   MPI_Iallreduce(&data.wall_times[0], MPI_IN_PLACE, n, MPI_DOUBLE, MPI_MAX, communicator, &requests[0]);
@@ -235,9 +237,9 @@ void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool
   MPI_Comm_size(communicator, &np);
   for (auto& op : data.operation_count)
     op /= np;
-  data = detail::sort_data(data, sort_by);
+  data = detail::remove::sort_data(data, sort_by);
   detail::format_paths(data.formatted_path_names, cumulative);
-  detail::write_report(prof, out, data, cumulative);
+  detail::remove::write_report(prof, out, data, cumulative);
 }
 #endif
 
