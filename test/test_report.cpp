@@ -18,8 +18,6 @@ using molpro::profiler::tree::detail::format_paths;
 using molpro::profiler::tree::detail::path_to_node;
 using molpro::profiler::tree::detail::total_operation_count;
 using molpro::profiler::tree::detail::TreePath;
-using molpro::profiler::tree::detail::remove::ReportData;
-using molpro::profiler::tree::detail::remove::sort_data;
 
 struct TreePath_Fixture : ::testing::Test {
   TreePath_Fixture() : prof("TreePath_Fixture") {
@@ -202,90 +200,6 @@ TEST(report_detail, format_paths__not_cumulative) {
   format_paths(path_names, false);
   auto reference = std::list<std::string>{{"  A : "}, {"**B : "}, {" *C : "}};
   ASSERT_EQ(path_names, reference);
-}
-
-TEST(report_detail, sort_data__wall) {
-  auto data = ReportData{{{"A"}, {"B"}, {"C"}, {"D"}},     // names
-                         {1, 0, 2, 1},                     // depth
-                         {0, 0, 0, 0},                     // calls
-                         {0, 0, 0, 0},                     // operations
-                         {5.1, 6, 7, 5.2},                 // wall
-                         {0, 0, 0, 0}};                    // cpu
-  auto ref_data = ReportData{{{"B"}, {"D"}, {"A"}, {"C"}}, // names
-                             {0, 1, 1, 2},                 // depth
-                             {0, 0, 0, 0},                 // calls
-                             {0, 0, 0, 0},                 // operations
-                             {6, 5.2, 5.1, 7},             // wall
-                             {0, 0, 0, 0}};                // cpu
-  auto sorted_data = sort_data(data, SortBy::wall);
-  ASSERT_EQ(sorted_data.formatted_path_names, ref_data.formatted_path_names);
-  ASSERT_EQ(sorted_data.depth, ref_data.depth);
-  ASSERT_EQ(sorted_data.calls, ref_data.calls);
-  ASSERT_EQ(sorted_data.wall_times, ref_data.wall_times);
-  ASSERT_EQ(sorted_data.cpu_times, ref_data.cpu_times);
-}
-
-TEST(report_detail, sort_data__cpu) {
-  auto data = ReportData{{{"A"}, {"B"}, {"C"}, {"D"}},     // names
-                         {1, 0, 2, 1},                     // depth
-                         {0, 0, 0, 0},                     // calls
-                         {0, 0, 0, 0},                     // operations
-                         {0, 0, 0, 0},                     // wall
-                         {5.1, 6, 7, 5.2}};                // cpu
-  auto ref_data = ReportData{{{"B"}, {"D"}, {"A"}, {"C"}}, // names
-                             {0, 1, 1, 2},                 // depth
-                             {0, 0, 0, 0},                 // calls
-                             {0, 0, 0, 0},                 // operations
-                             {0, 0, 0, 0},                 // wall
-                             {6, 5.2, 5.1, 7}};            // cpu
-  auto sorted_data = sort_data(data, SortBy::cpu);
-  ASSERT_EQ(sorted_data.formatted_path_names, ref_data.formatted_path_names);
-  ASSERT_EQ(sorted_data.depth, ref_data.depth);
-  ASSERT_EQ(sorted_data.calls, ref_data.calls);
-  ASSERT_EQ(sorted_data.wall_times, ref_data.wall_times);
-  ASSERT_EQ(sorted_data.cpu_times, ref_data.cpu_times);
-}
-
-TEST(report_detail, sort_data__calls) {
-  auto data = ReportData{{{"A"}, {"B"}, {"C"}, {"D"}},     // names
-                         {1, 0, 2, 1},                     // depth
-                         {1, 2, 3, 4},                     // calls
-                         {0, 0, 0, 0},                     // operations
-                         {0, 0, 0, 0},                     // wall
-                         {0, 0, 0, 0}};                    // cpu
-  auto ref_data = ReportData{{{"B"}, {"D"}, {"A"}, {"C"}}, // names
-                             {0, 1, 1, 2},                 // depth
-                             {2, 4, 1, 3},                 // calls
-                             {0, 0, 0, 0},                 // operations
-                             {0, 0, 0, 0},                 // wall
-                             {0, 0, 0, 0}};                // cpu
-  auto sorted_data = sort_data(data, SortBy::calls);
-  ASSERT_EQ(sorted_data.formatted_path_names, ref_data.formatted_path_names);
-  ASSERT_EQ(sorted_data.depth, ref_data.depth);
-  ASSERT_EQ(sorted_data.calls, ref_data.calls);
-  ASSERT_EQ(sorted_data.wall_times, ref_data.wall_times);
-  ASSERT_EQ(sorted_data.cpu_times, ref_data.cpu_times);
-}
-
-TEST(report_detail, sort_data__operation_count) {
-  auto data = ReportData{{{"A"}, {"B"}, {"C"}, {"D"}},     // names
-                         {1, 0, 2, 1},                     // depth
-                         {0, 0, 0, 0},                     // calls
-                         {1, 2, 3, 4},                     // operations
-                         {0, 0, 0, 0},                     // wall
-                         {0, 0, 0, 0}};                    // cpu
-  auto ref_data = ReportData{{{"B"}, {"D"}, {"A"}, {"C"}}, // names
-                             {0, 1, 1, 2},                 // depth
-                             {0, 0, 0, 0},                 // calls
-                             {2, 4, 1, 3},                 // operations
-                             {0, 0, 0, 0},                 // wall
-                             {0, 0, 0, 0}};                // cpu
-  auto sorted_data = sort_data(data, SortBy::operations);
-  ASSERT_EQ(sorted_data.formatted_path_names, ref_data.formatted_path_names);
-  ASSERT_EQ(sorted_data.depth, ref_data.depth);
-  ASSERT_EQ(sorted_data.calls, ref_data.calls);
-  ASSERT_EQ(sorted_data.wall_times, ref_data.wall_times);
-  ASSERT_EQ(sorted_data.cpu_times, ref_data.cpu_times);
 }
 
 TEST(report_detail, total_operation_count__nullptr) {

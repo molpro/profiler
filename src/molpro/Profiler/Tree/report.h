@@ -127,23 +127,6 @@ inline std::string format_single_path(const std::list<std::string>& path, bool c
     return format_path_not_cumulative(path);
 }
 
-namespace remove {
-struct ReportData {
-  std::list<std::string> formatted_path_names;
-  std::vector<int> depth;
-  std::vector<size_t> calls;
-  std::vector<double> operation_count;
-  std::vector<double> wall_times;
-  std::vector<double> cpu_times;
-};
-
-//! extracts data from TreePath objects
-ReportData get_report_data(const std::list<TreePath>& paths, bool cumulative);
-
-//! Sorts the data based on depth (ascending) and sort_by parameter (descending)
-ReportData sort_data(const ReportData& data, SortBy sort_by);
-} // namespace remove
-
 /*!
  * @brief Format paths for output
  *
@@ -159,9 +142,6 @@ void write_timing(std::ostream& out, double time, size_t n_op);
 
 //! Writes the report to an output stream
 void write_report(const Profiler& prof, const std::list<TreePath>& paths, std::ostream& out, bool cumulative);
-namespace remove {
-void write_report(const Profiler& prof, std::ostream& out, const ReportData& data, bool cumulative);
-} // namespace remove
 
 } // namespace detail
 } // namespace tree
