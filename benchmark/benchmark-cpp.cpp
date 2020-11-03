@@ -1,6 +1,6 @@
 #include <chrono>
+#include <iostream>
 #include <memory>
-#include <molpro/Profiler.h>
 #include <molpro/Profiler/Tree/Profiler.h>
 #include <molpro/Profiler/Tree/report.h>
 #include <sstream>
@@ -56,15 +56,6 @@ int main(int argc, char* argv[]) {
   if (argc > 1)
     repeat = std::stoi(argv[1]);
   {
-    molpro::Profiler p{"test: depth = 1"};
-    auto et = ElapsedTime(repeat);
-    for (auto i = 0; i < repeat; i++) {
-      p.push("test");
-    }
-    et.stop();
-    std::cout << p << std::endl;
-  }
-  {
     molpro::profiler::tree::Profiler tp{"test tree profiler: depth = 1, rank = " + std::to_string(rank)};
     auto et = ElapsedTime(repeat);
     for (auto i = 0; i < repeat; i++) {
@@ -81,27 +72,6 @@ int main(int argc, char* argv[]) {
 #endif
     report(tp, std::cout);
     delay();
-  }
-  {
-    molpro::Profiler p{"test: depth = 5"};
-    auto et = ElapsedTime(repeat);
-    for (auto i = 0; i < repeat / 10000; i++) {
-      auto p1 = p.push("test1");
-      for (auto ii = 0; ii < 10; ii++) {
-        auto p2 = p.push("test2");
-        for (auto iii = 0; iii < 10; iii++) {
-          auto p3 = p.push("test3");
-          for (auto iiii = 0; iiii < 10; iiii++) {
-            auto p4 = p.push("test4");
-            for (auto iiiii = 0; iiiii < 10; iiiii++) {
-              auto p5 = p.push("test5");
-            }
-          }
-        }
-      }
-    }
-    et.stop();
-    std::cout << p << std::endl;
   }
   {
     molpro::profiler::tree::Profiler tp{"test tree profiler: depth = 1, rank = " + std::to_string(rank)};
@@ -135,16 +105,6 @@ int main(int argc, char* argv[]) {
     delay();
 #endif
     report(tp, std::cout, false);
-  }
-  {
-    molpro::Profiler p{"test: operations "};
-    auto et = ElapsedTime(repeat);
-    for (auto i = 0; i < repeat; i++) {
-      auto proxy = p.push("test");
-      proxy += 7;
-    }
-    et.stop();
-    std::cout << p << std::endl;
   }
   {
     molpro::profiler::tree::Profiler p{"tree profiler: operations , rank = " + std::to_string(rank)};
