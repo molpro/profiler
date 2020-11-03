@@ -72,7 +72,7 @@ All                   : calls=1, wall=18
 ..read_input()        : calls=1, wall=2
 ```
 
-Alternatively, cumulative format can be turned off ``prof.str(0, false)`` and time spent on each
+Alternatively, cumulative format can be turned off using ``prof.str(false)`` then time spent on each
 call excluding any children is shown.
 ```
 Profiler "main()"
@@ -84,8 +84,6 @@ perform_calculation():operation2(): calls=2, wall=4
          initialise():read_input(): calls=1, wall=2
      initialise():restore_backup(): calls=1, wall=2
 ```
-
-**NOTE** we are transitioning to a new structure, and the interface might change.
 
 # Weak Singleton pattern
 During development and debugging it becomes inconvenient to pass a profiler instance down through all function calls.
