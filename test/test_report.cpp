@@ -251,18 +251,18 @@ void test_write_timing(double time, size_t n_op, std::string expected) {
   EXPECT_EQ(result.str(), expected);
 }
 TEST (report_detail, write_timing) {
-  test_write_timing(0,0,"0s");
-  test_write_timing(0,1,"0s");
-  test_write_timing(1,0,"1s");
-  test_write_timing(999,0,"999s");
-  test_write_timing(1000,0,"1ks");
-  test_write_timing(1e24,0,"1Ys");
-  test_write_timing(1e28,0,"10000Ys");
-  test_write_timing(1e-6,0,"1us");
-  test_write_timing(9.999999e-7,0,"1000ns");
-  test_write_timing(1e-28,0,"0.0001ys");
-  test_write_timing(1e-6,10,"1us, 10MHz");
-  test_write_timing(1e-6,999,"1us, 999MHz");
-  test_write_timing(1e-6,1000,"1us, 1GHz");
-  test_write_timing(1e-21,1234000,"1zs, 1234YHz");
+  test_write_timing(0,0,"0 s");
+  test_write_timing(0,1,"0 s");
+  test_write_timing(1,0,"1 s");
+  test_write_timing(999,0,"999 s");
+  test_write_timing(1000,0,"1 ks");
+  test_write_timing(1e24,0,"1 Ys");
+  test_write_timing(1e28,0,"10000 Ys");
+  test_write_timing(1e-6,0,"1 us");
+  test_write_timing(9.999999e-7,0,"1000 ns");
+  test_write_timing(1e-28,0,"0.0001 ys");
+  test_write_timing(1e-6,10,"1 us (10 MHz)");
+  test_write_timing(1e-6,999,"1 us (999 MHz)");
+  test_write_timing(1e-6,1000,"1 us (1 GHz)");
+  test_write_timing(1e-21,1234000,"1 zs (1234 YHz)");
 }
