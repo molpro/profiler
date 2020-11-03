@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <ctime>
+#include <utility>
 namespace molpro {
 namespace profiler {
 namespace {
@@ -39,6 +40,12 @@ Timer& Timer::stop() {
 }
 
 void Timer::operator+=(const Timer& other) { m_cumulative += other.m_cumulative; }
+
+void Timer::reset() {
+  auto temp = Timer{m_type, m_dummy};
+  using std::swap;
+  swap(*this, temp);
+}
 
 } // namespace profiler
 } // namespace molpro

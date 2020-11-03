@@ -77,3 +77,18 @@ TEST(Timer, start_stop_dummy) {
     ASSERT_EQ(t.cumulative_time(), 0);
   }
 }
+
+TEST(Timer, reset) {
+  for (auto type : {Timer::Type::wall, Timer::Type::cpu}) {
+    for (auto dummy : {true, false}) {
+      auto temp = Timer(type, dummy);
+      auto t = Timer(type, dummy);
+      t.start();
+      t.reset();
+      ASSERT_EQ(t.stopped(), temp.stopped());
+      ASSERT_EQ(t.start_time(), temp.start_time());
+      ASSERT_EQ(t.cumulative_time(), temp.cumulative_time());
+      ASSERT_EQ(t.stopped(), temp.stopped());
+    }
+  }
+}

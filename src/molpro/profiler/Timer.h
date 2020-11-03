@@ -28,6 +28,8 @@ public:
   bool stopped() const { return m_stopped; };
   //! Timer is dummy and does nothing
   bool dummy() const { return m_dummy; };
+  //! Reset the timer erasing all data
+  void reset();
   //! type of timer
   Type type() const { return m_type; }
 
