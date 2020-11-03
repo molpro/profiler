@@ -15,6 +15,9 @@ namespace profiler {
  */
 template <class Object>
 struct WeakSingleton {
+
+  using key_t = std::tuple<std::string, std::weak_ptr<Object>, Object*>;
+
   /*!
    * @brief Creates an instance of Object or returns an already registered instance
    * @param constructor_args arguments that should be passed to the constructor
@@ -22,13 +25,13 @@ struct WeakSingleton {
   template <typename... T>
   static std::shared_ptr<Object> single(const std::string& key, T&&... constructor_args) {
     std::shared_ptr<Object> result = nullptr;
-    auto it = std::find_if(begin(m_register), end(m_register),
-                           [&key](const std::pair<std::string, std::weak_ptr<Object>>& el) { return el.first == key; });
+    auto it =
+        std::find_if(begin(m_register), end(m_register), [&key](const key_t& el) { return std::get<0>(el) == key; });
     if (it != m_register.end())
-      result = it->second.lock();
+      result = std::get<1>(*it).lock();
     if (!result) {
       result = std::make_shared<Object>(std::forward<T>(constructor_args)...);
-      m_register.emplace_back(std::pair<std::string, std::weak_ptr<Object>>{key, result});
+      m_register.emplace_back(key_t{key, result, result.get()});
     }
     return result;
   }
@@ -36,13 +39,31 @@ struct WeakSingleton {
   //! Access the last registered object
   static std::shared_ptr<Object> single() {
     assert(!m_register.empty() && "First must make a call to single(key, ...) to create an object");
-    std::shared_ptr<Object> result = m_register.front().second.lock();
+    std::shared_ptr<Object> result = std::get<1>(m_register.back()).lock();
     assert(result && "The last registered object was deallocated");
     return result;
   }
 
-  static std::list<std::pair<std::string, std::weak_ptr<Object>>>
-      m_register; //!< stores all objects created by a call to single
+  //! Remove object from the register. This should be called in the destructor of class that exposes this pattern
+  static void erase(Object* obj) {
+    auto it =
+        std::find_if(begin(m_register), end(m_register), [obj](const key_t& el) { return std::get<2>(el) == obj; });
+    if (it != m_register.end())
+      m_register.erase(it);
+  }
+
+  //! Remove object registered under the name key.
+  static void erase(const std::string& key) {
+    auto it =
+        std::find_if(begin(m_register), end(m_register), [&key](const key_t& el) { return std::get<0>(el) == key; });
+    if (it != m_register.end())
+      m_register.erase(it);
+  }
+
+  //! Remove all registered objects
+  static void clear() { m_register.clear(); }
+
+  static std::list<key_t> m_register; //!< stores all objects created by a call to single
 };
 
 } // namespace profiler

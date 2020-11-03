@@ -9,10 +9,8 @@
 
 namespace molpro {
 namespace profiler {
-using profiler::Counter;
-using profiler::Node;
 
-Profiler::~Profiler() = default;
+Profiler::~Profiler() { WeakSingleton<Profiler>::erase(this); };
 
 Profiler::Profiler(std::string description_, const bool with_wall, const bool with_cpu)
     : m_description(std::move(description_)), m_max_depth{std::numeric_limits<int>::max()},
@@ -21,13 +19,15 @@ Profiler::Profiler(std::string description_, const bool with_wall, const bool wi
 }
 
 template <>
-std::list<std::pair<std::string, std::weak_ptr<Profiler>>> profiler::WeakSingleton<Profiler>::m_register = {};
+std::list<WeakSingleton<Profiler>::key_t> WeakSingleton<Profiler>::m_register = {};
 
 std::shared_ptr<Profiler> Profiler::single(const std::string& description_, bool with_wall, bool with_cpu) {
-  return profiler::WeakSingleton<Profiler>::single(description_, description_, with_wall, with_cpu);
+  return WeakSingleton<Profiler>::single(description_, description_, with_wall, with_cpu);
 }
 
-std::shared_ptr<Profiler> Profiler::single() { return profiler::WeakSingleton<Profiler>::single(); }
+std::shared_ptr<Profiler> Profiler::single() { return WeakSingleton<Profiler>::single(); }
+
+void Profiler::erase(const std::string& description) { WeakSingleton<Profiler>::erase(description); }
 
 int Profiler::get_max_depth() const { return m_max_depth; };
 void Profiler::set_max_depth(int new_max_depth) { m_max_depth = new_max_depth; };
@@ -90,14 +90,14 @@ size_t Profiler::Proxy::operator++(int) {
   return temp;
 }
 
-std::string Profiler::str(bool cumulative, profiler::SortBy sort_by) const {
+std::string Profiler::str(bool cumulative, SortBy sort_by) const {
   std::stringstream out;
   report(*this, out, cumulative, sort_by);
   return out.str();
 }
 
 #ifdef MOLPRO_PROFILER_MPI
-std::string Profiler::str(MPI_Comm communicator, bool cumulative, profiler::SortBy sort_by) const {
+std::string Profiler::str(MPI_Comm communicator, bool cumulative, SortBy sort_by) const {
   std::stringstream out;
   report(*this, out, communicator, cumulative, sort_by);
   return out.str();

@@ -61,6 +61,8 @@ public:
                                           bool with_cpu = false);
   //! Access the last registered Profiler
   static std::shared_ptr<Profiler> single();
+  //! Remove Profiler with specified description from the singleton register
+  static void erase(const std::string& description);
 
   /*!
    * @brief Get the maximum depth the profiler tree is allowed to reach

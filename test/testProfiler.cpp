@@ -180,6 +180,19 @@ TEST(Profiler, single) {
   }
 }
 
+TEST(Profiler, single__two_profilers) {
+  auto prof = Profiler::single("test1");
+  {
+    auto prof_single = Profiler::single();
+    ASSERT_EQ(prof_single, prof);
+  }
+  auto prof2 = Profiler::single("test2");
+  {
+    auto prof_single = Profiler::single();
+    ASSERT_EQ(prof_single, prof2);
+  }
+}
+
 TEST(Profiler, str) {
   Profiler p("test");
   auto s = p.str();
