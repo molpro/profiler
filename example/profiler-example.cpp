@@ -1,39 +1,38 @@
-#include "molpro/Profiler.h"
-#include "molpro/ProfilerC.h"
 #include <cmath>
 #include <ctime>
 #include <iostream>
+#include <molpro/Profiler/Tree/Profiler.h>
+#include <molpro/ProfilerC.h>
 #include <sys/time.h>
 #ifdef HAVE_MPI_H
 #include "mpi.h"
 #endif
+
+using molpro::profiler::tree::Profiler;
+using molpro::profiler::tree::SortBy;
+
 int main(int argc, char* argv[]) {
   const size_t repeat = 20000000, repeatr = 1000000, repeats = 10000000;
   {
 #ifdef HAVE_MPI_H
     MPI_Init(&argc, &argv);
 #endif
-    molpro::Profiler profiler("C++", molpro::Profiler::name);
+    Profiler profiler("C++");
 
     profiler.start("sqrt");
     auto a = (double)0;
     for (size_t i = 0; i < repeat; i++)
       a *= std::sqrt(a + i) / std::sqrt(a + i + 1);
-    profiler.stop("sqrt", 2 * repeat);
+    profiler.stop() += 2 * repeat;
 
     profiler.start("exp");
     for (size_t i = 0; i < repeat; i++)
       a *= std::exp(a + (double)1 / i) / std::exp(a + (double)1 / i + 1);
-    profiler.stop("exp", 2 * repeat);
-
-    profiler.start("getResources");
-    for (size_t i = 0; i < repeatr; i++)
-      struct molpro::Profiler::resources r = profiler.getResources();
-    profiler.stop("getResources", 2 * repeatr);
+    profiler.stop() += 2 * repeat;
 
     for (size_t i = 0; i < repeatr; i++) {
       profiler.start("profiler");
-      profiler.stop("profiler", 1);
+      profiler.stop() += 1;
     }
 
     profiler.start("gettimeofday");
@@ -43,12 +42,12 @@ int main(int argc, char* argv[]) {
       };
       gettimeofday(&time, nullptr);
     }
-    profiler.stop("gettimeofday", repeats);
+    profiler.stop() += repeats;
 
     {
       auto envelope = profiler.push("Envelope");
       {
-        molpro::Profiler::Push s(profiler, "gettimeofday-Stack-1");
+        auto s = profiler.push("gettimeofday-Stack-1");
         for (size_t i = 0; i < repeats; i++) {
           struct timeval time {
             0
@@ -58,7 +57,7 @@ int main(int argc, char* argv[]) {
         s += repeats;
       }
       {
-        molpro::Profiler::Push s(profiler, "gettimeofday-Stack-2");
+        auto s = profiler.push("gettimeofday-Stack-2");
         for (size_t i = 0; i < repeats; i++) {
           struct timeval time {
             0
