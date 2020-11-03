@@ -40,6 +40,7 @@ MODULE ProfilerF
         PROCEDURE :: stop => ProfilerStopF !< End timing a code segment
         PROCEDURE :: active => ProfilerActiveF !< Set the maximum depth at which recording is done
         PROCEDURE :: print => ProfilerPrintF !< \public Print a representation of the object.
+        PROCEDURE :: destroy => ProfilerDestroyF !< \public Destroys stored profiler
     END TYPE Profiler
     INTERFACE Profiler
         MODULE PROCEDURE ProfilerNewF
@@ -104,6 +105,11 @@ MODULE ProfilerF
             CHARACTER(kind = c_char, len = 1), DIMENSION(*), INTENT(inout) :: result
             INTEGER (kind = c_int), INTENT(in), value :: maxResult, verbosity, cumulative, precision
         END SUBROUTINE ProfilerStrC
+        !> \private
+        SUBROUTINE ProfilerDestroyC(handle) BIND (C, name = 'profilerDestroy')
+            USE iso_c_binding
+            TYPE(c_ptr), INTENT(in), VALUE :: handle
+        END SUBROUTINE ProfilerDestroyC
 
     END INTERFACE
 
@@ -216,6 +222,12 @@ CONTAINS
         END DO
         WRITE (unit, '(65535A)') result(:MIN(length, SIZE(result)) - 1)
     END SUBROUTINE ProfilerPrintF
+    !> \public Begin timing a code segment.
+    !! Should be called through type-bound interface \c start.
+    SUBROUTINE ProfilerDestroyF(this)
+        CLASS(Profiler), INTENT(in) :: this !< Profiler object
+        CALL ProfilerDestroyC(this%handle)
+    END SUBROUTINE ProfilerDestroyF
 END MODULE ProfilerF
 
 ! outside module to avoid false positives from private module elements
@@ -248,6 +260,7 @@ SUBROUTINE profiler_module_test(printlevel)
     call p%stop('subtask')
     if (printlevel > 0) CALL p%print(6)
     if (printlevel > 0) CALL p%print(6, cumulative = .FALSE.)
+    call p%destroy()
 #ifdef PROFILER_MEMORY
  IF (printlevel > 0) CALL time_memory(1000000*printlevel)
  if (printlevel > 9) PRINT *, 'done',memory_maximum_stack_used(),memory_used('STACK')
