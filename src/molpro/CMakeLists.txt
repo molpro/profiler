@@ -1,6 +1,6 @@
 LibraryManager_Append(${PROJECT_NAME}
-        SOURCES ProfilerC.cpp
-        PUBLIC_HEADER ProfilerC.h
+        SOURCES Profiler.cpp ProfilerC.cpp
+        PUBLIC_HEADER Profiler.h ProfilerC.h
         )
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXTENSIONS OFF)

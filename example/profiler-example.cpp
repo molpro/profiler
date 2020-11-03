@@ -1,7 +1,7 @@
 #include <cmath>
 #include <ctime>
 #include <iostream>
-#include <molpro/Profiler/Tree/Profiler.h>
+#include <molpro/Profiler.h>
 #include <molpro/ProfilerC.h>
 #include <sys/time.h>
 #ifdef HAVE_MPI_H

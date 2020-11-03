@@ -1,5 +1,5 @@
 #include "ProfilerC.h"
-#include "molpro/Profiler/Tree/Profiler.h"
+#include "molpro/Profiler.h"
 #include "molpro/Profiler/Tree/report.h"
 
 #include <algorithm>

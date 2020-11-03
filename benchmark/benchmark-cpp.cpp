@@ -1,7 +1,7 @@
 #include <chrono>
 #include <iostream>
 #include <memory>
-#include <molpro/Profiler/Tree/Profiler.h>
+#include <molpro/Profiler.h>
 #include <molpro/Profiler/Tree/report.h>
 #include <sstream>
 #include <sys/time.h>

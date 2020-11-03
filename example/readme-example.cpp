@@ -1,6 +1,6 @@
 #include <chrono>
 #include <iostream>
-#include <molpro/Profiler/Tree/Profiler.h>
+#include <molpro/Profiler.h>
 #include <thread>
 using molpro::profiler::tree::Profiler;
 

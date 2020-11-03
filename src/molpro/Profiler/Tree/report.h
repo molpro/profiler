@@ -4,9 +4,9 @@
 #include <mpi.h>
 #endif
 
+#include <molpro/Profiler.h>
 #include <molpro/Profiler/Tree/Counter.h>
 #include <molpro/Profiler/Tree/Node.h>
-#include <molpro/Profiler/Tree/Profiler.h>
 #include <molpro/Profiler/Tree/SortBy.h>
 
 #include <list>

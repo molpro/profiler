@@ -1,4 +1,4 @@
-#include <molpro/Profiler/Tree/Profiler.h>
+#include <molpro/Profiler.h>
 #ifdef HAVE_MPI_H
 #include "mpi.h"
 #endif
