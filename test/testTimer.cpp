@@ -92,3 +92,19 @@ TEST(Timer, reset) {
     }
   }
 }
+
+TEST(Timer, cumulative_time){
+  constexpr auto delay = std::chrono::milliseconds{5};
+  auto t = Timer(Timer::wall, false);
+  t.start();
+  std::this_thread::sleep_for(delay);
+  auto cumulative_time = t.cumulative_time();
+  ASSERT_NE(cumulative_time, 0);
+  std::this_thread::sleep_for(delay);
+  auto cumulative_time2 = t.cumulative_time();
+  ASSERT_GT(cumulative_time2, cumulative_time);
+  std::this_thread::sleep_for(delay);
+  t.stop();
+  auto cumulative_time3 = t.cumulative_time();
+  ASSERT_GT(cumulative_time3, cumulative_time2);
+}

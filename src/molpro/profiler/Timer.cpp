@@ -39,6 +39,15 @@ Timer& Timer::stop() {
   return *this;
 }
 
+double Timer::cumulative_time() const {
+  double ctime = m_cumulative;
+  if (!m_stopped) {
+    auto t_stop = Timer{m_type, m_dummy}.start().m_start;
+    ctime += t_stop - m_start;
+  }
+  return ctime;
+}
+
 void Timer::operator+=(const Timer& other) { m_cumulative += other.m_cumulative; }
 
 void Timer::reset() {

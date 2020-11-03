@@ -4,7 +4,39 @@
 namespace molpro {
 namespace profiler {
 
-//! Measures cpu or wall time. Can be constructed as a dummy that measures nothing.
+/*!
+ * @brief Measures cpu or wall time. Can be constructed as a dummy that is always stopped
+ *
+ * The timer is started with start() and stopped with stop(). Repetitive calls to start() do not cause a restart, and
+ * the start time from the first call is kept.
+ *
+ * Basic usage,
+ * @code{.cpp}
+ * auto t = Timer(Type::wall, false);
+ * t.start()
+ * // do some work
+ * t.stop()
+ * // ...
+ * std::cout << "the work took = " << t.cumulative_time() << " seconds " << std::endl;
+ * @endcode
+ *
+ * The timer measures cumulative time from all start/stop calls.
+ *
+ * Calling cumulative_time() while the timer is running returns the cumulative time at this moment without stopping.
+ * For example,
+ * @code{.cpp}
+ * auto t = Timer(Type::wall, false);
+ * t.start();
+ * // 1 second of work
+ * std::cout << "should say 1: " << t.cumulative_time() << std::endl;
+ * // another second of work
+ * std::cout << "should say 2: " << t.cumulative_time() << std::endl;
+ * t.stop()
+ * // lots more work
+ * std::cout << "should still say 2: " << t.cumulative_time() << std::endl;
+ * @endcode
+ *
+ */
 class Timer {
 public:
   enum Type { cpu, wall };
@@ -22,8 +54,8 @@ public:
 
   double start_time() const { return m_start; };
   double stop_time() const { return m_stop; };
-  //! Cumulative time over all start/stop periods
-  double cumulative_time() const { return m_cumulative; };
+  //! Cumulative time over all start/stop periods. If active than it includes the time from start to current moment.
+  double cumulative_time() const;
   //! Timer is stopped and is not timing
   bool stopped() const { return m_stopped; };
   //! Timer is dummy and does nothing
