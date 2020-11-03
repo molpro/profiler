@@ -100,9 +100,23 @@ struct AccessOperations {
   double operator()(const TreePath& t) { return t.counter.get_operation_count(); }
 };
 
-//! convert path to a formatted string
+/*!
+ * @brief convert path to a formatted string
+ *
+ * All parent nodes are replaced by dots
+ * {root,A,B,C} becomes "...C"
+ *
+ * @param path list of names from root to selected node
+ */
 std::string format_path_cumulative(const std::list<std::string>& path);
-//! convert path to a formatted string
+/*!
+ * @brief convert path to a formatted string
+ *
+ * Names are joined with ":" delimiter
+ * {root,A,B,C} becomes "root:A:B:C"
+ *
+ * @param path list of names from root to selected node
+ */
 std::string format_path_not_cumulative(const std::list<std::string>& path);
 
 struct ReportData {
@@ -120,7 +134,16 @@ ReportData get_report_data(const std::list<TreePath>& paths, bool cumulative);
 //! Sorts the data based on depth (ascending) and sort_by parameter (descending)
 ReportData sort_data(const ReportData& data, SortBy sort_by);
 
-void format_paths(std::list<std::string>& path_names, bool cumulative);
+/*!
+ * @brief Format paths for output
+ *
+ * Appends or prepends blank lines to each path if cumulative is true or not, respectively.
+ * This ensures that all names are the same length.
+ *
+ * @param path_names list of paths (see format_path_cumulative and format_path_not_cumulative)
+ * @param append whether to append or prepend blank lines
+ */
+void format_paths(std::list<std::string>& path_names, bool append);
 
 void write_timing(std::ostream& out, double time, size_t n_op);
 
