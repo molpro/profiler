@@ -1,7 +1,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <molpro/Profiler/Tree/Counter.h>
+#include <molpro/Profiler/Counter.h>
 
 using molpro::profiler::tree::Counter;
 using molpro::profiler::tree::Timer;

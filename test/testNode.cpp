@@ -2,8 +2,8 @@
 #include <gtest/gtest.h>
 
 #include <molpro/Profiler.h>
-#include <molpro/Profiler/Tree/Counter.h>
-#include <molpro/Profiler/Tree/Node.h>
+#include <molpro/Profiler/Counter.h>
+#include <molpro/Profiler/Node.h>
 
 using molpro::profiler::tree::Counter;
 using molpro::profiler::tree::Node;

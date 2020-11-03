@@ -4,7 +4,7 @@
 #include <mpi.h>
 #endif
 
-#include <molpro/Profiler/Tree/SortBy.h>
+#include <molpro/Profiler/SortBy.h>
 
 #include <memory>
 #include <ostream>

@@ -1,9 +1,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <molpro/Profiler/Tree/Counter.h>
-#include <molpro/Profiler/Tree/Node.h>
-#include <molpro/Profiler/Tree/report.h>
+#include <molpro/Profiler/Counter.h>
+#include <molpro/Profiler/Node.h>
+#include <molpro/Profiler/report.h>
 
 #include <sstream>
 

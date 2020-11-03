@@ -1,6 +1,6 @@
 #include "ProfilerC.h"
 #include "molpro/Profiler.h"
-#include "molpro/Profiler/Tree/report.h"
+#include "molpro/Profiler/report.h"
 
 #include <algorithm>
 #include <cstdlib>

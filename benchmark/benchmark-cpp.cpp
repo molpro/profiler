@@ -2,7 +2,7 @@
 #include <iostream>
 #include <memory>
 #include <molpro/Profiler.h>
-#include <molpro/Profiler/Tree/report.h>
+#include <molpro/Profiler/report.h>
 #include <sstream>
 #include <sys/time.h>
 #include <thread>
