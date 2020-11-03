@@ -3,11 +3,9 @@
 
 namespace molpro {
 namespace profiler {
-namespace tree {
 
 enum class SortBy { wall, cpu, calls, operations };
 
-}
 } // namespace profiler
 } // namespace molpro
 

@@ -5,7 +5,7 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
-using molpro::profiler::tree::Profiler;
+using molpro::Profiler;
 
 void sleep_milliseconds(const std::string &name, int repeats) {
   auto p = Profiler::single()->push(name);

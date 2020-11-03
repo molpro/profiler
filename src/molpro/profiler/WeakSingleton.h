@@ -8,7 +8,6 @@
 
 namespace molpro {
 namespace profiler {
-namespace tree {
 
 // FIXME improve description
 /*!
@@ -46,7 +45,6 @@ struct WeakSingleton {
       m_register; //!< stores all objects created by a call to single
 };
 
-} // namespace tree
 } // namespace profiler
 } // namespace molpro
 #endif // PROFILER_SRC_MOLPRO_PROFILER_TREE_SINGLE_H

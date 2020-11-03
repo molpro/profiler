@@ -3,8 +3,8 @@
 
 #include <molpro/profiler/Counter.h>
 
-using molpro::profiler::tree::Counter;
-using molpro::profiler::tree::Timer;
+using molpro::profiler::Counter;
+using molpro::profiler::Timer;
 
 TEST(Counter, constructor_default) {
   auto c = Counter();

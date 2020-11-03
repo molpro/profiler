@@ -8,8 +8,8 @@
 #include "mpi.h"
 #endif
 
-using molpro::profiler::tree::Profiler;
-using molpro::profiler::tree::SortBy;
+using molpro::Profiler;
+using molpro::profiler::SortBy;
 
 int main(int argc, char* argv[]) {
   const size_t repeat = 20000000, repeatr = 1000000, repeats = 10000000;

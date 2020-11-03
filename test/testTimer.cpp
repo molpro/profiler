@@ -5,7 +5,7 @@
 #include <molpro/profiler/Timer.h>
 #include <thread>
 
-using molpro::profiler::tree::Timer;
+using molpro::profiler::Timer;
 
 TEST(Timer, constructor) {
   for (auto type : {Timer::Type::cpu, Timer::Type::wall}) {

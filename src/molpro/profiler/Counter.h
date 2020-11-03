@@ -8,7 +8,6 @@
 
 namespace molpro {
 namespace profiler {
-namespace tree {
 
 /*!
  * @brief Resource counter used for storing operation count, call count, timing information.
@@ -49,7 +48,6 @@ protected:
   Timer wall = {Timer::wall, true}; //!< wall time
 };
 
-} // namespace tree
 } // namespace profiler
 } // namespace molpro
 

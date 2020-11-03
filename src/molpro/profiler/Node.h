@@ -6,7 +6,6 @@
 
 namespace molpro {
 namespace profiler {
-namespace tree {
 
 /*!
  * @brief A node in a parameter tree storing a Counter object aliased by a name
@@ -62,7 +61,6 @@ public:
   std::map<std::string, std::shared_ptr<Node<Counter>>> children; //!< child nodes
 };
 
-} // namespace tree
 } // namespace profiler
 } // namespace molpro
 #endif // PROFILER_SRC_MOLPRO_PROFILER_TREE_NODE_H

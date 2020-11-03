@@ -7,8 +7,8 @@
 #include <cstring>
 #include <list>
 #include <sstream>
-using molpro::profiler::tree::Profiler;
-using molpro::profiler::tree::SortBy;
+using molpro::Profiler;
+using molpro::profiler::SortBy;
 namespace {
 struct ProfilerInfo {
   ProfilerInfo(std::shared_ptr<Profiler> p) : prof{std::move(p)} {}
@@ -94,11 +94,11 @@ char* profilerStr(void* profiler, int verbosity, int cumulative, int precision) 
   std::stringstream out;
 #ifdef MOLPRO_PROFILER_MPI
   if (prof_info.comm != MPI_COMM_NULL)
-    molpro::profiler::tree::report(*obj, out, prof_info.comm, cumulative, prof_info.sort_by);
+    molpro::profiler::report(*obj, out, prof_info.comm, cumulative, prof_info.sort_by);
   else
-    molpro::profiler::tree::report(*obj, out, cumulative, prof_info.sort_by);
+    molpro::profiler::report(*obj, out, cumulative, prof_info.sort_by);
 #else
-  molpro::profiler::tree::report(*obj, out, cumulative, prof_info.sort_by);
+  molpro::profiler::report(*obj, out, cumulative, prof_info.sort_by);
 #endif
   std::string res = out.str();
   char* result = (char*)malloc(res.size() + 1);

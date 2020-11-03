@@ -7,17 +7,17 @@
 
 #include <sstream>
 
-using molpro::profiler::tree::Counter;
-using molpro::profiler::tree::Node;
-using molpro::profiler::tree::Profiler;
-using molpro::profiler::tree::report;
-using molpro::profiler::tree::SortBy;
-using molpro::profiler::tree::detail::format_path_cumulative;
-using molpro::profiler::tree::detail::format_path_not_cumulative;
-using molpro::profiler::tree::detail::format_paths;
-using molpro::profiler::tree::detail::path_to_node;
-using molpro::profiler::tree::detail::total_operation_count;
-using molpro::profiler::tree::detail::TreePath;
+using molpro::Profiler;
+using molpro::profiler::Counter;
+using molpro::profiler::Node;
+using molpro::profiler::report;
+using molpro::profiler::SortBy;
+using molpro::profiler::detail::format_path_cumulative;
+using molpro::profiler::detail::format_path_not_cumulative;
+using molpro::profiler::detail::format_paths;
+using molpro::profiler::detail::path_to_node;
+using molpro::profiler::detail::total_operation_count;
+using molpro::profiler::detail::TreePath;
 
 struct TreePath_Fixture : ::testing::Test {
   TreePath_Fixture() : prof("TreePath_Fixture") {

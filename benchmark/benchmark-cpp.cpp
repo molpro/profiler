@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
   if (argc > 1)
     repeat = std::stoi(argv[1]);
   {
-    molpro::profiler::tree::Profiler tp{"test tree profiler: depth = 1, rank = " + std::to_string(rank)};
+    molpro::Profiler tp{"test tree profiler: depth = 1, rank = " + std::to_string(rank)};
     auto et = ElapsedTime(repeat);
     for (auto i = 0; i < repeat; i++) {
       tp.push("test");
@@ -65,16 +65,16 @@ int main(int argc, char* argv[]) {
     tp.stop_all();
 #ifdef MOLPRO_PROFILER_MPI
     std::stringstream out;
-    report(tp, std::cout, MPI_COMM_WORLD);
+    molpro::profiler::report(tp, std::cout, MPI_COMM_WORLD);
     delay();
     std::cout << out.str() << std::endl;
     delay();
 #endif
-    report(tp, std::cout);
+    molpro::profiler::report(tp, std::cout);
     delay();
   }
   {
-    molpro::profiler::tree::Profiler tp{"test tree profiler: depth = 1, rank = " + std::to_string(rank)};
+    molpro::Profiler tp{"test tree profiler: depth = 1, rank = " + std::to_string(rank)};
     auto et = ElapsedTime(repeat);
     for (auto i = 0; i < repeat / 10000; i++) {
       auto p1 = tp.push("test1");
@@ -95,19 +95,19 @@ int main(int argc, char* argv[]) {
     et.stop();
 #ifdef MOLPRO_PROFILER_MPI
     std::stringstream out;
-    report(tp, out, MPI_COMM_WORLD);
+    molpro::profiler::report(tp, out, MPI_COMM_WORLD);
     delay();
     std::cout << out.str() << std::endl;
     delay();
 #endif
-    report(tp, std::cout, true);
+    molpro::profiler::report(tp, std::cout, true);
 #ifdef MOLPRO_PROFILER_MPI
     delay();
 #endif
-    report(tp, std::cout, false);
+    molpro::profiler::report(tp, std::cout, false);
   }
   {
-    molpro::profiler::tree::Profiler p{"tree profiler: operations , rank = " + std::to_string(rank)};
+    molpro::Profiler p{"tree profiler: operations , rank = " + std::to_string(rank)};
     auto et = ElapsedTime(repeat);
     for (auto i = 0; i < repeat; i++) {
       auto proxy = p.push("test");
@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
     p.stop_all();
 #ifdef MOLPRO_PROFILER_MPI
     std::stringstream out;
-    report(p, out, MPI_COMM_WORLD);
+    molpro::profiler::report(p, out, MPI_COMM_WORLD);
     if (rank == 0)
       std::cout << out.str() << std::endl;
     delay();

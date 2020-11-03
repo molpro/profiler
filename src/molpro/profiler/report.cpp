@@ -5,7 +5,6 @@
 
 namespace molpro {
 namespace profiler {
-namespace tree {
 namespace detail {
 
 TreePath::TreePath(std::shared_ptr<Node<Counter>> node, bool cumulative) {
@@ -213,6 +212,5 @@ void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool
 }
 #endif
 
-} // namespace tree
 } // namespace profiler
 } // namespace molpro

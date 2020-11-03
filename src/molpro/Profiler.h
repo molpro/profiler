@@ -11,12 +11,12 @@
 #include <string>
 
 namespace molpro {
-namespace profiler {
-namespace tree {
 
+namespace profiler {
 class Counter;
 template <class CounterT>
 class Node;
+} // namespace profiler
 
 /*!
  * @brief Instrumental profiler for timing sections of code
@@ -37,8 +37,8 @@ protected:
   int m_max_depth;         //!< max depth level of profiler tree counting root as 0. Defaults to largest possible value.
   int m_current_depth = 0; //!< current depth of the active node
 public:
-  std::shared_ptr<Node<Counter>> root;        //!< root node of the profiler call tree
-  std::shared_ptr<Node<Counter>> active_node; //!< the most recent active node.
+  std::shared_ptr<profiler::Node<profiler::Counter>> root;        //!< root node of the profiler call tree
+  std::shared_ptr<profiler::Node<profiler::Counter>> active_node; //!< the most recent active node.
   /*!
    * @brief Construct profiler and start timing
    * @param description_ description of profiler
@@ -92,7 +92,7 @@ public:
   Profiler& stop_all();
 
   //! Access counter at the top of the call stack
-  Counter& counter();
+  profiler::Counter& counter();
 
   // FIXME Why is this even needed?
   //! Erases all data and starts from root again
@@ -142,16 +142,15 @@ public:
 
   //! Produce a report on profiler as a string
   //! @param cumulative whether to use cumulative times or subtract the time spend by children
-  std::string str(bool cumulative = true, SortBy sort_by = SortBy::wall) const;
+  std::string str(bool cumulative = true, profiler::SortBy sort_by = profiler::SortBy::wall) const;
 
 #ifdef MOLPRO_PROFILER_MPI
-  std::string str(MPI_Comm communicator, bool cumulative = true, SortBy sort_by = SortBy::wall) const;
+  std::string str(MPI_Comm communicator, bool cumulative = true,
+                  profiler::SortBy sort_by = profiler::SortBy::wall) const;
 #endif
 
   friend std::ostream& operator<<(std::ostream& os, const Profiler& obj);
 };
 
-} // namespace tree
-} // namespace profiler
 } // namespace molpro
 #endif // PROFILER_SRC_MOLPRO_PROFILER_TREE_PROFILER_H

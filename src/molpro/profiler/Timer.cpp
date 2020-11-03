@@ -4,7 +4,6 @@
 #include <ctime>
 namespace molpro {
 namespace profiler {
-namespace tree {
 namespace {
 using clock_type = typename std::conditional<std::chrono::high_resolution_clock::is_steady,
                                              std::chrono::high_resolution_clock, std::chrono::steady_clock>::type;
@@ -43,6 +42,5 @@ Timer& Timer::stop() {
 
 void Timer::operator+=(const Timer& other) { m_cumulative += other.m_cumulative; }
 
-} // namespace tree
 } // namespace profiler
 } // namespace molpro

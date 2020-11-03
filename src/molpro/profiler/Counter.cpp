@@ -1,7 +1,6 @@
 #include "Counter.h"
 namespace molpro {
 namespace profiler {
-namespace tree {
 
 Counter& Counter::start() {
   ++call_count;
@@ -36,6 +35,5 @@ Counter::Counter(size_t call_count_, size_t operation_count_, double wall_time_,
     : call_count(call_count_), operation_count(operation_count_), cpu(Timer{cpu_time_, Timer::cpu, !with_cpu_time}),
       wall(Timer{wall_time_, Timer::wall, !with_wall_time}) {}
 
-} // namespace tree
 } // namespace profiler
 } // namespace molpro

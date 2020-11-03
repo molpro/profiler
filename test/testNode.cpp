@@ -5,9 +5,9 @@
 #include <molpro/profiler/Counter.h>
 #include <molpro/profiler/Node.h>
 
-using molpro::profiler::tree::Counter;
-using molpro::profiler::tree::Node;
-using molpro::profiler::tree::Profiler;
+using molpro::Profiler;
+using molpro::profiler::Counter;
+using molpro::profiler::Node;
 
 struct DummyCounter {
   int i = 0;

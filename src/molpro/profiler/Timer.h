@@ -3,7 +3,6 @@
 
 namespace molpro {
 namespace profiler {
-namespace tree {
 
 //! Measures cpu or wall time. Can be constructed as a dummy that measures nothing.
 class Timer {
@@ -41,7 +40,6 @@ private:
   bool m_dummy = false;    //!< whether the timer is a dummy that does nothing
 };
 
-} // namespace tree
 } // namespace profiler
 } // namespace molpro
 

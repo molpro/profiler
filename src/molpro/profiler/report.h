@@ -17,7 +17,6 @@
 
 namespace molpro {
 namespace profiler {
-namespace tree {
 
 /*!
  * @brief Reports content of Profiler
@@ -165,7 +164,6 @@ std::shared_ptr<Node<Counter>> synchronised_tree(const std::shared_ptr<Node<Coun
 #endif
 
 } // namespace detail
-} // namespace tree
 } // namespace profiler
 } // namespace molpro
 

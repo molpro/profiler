@@ -5,7 +5,7 @@
 #include <molpro/profiler/Counter.h>
 #include <molpro/profiler/Node.h>
 
-using molpro::profiler::tree::Profiler;
+using molpro::Profiler;
 
 TEST(Profiler, constructor) {
   const auto description = "test";
