@@ -1,7 +1,8 @@
 #include <chrono>
-#include <molpro/Profiler.h>
+#include <iostream>
+#include <molpro/Profiler/Tree/Profiler.h>
 #include <thread>
-using molpro::Profiler;
+using molpro::profiler::tree::Profiler;
 
 void sleep() { std::this_thread::sleep_for(std::chrono::milliseconds{20}); }
 void read_input(Profiler& p) {
@@ -40,6 +41,6 @@ int main() {
   }
   prof.stop();
   std::cout << prof << std::endl;
-  std::cout << prof.str(0, false) << std::endl;
+  std::cout << prof.str(false) << std::endl;
   return 0;
 }
