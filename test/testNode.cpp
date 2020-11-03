@@ -1,9 +1,13 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <molpro/Profiler/Tree/Counter.h>
 #include <molpro/Profiler/Tree/Node.h>
+#include <molpro/Profiler/Tree/Profiler.h>
 
+using molpro::profiler::tree::Counter;
 using molpro::profiler::tree::Node;
+using molpro::profiler::tree::Profiler;
 
 struct DummyCounter {
   int i = 0;
@@ -44,4 +48,12 @@ TEST(Node, deep_copy) {
   ASSERT_NE(root_copy->counter.i, root->counter.i);
   ASSERT_NE(child_copy->counter.i, child->counter.i);
   ASSERT_NE(grand_child_copy->counter.i, grand_child->counter.i);
+}
+
+TEST(Node, count_nodes) {
+  Profiler p("test");
+  p.start("A").start("AA").stop().start("AB").stop().stop();
+  p.start("B").start("BA").stop().start("BB").stop().stop();
+  auto n_nodes = Node<Counter>::count_nodes(p.root);
+  ASSERT_EQ(n_nodes, 7);
 }

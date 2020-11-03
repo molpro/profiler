@@ -48,6 +48,14 @@ public:
     return tree_copy;
   }
 
+  //! Get total number of nodes in a tree
+  static size_t count_nodes(const std::shared_ptr<Node<Counter>>& root) {
+    size_t n = 1;
+    for (auto& child : root->children)
+      n += count_nodes(child.second);
+    return n;
+  }
+
   std::string name; //!< name of the node. This is a duplicate, same name is stored in parent's map of children.
   Counter counter;  //! resource counter
   std::shared_ptr<Node<Counter>> parent = nullptr;                //!< parent node
