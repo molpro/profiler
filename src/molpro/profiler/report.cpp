@@ -124,11 +124,11 @@ void write_timing(std::ostream& out, double time, size_t n_op) {
   std::string prefixes{"yzafpnum kMGTPEZY"};
   int prefix_base = prefixes.find(" ");
   auto log_time = std::log10(time);
-  int prefix_time = std::min(prefixes.size() - 1, size_t(std::max(0.0, (log_time / 3) + prefix_base)));
+  int prefix_time = time == 0 ? prefix_base : std::min(prefixes.size() - 1, size_t(std::max(0.0, (log_time / 3) + prefix_base)));
   out << time / std::pow(1e3, (prefix_time - prefix_base));
   if (prefix_time != prefix_base) out << prefixes[prefix_time];
   out << "s";
-  if (n_op) {
+  if (n_op and time > 0) {
     auto rate = double(n_op) / time;
     auto log_rate = std::log10(rate);
     int prefix_rate = std::min(prefixes.size() - 1, size_t(std::max(0.0, (log_rate / 3) + prefix_base)));

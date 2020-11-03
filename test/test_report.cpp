@@ -251,6 +251,8 @@ void test_write_timing(double time, size_t n_op, std::string expected) {
   EXPECT_EQ(result.str(), expected);
 }
 TEST (report_detail, write_timing) {
+  test_write_timing(0,0,"0s");
+  test_write_timing(0,1,"0s");
   test_write_timing(1,0,"1s");
   test_write_timing(999,0,"999s");
   test_write_timing(1000,0,"1ks");
