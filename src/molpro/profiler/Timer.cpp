@@ -17,7 +17,7 @@ Timer::Timer(double cumulative_time, Timer::Type type, bool is_dummy)
     : m_type(type), m_cumulative(cumulative_time), m_dummy(is_dummy) {}
 
 Timer& Timer::start() {
-  if (not m_dummy && m_start == 0) {
+  if (not m_dummy && m_stopped) {
     if (m_type == cpu) {
       m_start = double(clock()) / CLOCKS_PER_SEC;
     } else if (m_type == wall) {
@@ -33,8 +33,6 @@ Timer& Timer::stop() {
   if (not m_stopped) {
     m_stop = Timer{m_type, m_dummy}.start().m_start;
     m_cumulative += m_stop - m_start;
-    m_stop = m_cumulative;
-    m_start = 0;
   }
   m_stopped = true;
   return *this;
