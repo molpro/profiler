@@ -244,3 +244,23 @@ TEST(report_detail, total_operation_count__tree) {
   auto tot_count = total_operation_count(p.root);
   ASSERT_EQ(tot_count, 7 * n_op);
 }
+
+void test_write_timing(double time, size_t n_op, std::string expected) {
+  std::stringstream result;
+  molpro::profiler::detail::write_timing(result, time, n_op);
+  EXPECT_EQ(result.str(), expected);
+}
+TEST (report_detail, write_timing) {
+  test_write_timing(1,0,"1s");
+  test_write_timing(999,0,"999s");
+  test_write_timing(1000,0,"1ks");
+  test_write_timing(1e24,0,"1Ys");
+  test_write_timing(1e28,0,"10000Ys");
+  test_write_timing(1e-6,0,"1us");
+  test_write_timing(9.999999e-7,0,"1000ns");
+  test_write_timing(1e-28,0,"0.0001ys");
+  test_write_timing(1e-6,10,"1us, 10MHz");
+  test_write_timing(1e-6,999,"1us, 999MHz");
+  test_write_timing(1e-6,1000,"1us, 1GHz");
+  test_write_timing(1e-21,1234000,"1zs, 1234YHz");
+}
