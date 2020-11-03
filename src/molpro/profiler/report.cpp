@@ -1,9 +1,7 @@
 #include "report.h"
 
-#include <algorithm>
 #include <cassert>
 #include <functional>
-#include <queue>
 
 namespace molpro {
 namespace profiler {

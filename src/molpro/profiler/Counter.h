@@ -1,6 +1,6 @@
 #ifndef PROFILER_SRC_MOLPRO_PROFILER_TREE_COUNTER_H
 #define PROFILER_SRC_MOLPRO_PROFILER_TREE_COUNTER_H
-#include <molpro/Profiler/Timer.h>
+#include <molpro/profiler/Timer.h>
 
 #include <map>
 #include <memory>

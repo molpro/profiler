@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 
 #include <chrono>
-#include <molpro/Profiler/Timer.h>
+#include <molpro/profiler/Timer.h>
 #include <thread>
 
 using molpro::profiler::tree::Timer;

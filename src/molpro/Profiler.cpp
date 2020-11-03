@@ -1,8 +1,8 @@
 #include "Profiler.h"
-#include "molpro/Profiler/Counter.h"
-#include "molpro/Profiler/Node.h"
-#include "molpro/Profiler/WeakSingleton.h"
-#include "molpro/Profiler/report.h"
+#include "molpro/profiler/Counter.h"
+#include "molpro/profiler/Node.h"
+#include "molpro/profiler/WeakSingleton.h"
+#include "molpro/profiler/report.h"
 
 #include <algorithm>
 #include <sstream>

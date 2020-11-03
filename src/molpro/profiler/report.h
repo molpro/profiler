@@ -5,9 +5,9 @@
 #endif
 
 #include <molpro/Profiler.h>
-#include <molpro/Profiler/Counter.h>
-#include <molpro/Profiler/Node.h>
-#include <molpro/Profiler/SortBy.h>
+#include <molpro/profiler/Counter.h>
+#include <molpro/profiler/Node.h>
+#include <molpro/profiler/SortBy.h>
 
 #include <list>
 #include <memory>
