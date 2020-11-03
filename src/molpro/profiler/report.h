@@ -74,7 +74,7 @@ size_t total_operation_count(const std::shared_ptr<Node<Counter>>& node);
 //! The implicit equality condition (!Compare{}(a,b) && !Compare{}(b,a)) is false by design.
 template <class AccessParameter>
 struct Compare {
-  bool operator()(const TreePath& l, const TreePath& r) {
+  bool operator()(const TreePath& l, const TreePath& r) const {
     bool depth_check = l.depth < r.depth;
     bool parameter_check = AccessParameter{}(l) > AccessParameter{}(r);
     bool result = depth_check ? depth_check : parameter_check;

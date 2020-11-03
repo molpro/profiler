@@ -7,6 +7,8 @@
 #include <cstring>
 #include <list>
 #include <sstream>
+#include <array>
+#include <memory>
 using molpro::profiler::Profiler;
 using molpro::profiler::SortBy;
 namespace {

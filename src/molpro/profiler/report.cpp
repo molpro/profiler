@@ -2,6 +2,8 @@
 
 #include <cassert>
 #include <functional>
+#include <map>
+#include <utility>
 
 namespace molpro {
 namespace profiler {
@@ -79,6 +81,7 @@ std::list<TreePath> TreePath::convert_tree_to_paths(const std::shared_ptr<Node<C
   } else {
     assert(false);
   }
+  return std::list<TreePath>();
 }
 
 template <class CompareTreePaths>
