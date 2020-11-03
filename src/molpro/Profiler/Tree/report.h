@@ -143,6 +143,27 @@ void write_timing(std::ostream& out, double time, size_t n_op);
 //! Writes the report to an output stream
 void write_report(const Profiler& prof, const std::list<TreePath>& paths, std::ostream& out, bool cumulative);
 
+#ifdef MOLPRO_PROFILER_MPI
+/*!
+ * @brief Data from the tree is reduced among all processors to an average profile
+ * @note All trees must have the same structure
+ *
+ * Reduce operations
+ * -----------------
+ * call count - unchanged
+ * operation count - total value on all process
+ * wall times - maximum value on any process
+ * cpu times - total of all processes
+ *
+ * @param root root of the tree
+ * @param comm communicator
+ * @return
+ */
+std::shared_ptr<Node<Counter>> synchronised_tree(const std::shared_ptr<Node<Counter>>& node,
+                                                 const std::shared_ptr<Node<Counter>>& parent, MPI_Comm comm);
+
+#endif
+
 } // namespace detail
 } // namespace tree
 } // namespace profiler

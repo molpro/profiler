@@ -164,22 +164,54 @@ void report(const Profiler& prof, std::ostream& out, bool cumulative, SortBy sor
 }
 
 #ifdef MOLPRO_PROFILER_MPI
+namespace detail {
+/*!
+ * @brief Data from the tree is reduced among all processors to an average profile
+ * @note All trees must have the same structure
+ *
+ * Reduce operations
+ * -----------------
+ * call count - unchanged
+ * operation count - total value on all process
+ * wall times - maximum value on any process
+ * cpu times - total of all processes
+ *
+ * @param root root of the tree
+ * @param comm communicator
+ * @return
+ */
+std::shared_ptr<Node<Counter>> synchronised_tree(const std::shared_ptr<Node<Counter>>& node,
+                                                 const std::shared_ptr<Node<Counter>>& parent, MPI_Comm comm) {
+  auto call_count = node->counter.get_call_count();
+  long long int operation_count = node->counter.get_operation_count();
+  auto wall_time = node->counter.get_wall().cumulative_time();
+  auto cpu_time = node->counter.get_cpu().cumulative_time();
+  MPI_Request requests[3];
+  MPI_Iallreduce(MPI_IN_PLACE, &operation_count, 1, MPI_LONG_LONG_INT, MPI_SUM, comm, &requests[0]);
+  MPI_Iallreduce(MPI_IN_PLACE, &wall_time, 1, MPI_DOUBLE, MPI_MAX, comm, &requests[1]);
+  MPI_Iallreduce(MPI_IN_PLACE, &cpu_time, 1, MPI_DOUBLE, MPI_SUM, comm, &requests[2]);
+  MPI_Waitall(3, requests, MPI_STATUSES_IGNORE);
+  auto counter = Counter(call_count, operation_count, wall_time, cpu_time, false, false);
+  auto node_copy = Node<Counter>::make_root(node->name, counter);
+  node_copy->parent = parent;
+  for (const auto& child : node->children)
+    node_copy->children.emplace(child.first, synchronised_tree(child.second, node_copy, comm));
+  return node_copy;
+}
+} // namespace detail
+
 void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool cumulative, SortBy sort_by) {
-//  auto paths = detail::TreePath::convert_tree_to_paths(prof.root, cumulative, sort_by);
-//  auto data = detail::remove::get_report_data(paths, cumulative);
-//  MPI_Request requests[3];
-//  auto n = data.wall_times.size();
-//  MPI_Iallreduce(&data.wall_times[0], MPI_IN_PLACE, n, MPI_DOUBLE, MPI_MAX, communicator, &requests[0]);
-//  MPI_Iallreduce(&data.cpu_times[0], MPI_IN_PLACE, n, MPI_DOUBLE, MPI_SUM, communicator, &requests[1]);
-//  MPI_Iallreduce(&data.operation_count[0], MPI_IN_PLACE, n, MPI_DOUBLE, MPI_SUM, communicator, &requests[2]);
-//  MPI_Waitall(3, requests, MPI_STATUSES_IGNORE);
-//  int np;
-//  MPI_Comm_size(communicator, &np);
-//  for (auto& op : data.operation_count)
-//    op /= np;
-//  data = detail::remove::sort_data(data, sort_by);
-//  detail::format_paths(data.formatted_path_names, cumulative);
-//  detail::remove::write_report(prof, out, data, cumulative);
+  int rank, n_loc, n_root;
+  MPI_Comm_rank(communicator, &rank);
+  n_loc = Node<Counter>::count_nodes(prof.root);
+  if (rank == 0)
+    n_root = n_loc;
+  MPI_Bcast(&n_root, 1, MPI_INT, 0, communicator);
+  if (n_root != n_loc)
+    MPI_Abort(communicator, 0); // Profiler trees are not compatible
+  auto root_sync = detail::synchronised_tree(prof.root, nullptr, communicator);
+  auto paths = detail::TreePath::convert_tree_to_paths(root_sync, cumulative, sort_by);
+  detail::write_report(prof, paths, out, cumulative);
 }
 #endif
 

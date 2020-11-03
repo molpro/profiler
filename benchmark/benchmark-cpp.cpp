@@ -3,27 +3,53 @@
 #include <molpro/Profiler.h>
 #include <molpro/Profiler/Tree/Profiler.h>
 #include <molpro/Profiler/Tree/report.h>
+#include <sstream>
 #include <sys/time.h>
+#include <thread>
 #ifdef MOLPRO_PROFILER_MPI
 #include <mpi.h>
 #endif
 struct ElapsedTime {
   using time_point = decltype(std::chrono::system_clock::now());
-  explicit ElapsedTime(size_t n) : n_operations(n) { start = std::chrono::system_clock::now(); }
+  explicit ElapsedTime(size_t n) : n_operations(n) {
+    start = std::chrono::system_clock::now();
+    stop_ = start;
+  }
+  void stop() { stop_ = std::chrono::system_clock::now(); }
   ~ElapsedTime() {
-    std::cout << "Elapsed time: " << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count()
-              << std::endl;
-    std::cout << "Elapsed time per call: "
-              << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count() / n_operations
-              << std::endl;
-    std::cout << std::endl;
+    if (stop_ == start)
+      stop();
+    int rank = 0;
+#ifdef MOLPRO_PROFILER_MPI
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+#endif
+    if (rank == 0) {
+      std::cout << "Elapsed time: " << (std::chrono::duration<double>(stop_ - start)).count() << std::endl;
+      std::cout << "Elapsed time per call: " << (std::chrono::duration<double>(stop_ - start)).count() / n_operations
+                << std::endl;
+      std::cout << std::endl;
+    }
   }
   size_t n_operations;
   time_point start;
+  time_point stop_;
 };
+
+void delay() {
+  int delay = 2000;
+#ifdef MOLPRO_PROFILER_MPI
+  int rank = 0;
+  MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  std::this_thread::sleep_for(std::chrono::milliseconds{delay * rank});
+#endif
+}
+
 int main(int argc, char* argv[]) {
+  int rank = 0;
 #ifdef MOLPRO_PROFILER_MPI
   MPI_Init(&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 #endif
   size_t repeat = 1000000;
   std::cout << repeat << " instances of Profiler::push()" << std::endl;
@@ -35,16 +61,26 @@ int main(int argc, char* argv[]) {
     for (auto i = 0; i < repeat; i++) {
       p.push("test");
     }
+    et.stop();
     std::cout << p << std::endl;
   }
   {
-    molpro::profiler::tree::Profiler tp{"test tree profiler: depth = 1"};
+    molpro::profiler::tree::Profiler tp{"test tree profiler: depth = 1, rank = " + std::to_string(rank)};
     auto et = ElapsedTime(repeat);
     for (auto i = 0; i < repeat; i++) {
       tp.push("test");
     }
+    et.stop();
     tp.stop_all();
+#ifdef MOLPRO_PROFILER_MPI
+    std::stringstream out;
+    report(tp, std::cout, MPI_COMM_WORLD);
+    delay();
+    std::cout << out.str() << std::endl;
+    delay();
+#endif
     report(tp, std::cout);
+    delay();
   }
   {
     molpro::Profiler p{"test: depth = 5"};
@@ -64,10 +100,11 @@ int main(int argc, char* argv[]) {
         }
       }
     }
+    et.stop();
     std::cout << p << std::endl;
   }
   {
-    molpro::profiler::tree::Profiler tp{"test tree profiler: depth = 1"};
+    molpro::profiler::tree::Profiler tp{"test tree profiler: depth = 1, rank = " + std::to_string(rank)};
     auto et = ElapsedTime(repeat);
     for (auto i = 0; i < repeat / 10000; i++) {
       auto p1 = tp.push("test1");
@@ -85,7 +122,18 @@ int main(int argc, char* argv[]) {
       }
     }
     tp.stop_all();
+    et.stop();
+#ifdef MOLPRO_PROFILER_MPI
+    std::stringstream out;
+    report(tp, out, MPI_COMM_WORLD);
+    delay();
+    std::cout << out.str() << std::endl;
+    delay();
+#endif
     report(tp, std::cout, true);
+#ifdef MOLPRO_PROFILER_MPI
+    delay();
+#endif
     report(tp, std::cout, false);
   }
   {
@@ -95,17 +143,27 @@ int main(int argc, char* argv[]) {
       auto proxy = p.push("test");
       proxy += 7;
     }
+    et.stop();
     std::cout << p << std::endl;
   }
   {
-    molpro::profiler::tree::Profiler p{"tree profiler: operations "};
+    molpro::profiler::tree::Profiler p{"tree profiler: operations , rank = " + std::to_string(rank)};
     auto et = ElapsedTime(repeat);
     for (auto i = 0; i < repeat; i++) {
       auto proxy = p.push("test");
       proxy += 7;
     }
+    et.stop();
     p.stop_all();
+#ifdef MOLPRO_PROFILER_MPI
+    std::stringstream out;
+    report(p, out, MPI_COMM_WORLD);
+    if (rank == 0)
+      std::cout << out.str() << std::endl;
+    delay();
+#endif
     std::cout << p << std::endl;
+    delay();
   }
 
   std::cout << repeat << " instances of 2*gettimeofday()" << std::endl;
