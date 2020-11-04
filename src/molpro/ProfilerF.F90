@@ -41,6 +41,7 @@ MODULE ProfilerF
         PROCEDURE :: active => ProfilerActiveF !< Set the maximum depth at which recording is done
         PROCEDURE :: print => ProfilerPrintF !< \public Print a representation of the object.
         PROCEDURE :: destroy => ProfilerDestroyF !< \public Destroys stored profiler
+        FINAL :: destructor
     END TYPE Profiler
     INTERFACE Profiler
         MODULE PROCEDURE ProfilerNewF
@@ -228,6 +229,11 @@ CONTAINS
         CLASS(Profiler), INTENT(in) :: this !< Profiler object
         CALL ProfilerDestroyC(this%handle)
     END SUBROUTINE ProfilerDestroyF
+    SUBROUTINE destructor(this)
+        TYPE(Profiler), INTENT(in) :: this !< Profiler object
+        write(*,*) "Profiler destructor called"
+        CALL ProfilerDestroyC(this%handle)
+    END SUBROUTINE destructor
 END MODULE ProfilerF
 
 ! outside module to avoid false positives from private module elements
@@ -260,7 +266,6 @@ SUBROUTINE profiler_module_test(printlevel)
     call p%stop('subtask')
     if (printlevel > 0) CALL p%print(6)
     if (printlevel > 0) CALL p%print(6, cumulative = .FALSE.)
-    call p%destroy()
 #ifdef PROFILER_MEMORY
  IF (printlevel > 0) CALL time_memory(1000000*printlevel)
  if (printlevel > 9) PRINT *, 'done',memory_maximum_stack_used(),memory_used('STACK')
