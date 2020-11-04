@@ -209,7 +209,7 @@ std::shared_ptr<Node<Counter>> synchronised_tree(const std::shared_ptr<Node<Coun
 void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool cumulative, SortBy sort_by) {
   int rank, n_loc, n_root;
   MPI_Comm_rank(communicator, &rank);
-  n_loc = Node<Counter>::count_nodes(prof.root);
+  n_loc = prof.root->count_nodes();
   if (rank == 0)
     n_root = n_loc;
   MPI_Bcast(&n_root, 1, MPI_INT, 0, communicator);

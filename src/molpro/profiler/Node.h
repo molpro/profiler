@@ -48,10 +48,10 @@ public:
   }
 
   //! Get total number of nodes in a tree
-  static size_t count_nodes(const std::shared_ptr<Node<Counter>>& root) {
+  size_t count_nodes() const {
     size_t n = 1;
-    for (auto& child : root->children)
-      n += count_nodes(child.second);
+    for (auto& child : children)
+      n += child.second->count_nodes();
     return n;
   }
 

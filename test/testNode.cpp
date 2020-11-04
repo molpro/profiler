@@ -54,6 +54,6 @@ TEST(Node, count_nodes) {
   Profiler p("test");
   p.start("A").start("AA").stop().start("AB").stop().stop();
   p.start("B").start("BA").stop().start("BB").stop().stop();
-  auto n_nodes = Node<Counter>::count_nodes(p.root);
+  auto n_nodes = p.root->count_nodes();
   ASSERT_EQ(n_nodes, 7);
 }
