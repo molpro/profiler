@@ -1,4 +1,5 @@
 #include <molpro/Profiler.h>
+#include <molpro/profiler/report.h>
 #ifdef HAVE_MPI_H
 #include "mpi.h"
 #endif
@@ -26,14 +27,19 @@ int main(int argc, char *argv[]) {
 #ifdef HAVE_MPI_H
   MPI_Init(&argc, &argv);
 #endif
-  auto p1 = Profiler::single("Singleton Example: job 1");
-  run();
-  auto p2 = Profiler::single("Singleton Example: job 2");
-  run();
-  std::cout << *p1;
-  std::cout << *p2;
-  p1.reset();
-  p2.reset();
+  {
+    auto p1 = Profiler::single("Singleton Example: job 1");
+    run();
+    auto p2 = Profiler::single("Singleton Example: job 2");
+    run();
+#ifdef HAVE_MPI_H
+    report_root_process(*p1, std::cout, MPI_COMM_WORLD, 0);
+    report_root_process(*p2, std::cout, MPI_COMM_WORLD, 0);
+#else
+    std::cout << *p1;
+    std::cout << *p2;
+#endif
+  }
 #ifdef HAVE_MPI_H
   MPI_Finalize();
 #endif

@@ -179,6 +179,24 @@ void report(const std::shared_ptr<Node<Counter>>& root, const std::string& descr
 
 #ifdef MOLPRO_PROFILER_MPI
 namespace detail {
+
+void reduce_all(long long int& operation_count, double& wall_time, double& cpu_time, MPI_Comm comm) {
+  MPI_Request requests[3];
+  MPI_Iallreduce(MPI_IN_PLACE, &operation_count, 1, MPI_LONG_LONG_INT, MPI_SUM, comm, &requests[0]);
+  MPI_Iallreduce(MPI_IN_PLACE, &wall_time, 1, MPI_DOUBLE, MPI_MAX, comm, &requests[1]);
+  MPI_Iallreduce(MPI_IN_PLACE, &cpu_time, 1, MPI_DOUBLE, MPI_SUM, comm, &requests[2]);
+  MPI_Waitall(3, requests, MPI_STATUSES_IGNORE);
+}
+
+void reduce_root_only(long long int& operation_count, double& wall_time, double& cpu_time, MPI_Comm comm,
+                      int root_process) {
+  MPI_Request requests[3];
+  MPI_Ireduce(MPI_IN_PLACE, &operation_count, 1, MPI_LONG_LONG_INT, MPI_SUM, root_process, comm, &requests[0]);
+  MPI_Ireduce(MPI_IN_PLACE, &wall_time, 1, MPI_DOUBLE, MPI_MAX, root_process, comm, &requests[1]);
+  MPI_Ireduce(MPI_IN_PLACE, &cpu_time, 1, MPI_DOUBLE, MPI_SUM, root_process, comm, &requests[2]);
+  MPI_Waitall(3, requests, MPI_STATUSES_IGNORE);
+}
+
 /*!
  * @brief Data from the tree is reduced among all processors to an average profile
  * @note All trees must have the same structure
@@ -195,21 +213,21 @@ namespace detail {
  * @return
  */
 std::shared_ptr<Node<Counter>> synchronised_tree(const std::shared_ptr<Node<Counter>>& node,
-                                                 const std::shared_ptr<Node<Counter>>& parent, MPI_Comm comm) {
+                                                 const std::shared_ptr<Node<Counter>>& parent, MPI_Comm comm,
+                                                 int root_process) {
   auto call_count = node->counter.get_call_count();
   long long int operation_count = node->counter.get_operation_count();
   auto wall_time = node->counter.get_wall().cumulative_time();
   auto cpu_time = node->counter.get_cpu().cumulative_time();
-  MPI_Request requests[3];
-  MPI_Iallreduce(MPI_IN_PLACE, &operation_count, 1, MPI_LONG_LONG_INT, MPI_SUM, comm, &requests[0]);
-  MPI_Iallreduce(MPI_IN_PLACE, &wall_time, 1, MPI_DOUBLE, MPI_MAX, comm, &requests[1]);
-  MPI_Iallreduce(MPI_IN_PLACE, &cpu_time, 1, MPI_DOUBLE, MPI_SUM, comm, &requests[2]);
-  MPI_Waitall(3, requests, MPI_STATUSES_IGNORE);
+  if (root_process > 0)
+    reduce_root_only(operation_count, wall_time, cpu_time, comm, root_process);
+  else
+    reduce_all(operation_count, wall_time, cpu_time, comm);
   auto counter = Counter(call_count, operation_count, wall_time, cpu_time, false, false);
   auto node_copy = Node<Counter>::make_root(node->name, counter);
   node_copy->parent = parent;
   for (const auto& child : node->children)
-    node_copy->children.emplace(child.first, synchronised_tree(child.second, node_copy, comm));
+    node_copy->children.emplace(child.first, synchronised_tree(child.second, node_copy, comm, root_process));
   return node_copy;
 }
 } // namespace detail
@@ -223,9 +241,26 @@ void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool
   MPI_Bcast(&n_root, 1, MPI_INT, 0, communicator);
   if (n_root != n_loc)
     MPI_Abort(communicator, 0); // Profiler trees are not compatible
-  auto root_sync = detail::synchronised_tree(prof.root, nullptr, communicator);
+  auto root_sync = detail::synchronised_tree(prof.root, nullptr, communicator, -1);
   auto paths = detail::TreePath::convert_tree_to_paths(root_sync, cumulative, sort_by);
   detail::write_report(*prof.root, prof.description(), paths, out, cumulative);
+}
+
+void report_root_process(const Profiler& prof, std::ostream& out, MPI_Comm communicator, int root_process,
+                         bool cumulative, SortBy sort_by) {
+  int rank, n_loc, n_root;
+  MPI_Comm_rank(communicator, &rank);
+  n_loc = prof.root->count_nodes();
+  if (rank == 0)
+    n_root = n_loc;
+  MPI_Bcast(&n_root, 1, MPI_INT, 0, communicator);
+  if (n_root != n_loc)
+    MPI_Abort(communicator, 0); // Profiler trees are not compatible
+  auto root_sync = detail::synchronised_tree(prof.root, nullptr, communicator, root_process);
+  if (rank == root_process) {
+    auto paths = detail::TreePath::convert_tree_to_paths(root_sync, cumulative, sort_by);
+    detail::write_report(*prof.root, prof.description(), paths, out, cumulative);
+  }
 }
 #endif
 

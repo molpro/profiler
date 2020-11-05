@@ -54,6 +54,9 @@ void report(const Profiler& prof, std::ostream& out, bool cumulative = true, Sor
 #ifdef MOLPRO_PROFILER_MPI
 void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool cumulative = true,
             SortBy sort_by = SortBy::wall);
+//! Reports collective content of Profiler but writing on the root process only
+void report_root_process(const Profiler& prof, std::ostream& out, MPI_Comm communicator, int root_process,
+                         bool cumulative = true, SortBy sort_by = SortBy::wall);
 #endif
 
 namespace detail {
@@ -179,13 +182,19 @@ void write_report(const Node<Counter>& root, const std::string& description, con
  * wall times - maximum value on any process
  * cpu times - total of all processes
  *
- * @param root root of the tree
+ * @param node root of the tree
+ * @param parent parent of the reduced node
  * @param comm communicator
+ * @param root_process index of the root process, if < 0 then AllReduce is performed
  * @return
  */
 std::shared_ptr<Node<Counter>> synchronised_tree(const std::shared_ptr<Node<Counter>>& node,
-                                                 const std::shared_ptr<Node<Counter>>& parent, MPI_Comm comm);
+                                                 const std::shared_ptr<Node<Counter>>& parent, MPI_Comm comm,
+                                                 int root_process);
 
+void reduce_all(long long int& operation_count, double& wall_time, double& cpu_time, MPI_Comm comm);
+void reduce_root_only(long long int& operation_count, double& wall_time, double& cpu_time, MPI_Comm comm,
+                      int root_process);
 #endif
 
 } // namespace detail
