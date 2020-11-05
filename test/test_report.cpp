@@ -7,9 +7,9 @@
 
 #include <sstream>
 
-using molpro::profiler::Profiler;
 using molpro::profiler::Counter;
 using molpro::profiler::Node;
+using molpro::profiler::Profiler;
 using molpro::profiler::report;
 using molpro::profiler::SortBy;
 using molpro::profiler::detail::format_path_cumulative;
@@ -188,6 +188,14 @@ TEST_F(TreePath_Fixture, report) {
   ASSERT_FALSE(out.str().empty());
 }
 
+TEST_F(TreePath_Fixture, report__from_node) {
+  std::stringstream out;
+  report(prof, out);
+  std::stringstream out2;
+  report(prof.root, prof.description(), out2);
+  ASSERT_EQ(out2.str(), out.str());
+}
+
 TEST(report_detail, format_paths__cumulative) {
   auto path_names = std::list<std::string>{{"A"}, {"**B"}, {"*C"}};
   format_paths(path_names, true);
@@ -250,19 +258,19 @@ void test_write_timing(double time, size_t n_op, std::string expected) {
   molpro::profiler::detail::write_timing(result, time, n_op);
   EXPECT_EQ(result.str(), expected);
 }
-TEST (report_detail, write_timing) {
-  test_write_timing(0,0,"0 s");
-  test_write_timing(0,1,"0 s");
-  test_write_timing(1,0,"1 s");
-  test_write_timing(999,0,"999 s");
-  test_write_timing(1000,0,"1 ks");
-  test_write_timing(1e24,0,"1 Ys");
-  test_write_timing(1e28,0,"10000 Ys");
-  test_write_timing(1e-6,0,"1 us");
-  test_write_timing(9.999999e-7,0,"1000 ns");
-  test_write_timing(1e-28,0,"0.0001 ys");
-  test_write_timing(1e-6,10,"1 us (10 MHz)");
-  test_write_timing(1e-6,999,"1 us (999 MHz)");
-  test_write_timing(1e-6,1000,"1 us (1 GHz)");
-  test_write_timing(1e-21,1234000,"1 zs (1234 YHz)");
+TEST(report_detail, write_timing) {
+  test_write_timing(0, 0, "0 s");
+  test_write_timing(0, 1, "0 s");
+  test_write_timing(1, 0, "1 s");
+  test_write_timing(999, 0, "999 s");
+  test_write_timing(1000, 0, "1 ks");
+  test_write_timing(1e24, 0, "1 Ys");
+  test_write_timing(1e28, 0, "10000 Ys");
+  test_write_timing(1e-6, 0, "1 us");
+  test_write_timing(9.999999e-7, 0, "1000 ns");
+  test_write_timing(1e-28, 0, "0.0001 ys");
+  test_write_timing(1e-6, 10, "1 us (10 MHz)");
+  test_write_timing(1e-6, 999, "1 us (999 MHz)");
+  test_write_timing(1e-6, 1000, "1 us (1 GHz)");
+  test_write_timing(1e-21, 1234000, "1 zs (1234 YHz)");
 }

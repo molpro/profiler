@@ -19,6 +19,30 @@ namespace molpro {
 namespace profiler {
 
 /*!
+ * @brief Reports the content of a Profiler call subtree
+ *
+ * In case only part of the call tree needs to be reported. You can use Node<Counter>::find_parent,
+ * Node<Counter::walk, Node<Counter::child and Node<Counter::walk_up to navigate to the desired node.
+ *
+ * Example usage
+ * @code{.cpp}
+ * Profiler p("Example of report");
+ * p.start("A").start("B").start("C");
+ * // do some work that uses profiler p
+ * report(p.active_node, std::cout);
+ * @endcode
+ *
+ *
+ * @param root root node of the tree, can be different from Profiler::root
+ * @param description description to use for profiler
+ * @param out output stream to write to
+ * @param cumulative whether cumulative timings should be used or only time spend by the node and not its children
+ * @param sort_by what parameter to use for sorting. Sorting is done on the same level only.
+ */
+void report(const std::shared_ptr<Node<Counter>>& root, const std::string& description, std::ostream& out,
+            bool cumulative = true, SortBy sort_by = SortBy::wall);
+
+/*!
  * @brief Reports content of Profiler
  * @param prof profiler to analyse and write
  * @param out output stream to write to
@@ -140,7 +164,8 @@ void format_paths(std::list<std::string>& path_names, bool append);
 void write_timing(std::ostream& out, double time, size_t n_op);
 
 //! Writes the report to an output stream
-void write_report(const Profiler& prof, const std::list<TreePath>& paths, std::ostream& out, bool cumulative);
+void write_report(const Node<Counter>& root, const std::string& description, const std::list<TreePath>& paths,
+                  std::ostream& out, bool cumulative);
 
 #ifdef MOLPRO_PROFILER_MPI
 /*!

@@ -1,11 +1,11 @@
 #include "report.h"
 
 #include <cassert>
+#include <cmath>
 #include <functional>
+#include <iostream>
 #include <map>
 #include <utility>
-#include <cmath>
-#include <iostream>
 
 namespace molpro {
 namespace profiler {
@@ -86,7 +86,7 @@ std::list<TreePath> TreePath::convert_tree_to_paths(const std::shared_ptr<Node<C
   return std::list<TreePath>();
 }
 
-template<class CompareTreePaths>
+template <class CompareTreePaths>
 std::list<TreePath> TreePath::convert_tree_to_paths(const std::shared_ptr<Node<Counter>>& root, TreePath path,
                                                     bool cumulative) {
   auto paths = std::list<TreePath>{};
@@ -123,10 +123,12 @@ void format_paths(std::list<std::string>& path_names, bool append) {
 void write_timing(std::ostream& out, double time, size_t n_op) {
   const std::string prefixes{"yzafpnum kMGTPEZY"};
   const int prefix_base = prefixes.find(" ");
-  int prefix_time =
-      time <= 0 ? prefix_base : std::min(prefixes.size() - 1, size_t(std::max(0.0, (std::log10(time) / 3) + prefix_base)));
+  int prefix_time = time <= 0
+                        ? prefix_base
+                        : std::min(prefixes.size() - 1, size_t(std::max(0.0, (std::log10(time) / 3) + prefix_base)));
   out << time / std::pow(1e3, (prefix_time - prefix_base)) << " ";
-  if (prefix_time != prefix_base) out << prefixes[prefix_time];
+  if (prefix_time != prefix_base)
+    out << prefixes[prefix_time];
   out << "s";
   if (n_op and time > 0) {
     auto rate = double(n_op) / time;
@@ -138,14 +140,15 @@ void write_timing(std::ostream& out, double time, size_t n_op) {
   }
 }
 
-void write_report(const Profiler& prof, const std::list<TreePath>& paths, std::ostream& out, bool cumulative) {
+void write_report(const Node<Counter>& root, const std::string& description, const std::list<TreePath>& paths,
+                  std::ostream& out, bool cumulative) {
   auto path_names = std::list<std::string>{};
   for (const auto& path : paths)
     path_names.emplace_back(format_single_path(path.path, cumulative));
   format_paths(path_names, cumulative);
-  bool with_wall = !prof.root->counter.get_wall().dummy();
-  bool with_cpu = !prof.root->counter.get_cpu().dummy();
-  out << "Profiler " << '"' << prof.description() << '"';
+  bool with_wall = !root.counter.get_wall().dummy();
+  bool with_cpu = !root.counter.get_cpu().dummy();
+  out << "Profiler " << '"' << description << '"';
   if (cumulative)
     out << " (cumulative) ";
   out << std::endl;
@@ -165,8 +168,13 @@ void write_report(const Profiler& prof, const std::list<TreePath>& paths, std::o
 } // namespace detail
 
 void report(const Profiler& prof, std::ostream& out, bool cumulative, SortBy sort_by) {
-  auto paths = detail::TreePath::convert_tree_to_paths(prof.root, cumulative, sort_by);
-  detail::write_report(prof, paths, out, cumulative);
+  report(prof.root, prof.description(), out, cumulative, sort_by);
+}
+
+void report(const std::shared_ptr<Node<Counter>>& root, const std::string& description, std::ostream& out,
+            bool cumulative, SortBy sort_by) {
+  auto paths = detail::TreePath::convert_tree_to_paths(root, cumulative, sort_by);
+  detail::write_report(*root, description, paths, out, cumulative);
 }
 
 #ifdef MOLPRO_PROFILER_MPI
@@ -217,7 +225,7 @@ void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool
     MPI_Abort(communicator, 0); // Profiler trees are not compatible
   auto root_sync = detail::synchronised_tree(prof.root, nullptr, communicator);
   auto paths = detail::TreePath::convert_tree_to_paths(root_sync, cumulative, sort_by);
-  detail::write_report(prof, paths, out, cumulative);
+  detail::write_report(*prof.root, prof.description(), paths, out, cumulative);
 }
 #endif
 
