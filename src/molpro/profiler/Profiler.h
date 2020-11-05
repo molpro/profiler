@@ -26,7 +26,9 @@ class Node;
  * accumulate number of calls to each node.
  * The maximum depth of profiler tree can be set using set_max_depth(), any nodes below max_depth are not created.
  * This allow for profiler calls to be used in Production code without degrading the performance
- * See README.md and examples for usage.
+ *
+ * @note See README.md and examples for different ways to use the Profiler, and see report() on how the results can we
+ * reported.
  *
  */
 class Profiler {

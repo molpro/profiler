@@ -51,6 +51,8 @@ int main(){
     }
     prof.stop();
     std::cout << prof << std::endl;
+    // Or directly call report()
+    report(prof, std::cout);
     return 0;
 }
 ```
@@ -115,6 +117,10 @@ at lower levels through **molpro::Profiler::single()**.
 This pattern avoids the pitfalls of the traditional Singleton by keeping Profiler instance on the heap
 with scoped memory management and only storing a non-owning pointer on the stack.
 
+# Profiling and Reporting
+
+Profiling is performed by `molpro::profiler::Profiler` class, there is an alias to it in `molpro/Profiler.h`.
+The results of Profiler can be reported using `molpro::profiler::report()` functions in `molpro/profiler/report.h`
 
 # Features
   * Constructs profiler call tree and accumulates statistics for each node
