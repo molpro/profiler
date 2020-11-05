@@ -78,6 +78,19 @@ TEST(Node, walk__vector) {
   ASSERT_EQ(p.root->walk(begin(path), end(path)), c);
 }
 
+TEST(Node, child__throw) {
+  auto n = Node<Counter>::make_root("test", {});
+  ASSERT_THROW(n->walk({""}), molpro::profiler::NodePathError);
+  auto ch = Node<Counter>::add_child("A", {}, n);
+  ASSERT_THROW(n->walk({"B"}), molpro::profiler::NodePathError);
+}
+
+TEST(Node, child) {
+  auto n = Node<Counter>::make_root("test", {});
+  auto child = Node<Counter>::add_child("A", {}, n);
+  ASSERT_EQ(n->child({"A"}), child);
+}
+
 TEST(Node, count_nodes) {
   Profiler p("test");
   p.start("A").start("AA").stop().start("AB").stop().stop();

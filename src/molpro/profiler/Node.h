@@ -79,6 +79,9 @@ public:
     return walk(begin(path_to_node), end(path_to_node));
   }
 
+  //! Returns a child node, same as calling walk with one element @param child_name name of the child node
+  std::shared_ptr<Node<Counter>> child(const std::string& child_name) { return walk({child_name}); }
+
   //! Get total number of nodes in a tree
   size_t count_nodes() const {
     size_t n = 1;
