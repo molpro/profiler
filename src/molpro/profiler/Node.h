@@ -95,6 +95,21 @@ public:
     return node->parent;
   }
 
+  /*!
+   * @brief Walks up n levels by following the parent nodes
+   * @param n number of levels to walk up ( n > 0)
+   * @return node n levels up (n=1 is the parent) or nullptr if n exceeds distance to root
+   */
+  std::shared_ptr<Node<Counter>> walk_up(int n) {
+    if (n < 1)
+      throw NodePathError("n must be > 0");
+    std::shared_ptr<Node<Counter>> node = parent;
+    while (--n > 0 && node != nullptr) {
+      node = node->parent;
+    }
+    return node;
+  }
+
   //! Get total number of nodes in a tree
   size_t count_nodes() const {
     size_t n = 1;

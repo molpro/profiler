@@ -7,6 +7,7 @@
 
 using molpro::profiler::Counter;
 using molpro::profiler::Node;
+using molpro::profiler::NodePathError;
 using molpro::profiler::Profiler;
 
 struct DummyCounter {
@@ -80,9 +81,9 @@ TEST(Node, walk__vector) {
 
 TEST(Node, child__throw) {
   auto n = Node<Counter>::make_root("test", {});
-  ASSERT_THROW(n->walk({""}), molpro::profiler::NodePathError);
+  ASSERT_THROW(n->walk({""}), NodePathError);
   auto ch = Node<Counter>::add_child("A", {}, n);
-  ASSERT_THROW(n->walk({"B"}), molpro::profiler::NodePathError);
+  ASSERT_THROW(n->walk({"B"}), NodePathError);
 }
 
 TEST(Node, child) {
@@ -111,6 +112,25 @@ TEST(Node, find_parent__found) {
   ASSERT_EQ(n, ref_a);
   n = p.active_node->find_parent("All");
   ASSERT_EQ(n, p.root);
+}
+
+TEST(Node, walk_up__throw) {
+  auto node = Node<Counter>::make_root("test", {});
+  ASSERT_THROW(node->walk_up(0), NodePathError);
+  ASSERT_THROW(node->walk_up(-1), NodePathError);
+}
+
+TEST(Node, walk_up__nullptr) {
+  Profiler p("test");
+  auto a = p.start("A").active_node;
+  auto b = p.start("B").active_node;
+  auto c = p.start("C").active_node;
+  ASSERT_EQ(c->walk_up(1), b);
+  ASSERT_EQ(c->walk_up(2), a);
+  ASSERT_EQ(c->walk_up(3), p.root);
+  ASSERT_EQ(c->walk_up(4), nullptr);
+  ASSERT_EQ(c->walk_up(10), nullptr);
+  ASSERT_EQ(p.root->walk_up(1), nullptr);
 }
 
 TEST(Node, count_nodes) {
