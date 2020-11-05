@@ -50,6 +50,34 @@ TEST(Node, deep_copy) {
   ASSERT_NE(grand_child_copy->counter.i, grand_child->counter.i);
 }
 
+TEST(Node, walk__null) {
+  auto n = Node<Counter>::make_root("test", {});
+  ASSERT_THROW(n->walk({""}), molpro::profiler::NodePathError);
+}
+
+TEST(Node, walk__branch_node) {
+  Profiler p("test");
+  p.start("A").start("B");
+  auto b = p.active_node;
+  p.start("C");
+  ASSERT_EQ(p.root->walk({"A", "B"}), b);
+}
+
+TEST(Node, walk__leaf_node) {
+  Profiler p("test");
+  p.start("A").start("B").start("C");
+  auto c = p.active_node;
+  ASSERT_EQ(p.root->walk({"A", "B", "C"}), c);
+}
+
+TEST(Node, walk__vector) {
+  Profiler p("test");
+  p.start("A").start("B").start("C");
+  auto c = p.active_node;
+  std::vector<std::string> path{"A", "B", "C"};
+  ASSERT_EQ(p.root->walk(begin(path), end(path)), c);
+}
+
 TEST(Node, count_nodes) {
   Profiler p("test");
   p.start("A").start("AA").stop().start("AB").stop().stop();
