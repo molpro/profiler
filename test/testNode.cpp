@@ -91,6 +91,28 @@ TEST(Node, child) {
   ASSERT_EQ(n->child({"A"}), child);
 }
 
+TEST(Node, find_parent__null) {
+  auto n = Node<Counter>::make_root("test", {});
+  ASSERT_EQ(n->find_parent(""), nullptr);
+}
+
+TEST(Node, find_parent__not_found) {
+  Profiler p("Test");
+  p.start("A").start("B");
+  ASSERT_EQ(p.active_node->find_parent(""), nullptr);
+}
+
+TEST(Node, find_parent__found) {
+  Profiler p("Test");
+  p.start("A").start("B");
+  auto ref_a = p.start("A").active_node;
+  p.start("B");
+  auto n = p.active_node->find_parent("A");
+  ASSERT_EQ(n, ref_a);
+  n = p.active_node->find_parent("All");
+  ASSERT_EQ(n, p.root);
+}
+
 TEST(Node, count_nodes) {
   Profiler p("test");
   p.start("A").start("AA").stop().start("AB").stop().stop();

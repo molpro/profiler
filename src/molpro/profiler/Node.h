@@ -82,6 +82,19 @@ public:
   //! Returns a child node, same as calling walk with one element @param child_name name of the child node
   std::shared_ptr<Node<Counter>> child(const std::string& child_name) { return walk({child_name}); }
 
+  /*!
+   * @brief Searches from current parent up to the root returning a node with specified name
+   * @param parent_name name of the node that needs to be returned
+   * @return parent with matching name or nullptr if no such node exists
+   */
+  std::shared_ptr<Node<Counter>> find_parent(const std::string& parent_name) {
+    auto node = this;
+    while (node->parent != nullptr && node->parent->name != parent_name) {
+      node = node->parent.get();
+    }
+    return node->parent;
+  }
+
   //! Get total number of nodes in a tree
   size_t count_nodes() const {
     size_t n = 1;
