@@ -12,7 +12,10 @@ Framework for timing sections of code in serial and parallel, implemented in C++
 This can degrade overall performance and distort real profile if attempting to time tight loops.
 
 The profiler works by constructing a call tree and accumulating call count, operation count, and timing
-duration in each node. Optionally, but typically with significantly greater overhead, CPU time can be recorded also. The profile tree can be analysed and printed.
+duration in each node. Optionally, but typically with significantly greater overhead, CPU time can be recorded also.
+The maximum depth of profiler tree can also be limited, resulting in any calls to start() that would grow the tree beyond
+the limit to do nothing. This allows Profiler to be used in production code without degrading performance.
+The profile tree can be analysed and printed.
 
 In the following simple example, calling *start()* on profiler moves down the call tree and starts timing and calling
 *stop()* moves up to the parent and stops timing. 
@@ -48,6 +51,8 @@ int main(){
     }
     prof.stop();
     std::cout << prof << std::endl;
+    // Or directly call report()
+    report(prof, std::cout);
     return 0;
 }
 ```
@@ -69,7 +74,7 @@ All                   : calls=1, wall=18
 ..read_input()        : calls=1, wall=2
 ```
 
-Alternatively, cumulative format can be turned off ``prof.str(0, false)`` and time spent on each
+Alternatively, cumulative format can be turned off using ``prof.str(false)`` then time spent on each
 call excluding any children is shown.
 ```
 Profiler "main()"
@@ -81,8 +86,6 @@ perform_calculation():operation2(): calls=2, wall=4
          initialise():read_input(): calls=1, wall=2
      initialise():restore_backup(): calls=1, wall=2
 ```
-
-**NOTE** we are transitioning to a new structure, and the interface might change.
 
 # Weak Singleton pattern
 During development and debugging it becomes inconvenient to pass a profiler instance down through all function calls.
@@ -114,6 +117,10 @@ at lower levels through **molpro::Profiler::single()**.
 This pattern avoids the pitfalls of the traditional Singleton by keeping Profiler instance on the heap
 with scoped memory management and only storing a non-owning pointer on the stack.
 
+# Profiling and Reporting
+
+Profiling is performed by `molpro::profiler::Profiler` class, there is an alias to it in `molpro/Profiler.h`.
+The results of Profiler can be reported using `molpro::profiler::report()` functions in `molpro/profiler/report.h`
 
 # Features
   * Constructs profiler call tree and accumulates statistics for each node
