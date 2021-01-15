@@ -32,6 +32,9 @@ MODULE ProfilerF
     !> Instances of this type define a single code-timing activity
     !! The implementation is via the C binding, which itself makes a C++ object
     !! whose address is stored here.
+    INTEGER, PUBLIC, PARAMETER :: mpicomm_kind = KIND(c_int64_t)
+    !PUBLIC :: mpicomm_global, mpicomm_compute
+    INTEGER(kind = mpicomm_kind), PRIVATE, SAVE :: s_mpicomm_compute=-9999999
     TYPE :: Profiler
         PRIVATE
         TYPE(c_ptr) :: handle !< C pointer to the corresponding C++ object
@@ -48,6 +51,10 @@ MODULE ProfilerF
     END INTERFACE Profiler
 
     INTERFACE
+        !FUNCTION mpicomm_global() BIND(C)
+        !    INTEGER, PARAMETER :: mpicomm_kind = KIND(c_int64_t)
+        !    INTEGER(KIND = mpicomm_kind) :: mpicomm_global
+        !END FUNCTION mpicomm_global
         !> \private
         FUNCTION ProfilerNewCSerA(name, cpu) BIND (C, name = 'profilerNewSerialA')
             USE iso_c_binding
@@ -67,14 +74,16 @@ MODULE ProfilerF
   FUNCTION ProfilerNewCMPIA(name, comm, cpu) BIND (C, name='profilerNewMPIA')
    USE iso_c_binding
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
-   INTEGER(kind=c_int), INTENT(in), VALUE ::  comm, cpu
+   INTEGER(C_int64_t), INTENT(in), VALUE ::  comm
+   INTEGER(kind=c_int), INTENT(in), VALUE ::  cpu
    TYPE(c_ptr) :: ProfilerNewCMPIA
   END FUNCTION ProfilerNewCMPIA
  !> \private
   FUNCTION ProfilerNewCMPIB(name, sort, level, comm, cpu) BIND (C, name='profilerNewMPIB')
    USE iso_c_binding
    CHARACTER(kind=c_char, len=1), DIMENSION(*), INTENT(in) ::  name
-   INTEGER(kind=c_int), INTENT(in), VALUE ::  sort, level, comm, cpu
+   INTEGER(C_int64_t), INTENT(in), VALUE ::  comm
+   INTEGER(kind=c_int), INTENT(in), VALUE ::  sort, level, cpu
    TYPE(c_ptr) :: ProfilerNewCMPIB
   END FUNCTION ProfilerNewCMPIB
 #endif
@@ -115,6 +124,11 @@ MODULE ProfilerF
     END INTERFACE
 
 CONTAINS
+    !FUNCTION mpicomm_compute()
+    !    INTEGER(KIND = mpicomm_kind) :: mpicomm_compute
+    !    if (s_mpicomm_compute .EQ. -9999999) s_mpicomm_compute = mpicomm_global()
+    !    mpicomm_compute = s_mpicomm_compute
+    !END FUNCTION mpicomm_compute
     !> \public Construct a new instance.
     !! Should be called through object construction.
     !! @warning If using anything other than the default MPI communicator MPI_COMM_WORLD, for example from use of GA or PPIDD, then you must pass the communicator explicitly.
@@ -128,9 +142,11 @@ CONTAINS
         USE iso_c_binding
         TYPE(Profiler) :: ProfilerNewF
         CHARACTER(len = *), INTENT(in) :: name !< Title of this object
-        INTEGER, INTENT(in), OPTIONAL :: sort, level, comm
+        INTEGER, INTENT(in), OPTIONAL :: sort, level
+        INTEGER(KIND=mpicomm_kind), INTENT(in), OPTIONAL :: comm !< MPI communicator
         LOGICAL, INTENT(in), OPTIONAL :: cpu
-        INTEGER(kind = c_int) :: sortC, levelC, commC, cpuC
+        INTEGER(c_int64_t) :: commC
+        INTEGER(kind = c_int) :: sortC, levelC, cpuC
         IF (PRESENT(sort)) THEN
             sortC = INT(sort, kind = c_int)
         ELSE
@@ -145,10 +161,17 @@ CONTAINS
         IF (PRESENT(cpu)) THEN
             IF (cpu) cpuC = 1
         ENDIF
+#ifdef MOLPRO_PROFILER_MPI
+        IF (PRESENT(comm)) THEN
+            commC = INT(comm, kind = c_int64_t)
+        !ELSE
+        !    commC = mpicomm_compute()
+        ENDIF
+#endif
         IF (PRESENT(sort) .or. PRESENT(level)) THEN
 #ifdef MOLPRO_PROFILER_MPI
     IF (PRESENT(comm)) THEN
-     ProfilerNewF%handle = ProfilerNewCMPIB((TRIM(name)//C_NULL_CHAR),sortC,levelC,INT(comm,kind=c_int),cpuC)
+     ProfilerNewF%handle = ProfilerNewCMPIB((TRIM(name)//C_NULL_CHAR),sortC,levelC,commC,cpuC)
     ELSE
 #endif
             ProfilerNewF%handle = ProfilerNewCSerB((TRIM(name) // C_NULL_CHAR), sortC, levelC, cpuC)
@@ -158,7 +181,7 @@ CONTAINS
         ELSE
 #ifdef MOLPRO_PROFILER_MPI
     IF (PRESENT(comm)) THEN
-     ProfilerNewF%handle = ProfilerNewCMPIA((TRIM(name)//C_NULL_CHAR),INT(comm,kind=c_int),cpuC)
+     ProfilerNewF%handle = ProfilerNewCMPIA((TRIM(name)//C_NULL_CHAR),commC,cpuC)
     ELSE
 #endif
             ProfilerNewF%handle = ProfilerNewCSerA((TRIM(name) // C_NULL_CHAR), cpuC)
@@ -227,11 +250,12 @@ CONTAINS
     !! Should be called through type-bound interface \c start.
     SUBROUTINE ProfilerDestroyF(this)
         CLASS(Profiler), INTENT(in) :: this !< Profiler object
+        !write(*,*) "Explicit profiler destructor called"
         CALL ProfilerDestroyC(this%handle)
     END SUBROUTINE ProfilerDestroyF
     SUBROUTINE destructor(this)
         TYPE(Profiler), INTENT(in) :: this !< Profiler object
-        write(*,*) "Profiler destructor called"
+        !write(*,*) "Implicit profiler destructor called"
         CALL ProfilerDestroyC(this%handle)
     END SUBROUTINE destructor
 END MODULE ProfilerF
@@ -266,6 +290,7 @@ SUBROUTINE profiler_module_test(printlevel)
     call p%stop('subtask')
     if (printlevel > 0) CALL p%print(6)
     if (printlevel > 0) CALL p%print(6, cumulative = .FALSE.)
+    call p%destroy()
 #ifdef PROFILER_MEMORY
  IF (printlevel > 0) CALL time_memory(1000000*printlevel)
  if (printlevel > 9) PRINT *, 'done',memory_maximum_stack_used(),memory_used('STACK')
