@@ -40,6 +40,8 @@ MODULE ProfilerF
         PROCEDURE :: stop => ProfilerStopF !< End timing a code segment
         PROCEDURE :: active => ProfilerActiveF !< Set the maximum depth at which recording is done
         PROCEDURE :: print => ProfilerPrintF !< \public Print a representation of the object.
+        PROCEDURE :: destroy => ProfilerDestroyF !< \public Destroys stored profiler
+        FINAL :: destructor
     END TYPE Profiler
     INTERFACE Profiler
         MODULE PROCEDURE ProfilerNewF
@@ -104,6 +106,11 @@ MODULE ProfilerF
             CHARACTER(kind = c_char, len = 1), DIMENSION(*), INTENT(inout) :: result
             INTEGER (kind = c_int), INTENT(in), value :: maxResult, verbosity, cumulative, precision
         END SUBROUTINE ProfilerStrC
+        !> \private
+        SUBROUTINE ProfilerDestroyC(handle) BIND (C, name = 'profilerDestroy')
+            USE iso_c_binding
+            TYPE(c_ptr), INTENT(in), VALUE :: handle
+        END SUBROUTINE ProfilerDestroyC
 
     END INTERFACE
 
@@ -144,7 +151,7 @@ CONTAINS
      ProfilerNewF%handle = ProfilerNewCMPIB((TRIM(name)//C_NULL_CHAR),sortC,levelC,INT(comm,kind=c_int),cpuC)
     ELSE
 #endif
-            ProfilerNewF%handle = ProfilerNewCSerB((TRIM(name) // C_NULL_CHAR), sortC, levelC,cpuC)
+            ProfilerNewF%handle = ProfilerNewCSerB((TRIM(name) // C_NULL_CHAR), sortC, levelC, cpuC)
 #ifdef MOLPRO_PROFILER_MPI
     ENDIF
 #endif
@@ -154,7 +161,7 @@ CONTAINS
      ProfilerNewF%handle = ProfilerNewCMPIA((TRIM(name)//C_NULL_CHAR),INT(comm,kind=c_int),cpuC)
     ELSE
 #endif
-            ProfilerNewF%handle = ProfilerNewCSerA((TRIM(name) // C_NULL_CHAR),cpuC)
+            ProfilerNewF%handle = ProfilerNewCSerA((TRIM(name) // C_NULL_CHAR), cpuC)
 #ifdef MOLPRO_PROFILER_MPI
     ENDIF
 #endif
@@ -216,6 +223,17 @@ CONTAINS
         END DO
         WRITE (unit, '(65535A)') result(:MIN(length, SIZE(result)) - 1)
     END SUBROUTINE ProfilerPrintF
+    !> \public Begin timing a code segment.
+    !! Should be called through type-bound interface \c start.
+    SUBROUTINE ProfilerDestroyF(this)
+        CLASS(Profiler), INTENT(in) :: this !< Profiler object
+        CALL ProfilerDestroyC(this%handle)
+    END SUBROUTINE ProfilerDestroyF
+    SUBROUTINE destructor(this)
+        TYPE(Profiler), INTENT(in) :: this !< Profiler object
+        write(*,*) "Profiler destructor called"
+        CALL ProfilerDestroyC(this%handle)
+    END SUBROUTINE destructor
 END MODULE ProfilerF
 
 ! outside module to avoid false positives from private module elements

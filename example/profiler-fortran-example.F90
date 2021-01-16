@@ -36,6 +36,7 @@ PROGRAM mainf
     call p%stop('a', 100)
     call p%print(6)
     call p%print(6, cumulative = .false.)
+    call p%destroy()
 #ifdef HAVE_MPI_H
   call MPI_Finalize()
   !call MPI_FINALIZE(ierr)  
