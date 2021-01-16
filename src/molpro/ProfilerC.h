@@ -1,12 +1,13 @@
 #ifndef MOLPRO_PROFILERC_H
 #define MOLPRO_PROFILERC_H
 
+#include <cstdint>
 #ifdef __cplusplus
 extern "C" {
 #endif
 #ifdef MOLPRO_PROFILER_MPI
-void* profilerNewMPIA(char* name, int comm, int cpu);
-void* profilerNewMPIB(char* name, int sort, int level, int comm, int cpu);
+void* profilerNewMPIA(char* name, int64_t comm, int cpu);
+void* profilerNewMPIB(char* name, int sort, int level, int64_t comm, int cpu);
 #endif
 void* profilerNewSerialB(char* name, int sort, int level, int cpu);
 void* profilerNewSerialA(char* name, int cpu);

@@ -1,4 +1,7 @@
 PROGRAM mainf
+!call example()
+!contains
+!subroutine example()
     use profilerf
 #ifdef HAVE_MPI_H
   !include 'mpif.h'
@@ -39,7 +42,7 @@ PROGRAM mainf
     call p%destroy()
 #ifdef HAVE_MPI_H
   call MPI_Finalize()
-  !call MPI_FINALIZE(ierr)  
+  !call MPI_FINALIZE(ierr)
 #endif
-
+!end subroutine example
 END PROGRAM mainf
