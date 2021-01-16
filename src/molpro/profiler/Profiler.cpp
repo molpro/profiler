@@ -49,7 +49,7 @@ Profiler& Profiler::start(const std::string& name) {
   return *this;
 }
 
-Profiler& Profiler::stop() {
+Profiler& Profiler::stop(const std::string& name) { // TODO use name if given
   if (m_current_depth <= m_max_depth) {
     active_node->counter.stop();
     if (active_node->parent) {
