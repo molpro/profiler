@@ -45,12 +45,12 @@ std::array<SortBy, 5> sort_orders = {SortBy::wall, SortBy::cpu, SortBy::calls, S
 // C binding
 extern "C" {
 #ifdef MOLPRO_PROFILER_MPI
-void* profilerNewMPIA(char* name, int comm, int cpu) {
+void* profilerNewMPIA(char* name, int64_t comm, int cpu) {
   auto p = Profiler::single(std::string(name), true, cpu != 0);
-  register_prof({p, SortBy::wall});
+  register_prof({p, SortBy::wall, MPI_Comm_f2c(comm)});
   return p.get();
 }
-void* profilerNewMPIB(char* name, int sort, int level, int comm, int cpu) {
+void* profilerNewMPIB(char* name, int sort, int level, int64_t comm, int cpu) {
   auto sortBy = sort_orders[sort];
   auto p = Profiler::single(std::string(name), true, cpu != 0);
   if (level != -1)
@@ -67,7 +67,7 @@ void* profilerNewSerialA(char* name, int cpu) {
 void* profilerNewSerialB(char* name, int sort, int level, int cpu) {
   auto sortBy = sort_orders[sort];
   auto p = Profiler::single(std::string(name), true, cpu != 0);
-  if (level == -1)
+  if (level != -1)
     p->set_max_depth(level);
   register_prof({p, sortBy});
   return p.get();
@@ -96,7 +96,8 @@ char* profilerStr(void* profiler, int verbosity, int cumulative, int precision) 
   std::stringstream out;
 #ifdef MOLPRO_PROFILER_MPI
   if (prof_info.comm != MPI_COMM_NULL)
-    molpro::profiler::report(*obj, out, prof_info.comm, cumulative, prof_info.sort_by);
+    //molpro::profiler::report(*obj, out, prof_info.comm, cumulative, prof_info.sort_by);
+    molpro::profiler::report_root_process(*obj, out, prof_info.comm, 0, cumulative, prof_info.sort_by);
   else
     molpro::profiler::report(*obj, out, cumulative, prof_info.sort_by);
 #else
