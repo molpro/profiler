@@ -89,7 +89,7 @@ public:
   Profiler& start(const std::string& name);
 
   //! Stop the active node and traverse up to its parent
-  Profiler& stop();
+  Profiler& stop(const std::string& name="");
 
   //! Stop all nodes and traverse up to the root
   Profiler& stop_all();
