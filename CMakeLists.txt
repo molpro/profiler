@@ -5,7 +5,7 @@ include(FetchContent)
 FetchContent_Declare(
         LibraryManager
         GIT_REPOSITORY https://gitlab.com/molpro/librarymanager.git
-        GIT_TAG 0.6.9
+        GIT_TAG f98717ecb6eebce9bf91f203b6092aad0e11a06a
 )
 FetchContent_Declare(
         dependency_manager
