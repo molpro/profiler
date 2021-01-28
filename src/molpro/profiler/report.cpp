@@ -157,11 +157,11 @@ void write_report(const Node<Counter>& root, const std::string& description, con
   for (size_t i = 0; i < paths.size(); ++i, ++path_name, ++path) {
     out << *path_name;
     auto& counter = path->counter;
-    out << "    calls=" << counter.get_call_count() << "  ";
+    out << "    calls=" << counter.get_call_count();
     if (with_wall)
-      write_timing(out << "wall=", counter.get_wall().cumulative_time(), counter.get_operation_count());
+      write_timing(out << " wall=", counter.get_wall().cumulative_time(), counter.get_operation_count());
     if (with_cpu)
-      write_timing(out << "cpu=", counter.get_cpu().cumulative_time(), counter.get_operation_count());
+      write_timing(out << " cpu=", counter.get_cpu().cumulative_time(), counter.get_operation_count());
     out << std::endl;
   }
 }
