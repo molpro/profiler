@@ -38,6 +38,11 @@ struct WeakSingleton {
 
   //! Access the last registered object
   static std::shared_ptr<Object> single() {
+    if (m_register.empty() or not std::get<1>(m_register.back()).lock()) { // default zero-depth instance
+      auto saver = new std::shared_ptr<Profiler>; *saver = Profiler::single("default");
+      (*saver)->set_max_depth(0);
+      return *saver;
+    }
     assert(!m_register.empty() && "First must make a call to single(key, ...) to create an object");
     std::shared_ptr<Object> result = std::get<1>(m_register.back()).lock();
     assert(result && "The last registered object was deallocated");
