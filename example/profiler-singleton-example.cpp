@@ -28,6 +28,8 @@ int main(int argc, char *argv[]) {
   MPI_Init(&argc, &argv);
 #endif
   {
+    run();
+    std::cout << *Profiler::single();
     auto p1 = Profiler::single("Singleton Example: job 1");
     run();
     auto p2 = Profiler::single("Singleton Example: job 2");
