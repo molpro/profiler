@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <limits>
 
 namespace molpro {
 namespace profiler {
