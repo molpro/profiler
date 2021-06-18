@@ -262,6 +262,28 @@ void report_root_process(const Profiler& prof, std::ostream& out, MPI_Comm commu
     detail::write_report(*prof.root, prof.description(), paths, out, cumulative);
   }
 }
+
+void get_dotgraph(const Profiler& prof, MPI_Comm communicator, int root_process, int hot[3], int cool[3],
+                  std::string dotgraph){
+  int rank, n_loc, n_root;
+  MPI_Comm_rank(communicator, &rank);
+  n_loc = prof.root->count_nodes();
+  if (rank == 0)
+    n_root = n_loc;
+  MPI_Bcast(&n_root, 1, MPI_INT, 0, communicator);
+  if (n_root != n_loc)
+    MPI_Abort(communicator, 0); // Profiler trees are not compatible
+  auto root_sync = detail::synchronised_tree(prof.root, nullptr, communicator, root_process);
+  if (rank == root_process) {
+    dotgraph = dotgraph::make_dotgraph(prof.root, prof.root->counter.get_wall().cumulative_time(), hot, cool);
+  }
+}
+
+std::string get_dotgraph(const Profiler& prof, int hot[3], int cool[3]){
+  return dotgraph::make_dotgraph(prof.root, prof.root->counter.get_wall().cumulative_time(), hot, cool);
+}
+    
+
 #endif
 
 } // namespace profiler

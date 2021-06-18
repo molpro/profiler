@@ -4,8 +4,10 @@
 #include <molpro/profiler/Counter.h>
 #include <molpro/profiler/Node.h>
 #include <molpro/profiler/report.h>
+#include <molpro/profiler/dotgraph.h>
 
 #include <sstream>
+#include <string>
 
 using molpro::profiler::Counter;
 using molpro::profiler::Node;
@@ -194,6 +196,25 @@ TEST_F(TreePath_Fixture, report__from_node) {
   std::stringstream out2;
   report(prof.root, prof.description(), out2);
   ASSERT_EQ(out2.str(), out.str());
+}
+
+TEST_F(TreePath_Fixture, output_dot){
+
+  const bool with_wall = true, with_cpu = false;
+  auto root = Node<Counter>::make_root("All", Counter(1, 0, 10, 0, with_wall, with_cpu));
+  auto a = Node<Counter>::add_child("A", Counter(1, 0, 6, 0, with_wall, with_cpu), root);
+  auto b = Node<Counter>::add_child("B", Counter(2, 0, 4, 0, with_wall, with_cpu), root);
+  auto aa = Node<Counter>::add_child("AA", Counter(4, 0, 5, 0, with_wall, with_cpu), a);
+  auto ab = Node<Counter>::add_child("AB", Counter(4, 0, 1, 0, with_wall, with_cpu), a);
+  auto ba = Node<Counter>::add_child("BA", Counter(1, 0, 1, 0, with_wall, with_cpu), b);
+  auto bb = Node<Counter>::add_child("BB", Counter(2, 0, 3, 0, with_wall, with_cpu), b);
+  //auto tree_paths = TreePath::convert_tree_to_paths(root, true, SortBy::operations);
+  int hot[3] = {255,0,0};
+  int cool[3] = {0,0,255};
+  molpro::profiler::dotgraph::blend_colours(0.3, hot, cool);
+  molpro::profiler::dotgraph::make_dotgraph(root, 10.0, hot, cool);
+  std::string dotgraph = get_dotgraph(prof, hot, cool);
+  // TODO: currently there is no way to validate this dotgraph without introducing an external dependency on dot
 }
 
 TEST(report_detail, format_paths__cumulative) {
