@@ -59,9 +59,9 @@ void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool
 void report_root_process(const Profiler& prof, std::ostream& out, MPI_Comm communicator, int root_process,
                          bool cumulative = true, SortBy sort_by = SortBy::wall);
 void get_dotgraph(const Profiler& prof, MPI_Comm communicator, int root_process, int hot[3], int cool[3],
-                  std::string dotgraph);
+                  double threshold, std::string dotgraph);
 #endif
-std::string get_dotgraph(const Profiler& prof, int hot[3], int cool[3]);
+std::string get_dotgraph(const Profiler& prof, int hot[3], int cool[3], double threshold);
 
 namespace detail {
 //! Utility for storing a node as a path from root to that node and corresponding Counter

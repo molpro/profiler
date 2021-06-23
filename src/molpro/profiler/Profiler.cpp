@@ -97,11 +97,30 @@ std::string Profiler::str(bool cumulative, SortBy sort_by) const {
   return out.str();
 }
 
+std::string Profiler::dotgraph(std::string path, int hot[3], int cool[3], double threshold = 0){
+  std::ofstream outfile(path);
+  std::string dotgraph;
+  dotgraph = get_dotgraph(*this, hot, cool, threshold);
+  outfile << dotgraph;
+  outfile.close();
+  return dotgraph;
+}
+
 #ifdef MOLPRO_PROFILER_MPI
 std::string Profiler::str(MPI_Comm communicator, bool cumulative, SortBy sort_by) const {
   std::stringstream out;
   report(*this, out, communicator, cumulative, sort_by);
   return out.str();
+}
+
+std::string Profiler::dotgraph(std::string path, MPI_Comm communicator, int root_process, int hot[3], int cool[3],
+                                double threshold = 0){
+  std::string dotgraph;
+  std::ofstream outfile(path);
+  get_dotgraph(*this, communicator, root_process, hot, cool, threshold, dotgraph);
+  outfile << dotgraph;
+  outfile.close();
+  return dotgraph;
 }
 #endif
 

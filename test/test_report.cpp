@@ -211,9 +211,12 @@ TEST_F(TreePath_Fixture, output_dot){
   //auto tree_paths = TreePath::convert_tree_to_paths(root, true, SortBy::operations);
   int hot[3] = {255,0,0};
   int cool[3] = {0,0,255};
-  molpro::profiler::dotgraph::blend_colours(0.3, hot, cool);
-  molpro::profiler::dotgraph::make_dotgraph(root, 10.0, hot, cool);
-  std::string dotgraph = get_dotgraph(prof, hot, cool);
+  for (double i = 0; i<0.1; i+=0.001){
+    std::cout << molpro::profiler::dotgraph::blend_colours(i, hot, cool) << "\n";
+  }
+  molpro::profiler::dotgraph::make_dotgraph(root, 10.0, hot, cool, 0.000);
+  std::string dotgraph = get_dotgraph(prof, hot, cool, 0.00001);
+  std::cout << dotgraph;
   // TODO: currently there is no way to validate this dotgraph without introducing an external dependency on dot
 }
 

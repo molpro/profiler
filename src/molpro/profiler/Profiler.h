@@ -9,6 +9,7 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <fstream>
 
 namespace molpro {
 namespace profiler {
@@ -147,9 +148,13 @@ public:
   //! @param cumulative whether to use cumulative times or subtract the time spend by children
   std::string str(bool cumulative = true, profiler::SortBy sort_by = profiler::SortBy::wall) const;
 
+  std::string dotgraph(std::string path, int hot[3], int cool[3], double threshold);
+
 #ifdef MOLPRO_PROFILER_MPI
   std::string str(MPI_Comm communicator, bool cumulative = true,
                   profiler::SortBy sort_by = profiler::SortBy::wall) const;
+  std::string dotgraph(std::string path, MPI_Comm communicator, int root_process, int hot[3], int cool[3],
+                      double threshold);
 #endif
 
   friend std::ostream& operator<<(std::ostream& os, const Profiler& obj);
