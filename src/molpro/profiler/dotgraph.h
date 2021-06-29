@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <iomanip>
+#include <cmath>
 
 #include <molpro/profiler/Counter.h>
 #include <molpro/profiler/Node.h>

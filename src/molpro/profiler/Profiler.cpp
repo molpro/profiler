@@ -56,6 +56,8 @@ Profiler& Profiler::stop(const std::string& name) { // TODO use name if given
     if (active_node->parent) {
       active_node = active_node->parent;
       --m_current_depth;
+    } else{
+      throw std::runtime_error("stop() has been called while the profiler is at the root node.");
     }
   } else
     --m_current_depth;
@@ -65,7 +67,7 @@ Profiler& Profiler::stop(const std::string& name) { // TODO use name if given
 Profiler& Profiler::stop_all() {
   while (active_node != root)
     stop();
-  stop();
+  //stop(); // Why was this here?
   return *this;
 }
 
@@ -97,7 +99,9 @@ std::string Profiler::str(bool cumulative, SortBy sort_by) const {
   return out.str();
 }
 
-std::string Profiler::dotgraph(std::string path, int hot[3], int cool[3], double threshold = 0){
+std::string Profiler::dotgraph(std::string path, double threshold, bool cumulative,
+                                int hot[3], int cool[3],
+                                std::vector<std::pair<double,double>> heat_adjust){
   std::ofstream outfile(path);
   std::string dotgraph;
   dotgraph = get_dotgraph(*this, hot, cool, threshold);
@@ -113,8 +117,9 @@ std::string Profiler::str(MPI_Comm communicator, bool cumulative, SortBy sort_by
   return out.str();
 }
 
-std::string Profiler::dotgraph(std::string path, MPI_Comm communicator, int root_process, int hot[3], int cool[3],
-                                double threshold = 0){
+std::string Profiler::dotgraph(std::string path, MPI_Comm communicator, int root_process, double threshold,
+                                int hot[3], int cool[3], bool cumulative,
+                                std::vector<std::pair<double,double>> heat_adjust){
   std::string dotgraph;
   std::ofstream outfile(path);
   get_dotgraph(*this, communicator, root_process, hot, cool, threshold, dotgraph);
@@ -132,6 +137,18 @@ Profiler& Profiler::reset(const std::string& name) {
   auto temp = Profiler(name, !root->counter.get_wall().dummy(), !root->counter.get_cpu().dummy());
   using std::swap;
   swap(*this, temp);
+  return *this;
+}
+
+Profiler& Profiler::validate(){
+  if (this->m_current_depth > 0){
+    throw std::runtime_error("Error validating profiler: profiler is not at root node. This means that there have been"
+    " more calls to start() than stop() and the profiler results are probably not valid.");
+  }
+  if (this->m_current_depth < 0){
+    throw std::runtime_error("Error validating proflier: profiler depth is <0. This means that stop() has been"
+    " called more than start() and the profiler results are probably not valid.");
+  }
   return *this;
 }
 

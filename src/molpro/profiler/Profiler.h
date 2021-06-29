@@ -10,9 +10,15 @@
 #include <ostream>
 #include <string>
 #include <fstream>
+#include <vector>
+#include <stdexcept>
 
 namespace molpro {
 namespace profiler {
+
+static int hot_default[3] = {255,0,0};
+static int cool_default[3] = {0,0,255};
+static std::vector<std::pair<double,double>> default_heat_adjust = {{-1.,-1.}};
 
 class Counter;
 template <class CounterT>
@@ -103,6 +109,12 @@ public:
   Profiler& reset(const std::string& name);
 
   /*!
+  * \brief This checks the m_current_depth and throw an exception if it !=0 as this means that the have not been
+  * the same number of calls to start() and stop(), and the profiler results are likely wrong.
+  */
+  Profiler& validate();
+
+  /*!
    * \brief Advance the counter holding the notional number of operations executed in the code segment.
    * \param operations The number of additional operations.
    */
@@ -148,13 +160,16 @@ public:
   //! @param cumulative whether to use cumulative times or subtract the time spend by children
   std::string str(bool cumulative = true, profiler::SortBy sort_by = profiler::SortBy::wall) const;
 
-  std::string dotgraph(std::string path, int hot[3], int cool[3], double threshold);
+  std::string dotgraph(std::string path, double threshold = 0.01, bool cumulative=true, int hot[3] = hot_default,
+                      int cool[3] = cool_default,
+                      std::vector<std::pair<double,double>> heat_adjust = default_heat_adjust);
 
 #ifdef MOLPRO_PROFILER_MPI
   std::string str(MPI_Comm communicator, bool cumulative = true,
                   profiler::SortBy sort_by = profiler::SortBy::wall) const;
-  std::string dotgraph(std::string path, MPI_Comm communicator, int root_process, int hot[3], int cool[3],
-                      double threshold);
+  std::string dotgraph(std::string path, MPI_Comm communicator, int root_process, double threshold = 0.01,
+                      int hot[3] = hot_default, int cool[3] = cool_default, bool cumulative=true,
+                      std::vector<std::pair<double,double>> heat_adjust = default_heat_adjust);
 #endif
 
   friend std::ostream& operator<<(std::ostream& os, const Profiler& obj);
