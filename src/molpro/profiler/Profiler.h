@@ -109,12 +109,6 @@ public:
   Profiler& reset(const std::string& name);
 
   /*!
-  * \brief This checks the m_current_depth and throw an exception if it !=0 as this means that the have not been
-  * the same number of calls to start() and stop(), and the profiler results are likely wrong.
-  */
-  Profiler& validate();
-
-  /*!
    * \brief Advance the counter holding the notional number of operations executed in the code segment.
    * \param operations The number of additional operations.
    */

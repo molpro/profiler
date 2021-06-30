@@ -56,8 +56,6 @@ Profiler& Profiler::stop(const std::string& name) { // TODO use name if given
     if (active_node->parent) {
       active_node = active_node->parent;
       --m_current_depth;
-    } else{
-      throw std::runtime_error("stop() has been called while the profiler is at the root node.");
     }
   } else
     --m_current_depth;
@@ -67,7 +65,7 @@ Profiler& Profiler::stop(const std::string& name) { // TODO use name if given
 Profiler& Profiler::stop_all() {
   while (active_node != root)
     stop();
-  //stop(); // Why was this here?
+  stop();
   return *this;
 }
 
@@ -137,18 +135,6 @@ Profiler& Profiler::reset(const std::string& name) {
   auto temp = Profiler(name, !root->counter.get_wall().dummy(), !root->counter.get_cpu().dummy());
   using std::swap;
   swap(*this, temp);
-  return *this;
-}
-
-Profiler& Profiler::validate(){
-  if (this->m_current_depth > 0){
-    throw std::runtime_error("Error validating profiler: profiler is not at root node. This means that there have been"
-    " more calls to start() than stop() and the profiler results are probably not valid.");
-  }
-  if (this->m_current_depth < 0){
-    throw std::runtime_error("Error validating proflier: profiler depth is <0. This means that stop() has been"
-    " called more than start() and the profiler results are probably not valid.");
-  }
   return *this;
 }
 
