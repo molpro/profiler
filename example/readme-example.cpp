@@ -30,6 +30,7 @@ int main() {
   prof.start("perform_calculation()");
   sleep();
   for (size_t i = 0; i < 2; ++i) {
+    auto ps = prof.push("operations");
     {
       auto p = prof.push("operation1()");
       operation1();
@@ -42,5 +43,7 @@ int main() {
   prof.stop();
   std::cout << prof << std::endl;
   std::cout << prof.str(false) << std::endl;
+  prof.dotgraph("readme-example.gv");
+  prof.dotgraph("readme-example.cumulative.gv",0.01, true);
   return 0;
 }
