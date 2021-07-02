@@ -69,6 +69,28 @@ std::string format_path_not_cumulative(const std::list<std::string>& path) {
   return result;
 }
 
+template <class CompareTreePaths>
+std::map<TreePath, std::shared_ptr<Node<Counter>>, CompareTreePaths> sort_children(
+  const std::shared_ptr<Node<Counter>>& root, bool cumulative) {
+  auto children = std::map<TreePath, std::shared_ptr<Node<Counter>>, CompareTreePaths>{};
+  for (auto it_child = root->children.rbegin(); it_child != root->children.rend(); ++it_child){
+    children.emplace(TreePath(it_child->second, cumulative), it_child->second);
+  }
+  return children;
+}
+
+// explicit instantiation of sort_children
+template std::map<TreePath, std::shared_ptr<Node<Counter>>, Compare<AccessWall>>
+  sort_children<Compare<AccessWall>>(const std::shared_ptr<Node<Counter>>& root, bool cumulative);
+template std::map<TreePath, std::shared_ptr<Node<Counter>>, Compare<AccessCPU>>
+  sort_children<Compare<AccessCPU>>(const std::shared_ptr<Node<Counter>>& root, bool cumulative);
+template std::map<TreePath, std::shared_ptr<Node<Counter>>, Compare<AccessCalls>>
+  sort_children<Compare<AccessCalls>>(const std::shared_ptr<Node<Counter>>& root, bool cumulative);
+template std::map<TreePath, std::shared_ptr<Node<Counter>>, Compare<AccessOperations>>
+  sort_children<Compare<AccessOperations>>(const std::shared_ptr<Node<Counter>>& root, bool cumulative);
+template std::map<TreePath, std::shared_ptr<Node<Counter>>, Compare<None>>
+  sort_children<Compare<None>>(const std::shared_ptr<Node<Counter>>& root, bool cumulative);
+
 std::list<TreePath> TreePath::convert_tree_to_paths(const std::shared_ptr<Node<Counter>>& root, bool cumulative,
                                                     SortBy sort_by) {
   auto path = TreePath(root, cumulative);
@@ -80,7 +102,10 @@ std::list<TreePath> TreePath::convert_tree_to_paths(const std::shared_ptr<Node<C
     return TreePath::convert_tree_to_paths<Compare<AccessCalls>>(root, path, cumulative);
   } else if (sort_by == SortBy::operations) {
     return TreePath::convert_tree_to_paths<Compare<AccessOperations>>(root, path, cumulative);
-  } else {
+  } else if (sort_by == SortBy::none) {
+    return TreePath::convert_tree_to_paths<Compare<None>>(root, path, cumulative);
+  }
+   else {
     assert(false);
   }
   return std::list<TreePath>();
@@ -91,10 +116,7 @@ std::list<TreePath> TreePath::convert_tree_to_paths(const std::shared_ptr<Node<C
                                                     bool cumulative) {
   auto paths = std::list<TreePath>{};
   paths.emplace_back(std::move(path));
-  auto children = std::map<TreePath, std::shared_ptr<Node<Counter>>, CompareTreePaths>{};
-  // iterate in reverse to preserve ordering of equivalent nodes
-  for (auto it_child = root->children.rbegin(); it_child != root->children.rend(); ++it_child)
-    children.emplace(TreePath(it_child->second, cumulative), it_child->second);
+  auto children = sort_children<CompareTreePaths>(root, cumulative);
   for (const auto& child : children) {
     auto child_paths = convert_tree_to_paths<CompareTreePaths>(child.second, std::move(child.first), cumulative);
     paths.splice(paths.end(), child_paths, child_paths.begin(), child_paths.end());

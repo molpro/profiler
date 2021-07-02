@@ -18,7 +18,7 @@ namespace profiler {
 
 static int hot_default[3] = {255,0,0};
 static int cool_default[3] = {0,0,255};
-static std::vector<std::pair<double,double>> default_heat_adjust = {{-1.,-1.}};
+static std::vector<std::pair<double,double>> default_heat_adjust = {{}};
 
 class Counter;
 template <class CounterT>
@@ -154,15 +154,51 @@ public:
   //! @param cumulative whether to use cumulative times or subtract the time spend by children
   std::string str(bool cumulative = true, profiler::SortBy sort_by = profiler::SortBy::wall) const;
 
+  /*!
+   * @brief Get a graphviz .dot markup file for a profile.
+   * @param path path to the file to be written to disk. This should be an absolute path, as the working directory
+   * may be a temporary folder.
+   * @param threshold - ratio of the time spent in one node to the whole runtime. If the time spent in that node is
+   * less that the threshold, the node is hidden.
+   * @param hot the RGB values (0-255) of the 'hot' colour (a ratio of 1 will produce the hot colour, 0 the cool)
+   * @param cool the RGB values (0-255) of the 'cool' colour.
+   * @param cumulative whether to print the cumulative time, or to subtract the time spent in the children from a node's
+   * timings.
+   * @param sort_by whether to sort by wall clock time, calls, frequency, etc. Currently unused!
+   * @param heat_adjust currently unused, will eventually be used to establish non-linear mappings between ratio and
+   * colour.
+   * @return a string containing the dotgraph. Using this string is optional as the dotgraph is already written to path.
+   */
+  template <class AccessParameter>
   std::string dotgraph(std::string path, double threshold = 0.01, bool cumulative=true, int hot[3] = hot_default,
-                      int cool[3] = cool_default,
+                      int cool[3] = cool_default, SortBy sort_by = profiler::SortBy::wall,
                       std::vector<std::pair<double,double>> heat_adjust = default_heat_adjust);
 
 #ifdef MOLPRO_PROFILER_MPI
   std::string str(MPI_Comm communicator, bool cumulative = true,
                   profiler::SortBy sort_by = profiler::SortBy::wall) const;
+
+  /*!
+   * @brief Get a graphviz .dot markup file for a profile.
+   * @param path path to the file to be written to disk. This should be an absolute path, as the working directory
+   * may be a temporary folder.
+   * @param communicator instance of MPI_Comm
+   * @param root_process - determines whether reduce_root_only or reduce_all is run when synchronising the tree.
+   * @param threshold - ratio of the time spent in one node to the whole runtime. If the time spent in that node is
+   * less that the threshold, the node is hidden.
+   * @param hot the RGB values (0-255) of the 'hot' colour (a ratio of 1 will produce the hot colour, 0 the cool)
+   * @param cool the RGB values (0-255) of the 'cool' colour.
+   * @param cumulative whether to print the cumulative time, or to subtract the time spent in the children from a node's
+   * timings.
+   * @param sort_by whether to sort by wall clock time, calls, frequency, etc. Currently unused!
+   * @param heat_adjust currently unused, will eventually be used to establish non-linear mappings between ratio and
+   * colour.
+   * @return a string containing the dotgraph. Using this string is optional as the dotgraph is already written to path.
+   */
+  template <class AccessParameter>
   std::string dotgraph(std::string path, MPI_Comm communicator, int root_process, double threshold = 0.01,
                       int hot[3] = hot_default, int cool[3] = cool_default, bool cumulative=true,
+                      SortBy sort_by = profiler::SortBy::none,
                       std::vector<std::pair<double,double>> heat_adjust = default_heat_adjust);
 #endif
 

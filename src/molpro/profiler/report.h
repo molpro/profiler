@@ -129,6 +129,10 @@ struct AccessCalls {
 struct AccessOperations {
   double operator()(const TreePath& t) { return t.counter.get_operation_count(); }
 };
+struct None {
+  double operator()(const TreePath& t) { return 0; }
+  double operator()() {return 0;}
+};
 
 /*!
  * @brief convert path to a formatted string
@@ -156,6 +160,16 @@ inline std::string format_single_path(const std::list<std::string>& path, bool c
   else
     return format_path_not_cumulative(path);
 }
+
+/*!
+ * @brief Sorts the children of a node
+ *
+ * @param root the node in the graph to be sorted. Will only sort that node's children.
+ * @param cumulative whether to sort cumulatively or not.
+ */
+template <class CompareTreePaths>
+std::map<TreePath, std::shared_ptr<Node<Counter>>, CompareTreePaths> sort_children(
+  const std::shared_ptr<Node<Counter>>& root, bool cumulative);
 
 /*!
  * @brief Format paths for output
