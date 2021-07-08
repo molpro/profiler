@@ -1,23 +1,13 @@
+// todo:
+// why is frequency printing broken?
+
 #include "dotgraph.h"
 
 namespace molpro {
 namespace profiler {
 namespace dotgraph {
 
-
-// todo: move this to report.cpp and tidy up write_timing (of which this is one part)
-std::string frequency(size_t n_op, double time){
-  std::stringstream ss;
-  const std::string prefixes{"yzafpnum kMGTPEZY"};
-  const int prefix_base = prefixes.find(" ");
-  auto rate = double(n_op) / time;
-  int prefix_rate = std::min(prefixes.size() - 1, size_t(std::max(0.0, (std::log10(rate) / 3) + prefix_base)));
-  ss << " (" << rate / std::pow(1e3, (prefix_rate - prefix_base)) << " ";
-  if (prefix_rate != prefix_base)
-    ss << prefixes[prefix_rate];
-  ss << "Hz)";
-  return ss.str();
-}
+// functions to do with creatinng graphviz output
 
 std::string blend_colours(double ratio, int hot_colour[3], int cool_colour[3]){
   std::stringstream ss;
@@ -39,7 +29,7 @@ std::string make_box(std::string name, double time, double total_time, size_t ca
   ss << "\"" << name << "\"" << " [" << "color=\"" << blend_colours(time/total_time, hot, cool) <<
   "\", fontcolor=\"#ffffff\", label=\"" << name << "\\n" << (time/total_time)*100 << "%\\n" << call_count << "x";
   if (opcount > 0){
-    ss << "\\n" << frequency(opcount, time) << "";
+    ss << "\\n" << molpro::profiler::detail::frequency(opcount, time) << "";
   }
   ss << "\"];\n";
   return ss.str();
@@ -54,6 +44,24 @@ std::string make_arrow(std::string name_from, std::string name_to, double time, 
   return ss.str();
 }
 
+std::string get_graph_markup(std::vector<GraphEntry>& graph_entries, double total_time, int hot[3],
+                              int cool[3]){
+  std::stringstream ss;
+  for(int i = 0; i<graph_entries.size(); i++) {
+    if (graph_entries[i].entry_type == node){
+      ss << make_box(graph_entries[i].name, graph_entries[i].runtime, total_time, graph_entries[i].calls,
+                graph_entries[i].operations, hot, cool);
+    }
+    if (graph_entries[i].entry_type == edge){
+      ss << make_arrow(graph_entries[i].name, graph_entries[i].name_to, graph_entries[i].runtime, total_time,
+                        graph_entries[i].calls, hot, cool);
+    }
+  }
+  return ss.str();
+}
+
+// funtions that operate on GraphEntries or collections
+
 void combine_graph_entries(GraphEntry& entry1, GraphEntry& entry2){
   if (entry1.entry_type != entry2.entry_type){
     throw std::runtime_error("Cannot combine node and edge");
@@ -63,7 +71,7 @@ void combine_graph_entries(GraphEntry& entry1, GraphEntry& entry2){
   entry2.operations += entry1.operations;
 }
 
-void make_dotgraph_vec(std::shared_ptr<Node<Counter>> root, double total_time, double threshold,
+void make_dotgraph_vec(std::shared_ptr<Node<Counter>> root, double total_time,
                 /*out*/ std::vector<GraphEntry>& graph_entries){
   // get values
   auto opcount = root->counter.get_operation_count();
@@ -78,7 +86,7 @@ void make_dotgraph_vec(std::shared_ptr<Node<Counter>> root, double total_time, d
       graph_entries.emplace_back(GraphEntry(edge, root->name, child_time, child_call_count, total_time, -1,
                                   child_node->name));
       // recurse into children
-      make_dotgraph_vec(child_node, total_time, threshold, graph_entries);
+      make_dotgraph_vec(child_node, total_time, graph_entries);
   }
 }
 
@@ -89,9 +97,6 @@ void merge_vec(std::vector<GraphEntry>& graph_entries){
     bool name_in_names = false;
     for (int j = 0; j != names.size(); j++){
       if (graph_entries[i].name == names[j].first && graph_entries[i].entry_type == node){
-        //std::cout << "(entry type " << graph_entries[i].entry_type << ") ";
-        //std::cout << "merging " << graph_entries[i].entry_type << " " << graph_entries[i].name << " at " << i;
-        //std::cout << " with " << graph_entries[names[j].second].entry_type << " " << graph_entries[names[j].second].name << " at " << names[j].second << "\n";
         // combine vectors
         combine_graph_entries(graph_entries[i], graph_entries[names[j].second]);
         graph_entries.erase(graph_entries.begin() + i);
@@ -108,21 +113,42 @@ void merge_vec(std::vector<GraphEntry>& graph_entries){
   }
 }
 
-std::string get_graph_markup(std::vector<GraphEntry>& graph_entries, double total_time, double threshold, int hot[3],
-                              int cool[3]){
-  std::stringstream ss;
-  for(int i = 0; i<graph_entries.size(); i++) {
-    if (graph_entries[i].entry_type == node && graph_entries[i].runtime/total_time > threshold){
-      ss << make_box(graph_entries[i].name, graph_entries[i].runtime, total_time, graph_entries[i].calls,
-                graph_entries[i].operations, hot, cool);
-    }
-    if (graph_entries[i].entry_type == edge && graph_entries[i].runtime/total_time > threshold){
-      ss << make_arrow(graph_entries[i].name, graph_entries[i].name_to, graph_entries[i].runtime, total_time,
-                        graph_entries[i].calls, hot, cool);
+void apply_threshold(std::vector<GraphEntry>& graph_entries, double threshold, double total_time){
+  int size = graph_entries.size();
+  for (int i = 0; i<size; i++){
+    double time_ratio = graph_entries[i].runtime/total_time;
+    if (time_ratio < threshold){
+        graph_entries.erase(graph_entries.begin() + i);
+        --i;
+        size = graph_entries.size();
     }
   }
-  return ss.str();
 }
+
+bool has_parent(GraphEntry& child, std::vector<GraphEntry>& graph_entries){
+  std::string parent = child.name;
+  bool has_parent = false;
+  for (int i = 0; i<graph_entries.size(); i++){
+    if (graph_entries[i].entry_type == edge && graph_entries[i].name_to == parent){
+      has_parent = true;
+      break;
+    }
+  }
+  return has_parent;
+}
+
+void destroy_orphans(std::vector<GraphEntry>& graph_entries){
+  int size = graph_entries.size();
+  for (int i = 0; i<size; i++){
+    if (!has_parent(graph_entries[i], graph_entries) && graph_entries[i].name != "All"){
+        graph_entries.erase(graph_entries.begin() + i);
+        --i;
+        size = graph_entries.size();
+    }
+  }
+}
+
+// constructur
 
 GraphEntry::GraphEntry(EntryType entry_type, std::string name, double runtime, int calls,
             double total_time, int operations, std::string name_to) 
@@ -130,25 +156,16 @@ GraphEntry::GraphEntry(EntryType entry_type, std::string name, double runtime, i
             operations(operations)
 { }
 
-// TODO: either incorporate this or remove it
-//std::pair<std::string, std::string> GraphEntry::get_colours(int hot[3], int cool[3], double total_time){
-//  std::string colour = blend_colours(this->runtime/total_time, hot, cool);
-//  std::string fontcolour;
-//  if (this->entry_type == node){
-//      fontcolour = "#ffffff";
-//  } else {
-//      fontcolour = colour;
-//  }
-//  return std::make_pair(colour, fontcolour);
-//}
+// this does everything
 
 std::string make_dotgraph(std::shared_ptr<Node<Counter>> root, double total_time, int hot[3], int cool[3],
                             double threshold){
   std::vector<GraphEntry> graph_entries;
-  make_dotgraph_vec(root, total_time, threshold, graph_entries);
-  merge_vec(graph_entries);
-  std::string graph_contents = get_graph_markup(graph_entries, total_time, threshold, hot, cool);
-  
+  make_dotgraph_vec(root, total_time, graph_entries); // create data structure
+  merge_vec(graph_entries); // merge together calls to the same function with different parents
+  apply_threshold(graph_entries, threshold, total_time); // cull nodes that run for less than the threshold ratio
+  destroy_orphans(graph_entries); // cull any node with no parents
+  std::string graph_contents = get_graph_markup(graph_entries, total_time, hot, cool);
   std::stringstream ss;
   // write header info
   ss << "digraph {\n\n";
@@ -160,8 +177,6 @@ std::string make_dotgraph(std::shared_ptr<Node<Counter>> root, double total_time
   ss << "\n}";
   return ss.str();
 }
-
-
 
 } // namespace dotgraph
 } // namespace profiler

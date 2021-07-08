@@ -182,6 +182,14 @@ std::map<TreePath, std::shared_ptr<Node<Counter>>, CompareTreePaths> sort_childr
  */
 void format_paths(std::list<std::string>& path_names, bool append);
 
+  /*!
+   * @brief Get the frequency of an operation as a string with units of Hz.
+   * @param n_op the number of operations as counted by the profiler (e.g counter.get_call_count())
+   * @param time time taken in seconds.
+   * @return the frequency, as a std::string, with units of Hz.
+   */
+std::string frequency(size_t n_op, double time);
+
 void write_timing(std::ostream& out, double time, size_t n_op);
 
 //! Writes the report to an output stream

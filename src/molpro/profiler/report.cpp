@@ -142,6 +142,19 @@ void format_paths(std::list<std::string>& path_names, bool append) {
   }
 }
 
+std::string frequency(size_t n_op, double time){
+  std::stringstream ss;
+  const std::string prefixes{"yzafpnum kMGTPEZY"};
+  const int prefix_base = prefixes.find(" ");
+  auto rate = double(n_op) / time;
+  int prefix_rate = std::min(prefixes.size() - 1, size_t(std::max(0.0, (std::log10(rate) / 3) + prefix_base)));
+  ss << " (" << rate / std::pow(1e3, (prefix_rate - prefix_base)) << " ";
+  if (prefix_rate != prefix_base)
+    ss << prefixes[prefix_rate];
+  ss << "Hz)";
+  return ss.str();
+}
+
 void write_timing(std::ostream& out, double time, size_t n_op) {
   const std::string prefixes{"yzafpnum kMGTPEZY"};
   const int prefix_base = prefixes.find(" ");
@@ -153,12 +166,7 @@ void write_timing(std::ostream& out, double time, size_t n_op) {
     out << prefixes[prefix_time];
   out << "s";
   if (n_op and time > 0) {
-    auto rate = double(n_op) / time;
-    int prefix_rate = std::min(prefixes.size() - 1, size_t(std::max(0.0, (std::log10(rate) / 3) + prefix_base)));
-    out << " (" << rate / std::pow(1e3, (prefix_rate - prefix_base)) << " ";
-    if (prefix_rate != prefix_base)
-      out << prefixes[prefix_rate];
-    out << "Hz)";
+    out << frequency(n_op, time);
   }
 }
 

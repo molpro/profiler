@@ -39,14 +39,6 @@ class GraphEntry{
 // in profiler::dotgraph.
 
   /*!
-   * @brief Get the frequency of an operation as a string with units of Hz.
-   * @param n_op the number of operations as counted by the profiler (e.g counter.get_call_count())
-   * @param time time taken in seconds.
-   * @return the frequency, as a std::string, with units of Hz.
-   */
-std::string frequency(size_t n_op, double time);
-
-  /*!
    * @brief Simple additive blending of two colours. May be reduced with nicer colour blending in the future.
    * @param ratio ratio of the colours. A double between 0 and 1. 1 is hot, 0 is cool.
    * @param hot_colour an 8-bit colour, 0-255.
@@ -83,11 +75,57 @@ std::string make_box(std::string name, double time, double total_time, size_t ca
 std::string make_arrow(std::string name_from, std::string name_to, double time, double total_time, size_t call_count,
                         int hot[3], int cool[3]);
 
-// TODO: write docs for these functions
+  /*!
+   * @brief Combines two graph entries, summing their time, calls and opcount.
+   * @param entry1 the graph entry that entry2 will be merged into.
+   * @param entry2 the graph entry that will be merged into entry1.
+   * @return nothing, modifies entry1. If you use this function, erase entry2 afterward.
+   */
 void combine_graph_entries(GraphEntry& entry1, GraphEntry& entry2);
+
+  /*!
+   * @brief Iterates through the list of GraphEntries and merges any two nodes with the same name.
+   * The implementation is a little complex, it removes elements from the vector as it goes and has to update the
+   * iterators to correct for entries being deleted.
+   * @param graph_entries a vector filled with GraphEntry objects, normally found in make_dotgraph_vec
+   * @return nothing, modifies graph_entries.
+   */
 void merge_vec(std::vector<GraphEntry>& graph_entries);
-std::string get_graph_markup(std::vector<GraphEntry>& graph_entries, double total_time, double threshold, int hot[3],
-                              int cool[3]);
+
+  /*!
+   * @brief This removes any enntry from graph_entries with a runtime/total_time less than threshold.
+   * @param graph_entries a vector filled with GraphEntry objects.
+   * @param threshold the threshold below which the entry will be deleted (as a ratio)
+   * @param total_time total runntime of the profile.
+   * @return nothing, but modifies graph_entries.
+   */
+void apply_threshold(std::vector<GraphEntry>& graph_entries, double threshold, double total_time);
+
+  /*!
+   * @brief Determines if a node has a parent.
+   * @param child - a single graph_entry
+   * @param graph_entries a vector filled with GraphEntry objects.
+   * @return true if child has a parent in graph_entries, false if it does not.
+   */
+bool has_parent(GraphEntry& child, std::vector<GraphEntry>& graph_entries);
+
+  /*!
+   * @brief Removes every element from graph_entries that does not have an edge pointing towards it (unless it's the
+   * root node).
+   * @param graph_entries a vector filled with GraphEntry objects, normally found in make_dotgraph_vec
+   * @return nothing, modifies graph_entries.
+   */
+void destroy_orphans(std::vector<GraphEntry>& graph_entries);
+
+  /*!
+   * @brief This gets the graphviz markup for the main part of the graph (excepting global styles).
+   * @param graph_entries a vector filled with GraphEntry objects.
+   * @param total_time the total time taken by the program, in seconds.
+   * @param hot an 8-bit colour, 0-255. The more time spent in this node, the hotter the colour will be.
+   * @param cool an 8-bit colour, 0-255.
+   * @return a string containing graphviz markup for nodes and edges.
+   */
+std::string get_graph_markup(std::vector<GraphEntry>& graph_entries, double total_time, int hot[3], int cool[3]);
 
   /*!
    * @brief This populates a vector containing a GraphEntry for each profiler node. This is an intermediate data
@@ -99,7 +137,7 @@ std::string get_graph_markup(std::vector<GraphEntry>& graph_entries, double tota
    * @param graph_entries a vector (most likely empty) that will be filled with GraphEntry objects.
    * @return nothing, but populates graph_entries.
    */
-void make_dotgraph_vec(std::shared_ptr<Node<Counter>> root, double total_time, double threshold,
+void make_dotgraph_vec(std::shared_ptr<Node<Counter>> root, double total_time,
                 /*out*/ std::vector<GraphEntry>& graph_entries);
 
   /*!
