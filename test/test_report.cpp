@@ -218,6 +218,24 @@ TEST_F(TreePath_Fixture, output_dot){
   std::string dotgraph = get_dotgraph(prof, hot, cool, 0.00001);
   std::cout << dotgraph;
   // TODO: currently there is no way to validate this dotgraph without introducing an external dependency on dot
+  // TODO: test conversion to intermediate data structure, merging, and change this to a different type of test
+}
+
+TEST_F(TreePath_Fixture, merge){
+  const bool with_wall = true, with_cpu = false;
+  auto root = Node<Counter>::make_root("All", Counter(1, 0, 10, 0, with_wall, with_cpu));
+  auto a = Node<Counter>::add_child("A", Counter(1, 0, 6, 0, with_wall, with_cpu), root);
+  auto b = Node<Counter>::add_child("B", Counter(2, 0, 4, 0, with_wall, with_cpu), root);
+  auto aa = Node<Counter>::add_child("AA", Counter(4, 0, 5, 0, with_wall, with_cpu), a);
+  auto ab = Node<Counter>::add_child("AB", Counter(4, 0, 1, 0, with_wall, with_cpu), a);
+  auto ba = Node<Counter>::add_child("BA", Counter(1, 0, 1, 0, with_wall, with_cpu), b);
+  auto bb = Node<Counter>::add_child("AB", Counter(2, 0, 3, 0, with_wall, with_cpu), b);
+  std::vector<molpro::profiler::dotgraph::GraphEntry> graph_entries;
+  molpro::profiler::dotgraph::make_dotgraph_vec(root, 10, 0, graph_entries);
+  molpro::profiler::dotgraph::merge_vec(graph_entries);
+  int hot[3] = {255,0,0};
+  int cool[3] = {0,0,255};
+  std::cout << molpro::profiler::dotgraph::get_graph_markup(graph_entries, 10, 0, hot, cool) << "\n";
 }
 
 TEST(report_detail, format_paths__cumulative) {

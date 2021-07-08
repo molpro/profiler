@@ -86,10 +86,12 @@ void merge_vec(std::vector<GraphEntry>& graph_entries){
   std::vector<std::pair<std::string, int>> names;
   int size = graph_entries.size();
   for(int i = 0; i<size; i++) {
-    bool entry_is_node = graph_entries[i].entry_type == node;
     bool name_in_names = false;
     for (int j = 0; j != names.size(); j++){
-      if (graph_entries[i].name == names[j].first && entry_is_node){
+      if (graph_entries[i].name == names[j].first && graph_entries[i].entry_type == node){
+        //std::cout << "(entry type " << graph_entries[i].entry_type << ") ";
+        //std::cout << "merging " << graph_entries[i].entry_type << " " << graph_entries[i].name << " at " << i;
+        //std::cout << " with " << graph_entries[names[j].second].entry_type << " " << graph_entries[names[j].second].name << " at " << names[j].second << "\n";
         // combine vectors
         combine_graph_entries(graph_entries[i], graph_entries[names[j].second]);
         graph_entries.erase(graph_entries.begin() + i);
@@ -100,18 +102,21 @@ void merge_vec(std::vector<GraphEntry>& graph_entries){
       }
     }
     // keep track of which names exist and their indices
-    if (!name_in_names && entry_is_node){ names.emplace_back(std::make_pair(graph_entries[i].name, i)); }
+    if (!name_in_names && graph_entries[i].entry_type == node){
+      names.emplace_back(std::make_pair(graph_entries[i].name, i));
+    }
   }
 }
 
-std::string get_graph_markup(std::vector<GraphEntry>& graph_entries, double total_time, int hot[3], int cool[3]){
+std::string get_graph_markup(std::vector<GraphEntry>& graph_entries, double total_time, double threshold, int hot[3],
+                              int cool[3]){
   std::stringstream ss;
   for(int i = 0; i<graph_entries.size(); i++) {
-    if (graph_entries[i].entry_type == node){
+    if (graph_entries[i].entry_type == node && graph_entries[i].runtime/total_time > threshold){
       ss << make_box(graph_entries[i].name, graph_entries[i].runtime, total_time, graph_entries[i].calls,
                 graph_entries[i].operations, hot, cool);
     }
-    if (graph_entries[i].entry_type == edge){
+    if (graph_entries[i].entry_type == edge && graph_entries[i].runtime/total_time > threshold){
       ss << make_arrow(graph_entries[i].name, graph_entries[i].name_to, graph_entries[i].runtime, total_time,
                         graph_entries[i].calls, hot, cool);
     }
@@ -140,9 +145,9 @@ GraphEntry::GraphEntry(EntryType entry_type, std::string name, double runtime, i
 std::string make_dotgraph(std::shared_ptr<Node<Counter>> root, double total_time, int hot[3], int cool[3],
                             double threshold){
   std::vector<GraphEntry> graph_entries;
-  make_dotgraph_vec(root, total_time, threshold, graph_entries);      
-  merge_vec(graph_entries);          
-  std::string graph_contents = get_graph_markup(graph_entries, total_time, hot, cool);
+  make_dotgraph_vec(root, total_time, threshold, graph_entries);
+  merge_vec(graph_entries);
+  std::string graph_contents = get_graph_markup(graph_entries, total_time, threshold, hot, cool);
   
   std::stringstream ss;
   // write header info

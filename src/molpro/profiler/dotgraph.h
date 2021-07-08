@@ -86,7 +86,8 @@ std::string make_arrow(std::string name_from, std::string name_to, double time, 
 // TODO: write docs for these functions
 void combine_graph_entries(GraphEntry& entry1, GraphEntry& entry2);
 void merge_vec(std::vector<GraphEntry>& graph_entries);
-std::string get_graph_markup(std::vector<GraphEntry>& graph_entries, double total_time, int hot[3], int cool[3]);
+std::string get_graph_markup(std::vector<GraphEntry>& graph_entries, double total_time, double threshold, int hot[3],
+                              int cool[3]);
 
   /*!
    * @brief This populates a vector containing a GraphEntry for each profiler node. This is an intermediate data
