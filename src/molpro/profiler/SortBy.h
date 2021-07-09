@@ -4,7 +4,7 @@
 namespace molpro {
 namespace profiler {
 
-enum class SortBy { wall, cpu, calls, operations };
+enum class SortBy { wall, cpu, calls, operations, none };
 
 } // namespace profiler
 } // namespace molpro
