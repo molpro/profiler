@@ -155,7 +155,8 @@ std::string frequency(size_t n_op, double time){
   return ss.str();
 }
 
-void write_timing(std::ostream& out, double time, size_t n_op) {
+std::string seconds(double time){
+  std::stringstream out;
   const std::string prefixes{"yzafpnum kMGTPEZY"};
   const int prefix_base = prefixes.find(" ");
   int prefix_time = time <= 0
@@ -165,6 +166,11 @@ void write_timing(std::ostream& out, double time, size_t n_op) {
   if (prefix_time != prefix_base)
     out << prefixes[prefix_time];
   out << "s";
+  return out.str();
+}
+
+void write_timing(std::ostream& out, double time, size_t n_op) {
+  out << seconds(time);
   if (n_op and time > 0) {
     out << frequency(n_op, time);
   }
@@ -294,7 +300,7 @@ void report_root_process(const Profiler& prof, std::ostream& out, MPI_Comm commu
 }
 
 void get_dotgraph(const Profiler& prof, MPI_Comm communicator, int root_process, int hot[3], int cool[3],
-                  double threshold, std::string dotgraph){
+                  double threshold, std::string dotgraph, bool get_percentage_time){
   int rank, n_loc, n_root;
   MPI_Comm_rank(communicator, &rank);
   n_loc = prof.root->count_nodes();
@@ -306,12 +312,13 @@ void get_dotgraph(const Profiler& prof, MPI_Comm communicator, int root_process,
   auto root_sync = detail::synchronised_tree(prof.root, nullptr, communicator, root_process);
   if (rank == root_process) {
     dotgraph = dotgraph::make_dotgraph(prof.root, prof.root->counter.get_wall().cumulative_time(), hot, cool,
-                                      threshold);
+                                      threshold, get_percentage_time);
   }
 }
 
-std::string get_dotgraph(const Profiler& prof, int hot[3], int cool[3], double threshold){
-  return dotgraph::make_dotgraph(prof.root, prof.root->counter.get_wall().cumulative_time(), hot, cool, threshold);
+std::string get_dotgraph(const Profiler& prof, int hot[3], int cool[3], double threshold, bool get_percentage_time){
+  return dotgraph::make_dotgraph(prof.root, prof.root->counter.get_wall().cumulative_time(), hot, cool, threshold,
+                                  get_percentage_time);
 }
     
 

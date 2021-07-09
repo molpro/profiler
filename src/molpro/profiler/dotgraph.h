@@ -26,7 +26,7 @@ class GraphEntry{
     int calls; // number of calls for the node/edge
     std::string name_to; // if this is a edge, this is where it goes to
     std::string fontcolour; // colour of the font for an edge
-    int operations; // number of operations in a node
+    int operations = -1; // number of operations in a node
     
     GraphEntry(EntryType entry_type, std::string name, double runtime, int calls,
             double total_time, int operations = -1, std::string name_to = "" );
@@ -48,6 +48,15 @@ class GraphEntry{
 std::string blend_colours(double ratio, int hot_colour[3], int cool_colour[3]);
 
   /*!
+   * @brief Returns a string with the runtime of a node.
+   * @param time The runtime of the node
+   * @param total_time the total runtime of the tree.
+   * @param show_percentage_time if true, will show a percentage, otherwise will show the time in seconds.
+   * @return a string with the runtime of the node.
+   */
+std::string print_time(double time, double total_time, bool show_percentage_time);
+
+  /*!
    * @brief Create a graphviz box of a profiler node.
    * @param ratio name the name of the box.
    * @param time time time taken for the node, in seconds.
@@ -56,10 +65,11 @@ std::string blend_colours(double ratio, int hot_colour[3], int cool_colour[3]);
    * @param opcount the number of operations (used to calculate frequency)
    * @param hot an 8-bit colour, 0-255. The more time spent in this node, the hotter the colour will be.
    * @param cool an 8-bit colour, 0-255.
+   * @param show_percentage_time whether to show the time as a percentage of the runtime (true) or in seconds (false).
    * @return the box, as graphviz markup.
    */
 std::string make_box(std::string name, double time, double total_time, size_t call_count, size_t opcount,
-                      int hot[3], int cool[3]);
+                      int hot[3], int cool[3], bool show_percentage_time);
 
   /*!
    * @brief Create a graphviz arrow of a profiler node.
@@ -70,10 +80,11 @@ std::string make_box(std::string name, double time, double total_time, size_t ca
    * @param call_count the number of times the node has been called.
    * @param hot an 8-bit colour, 0-255. The more time spent in this node, the hotter the colour will be.
    * @param cool an 8-bit colour, 0-255.
+   * @param show_percentage_time whether to show the time as a percentage of the runtime (true) or in seconds (false).
    * @return the arrow, as graphviz markup.
    */
 std::string make_arrow(std::string name_from, std::string name_to, double time, double total_time, size_t call_count,
-                        int hot[3], int cool[3]);
+                        int hot[3], int cool[3], bool show_percentage_time);
 
   /*!
    * @brief Combines two graph entries, summing their time, calls and opcount.
@@ -123,9 +134,11 @@ void destroy_orphans(std::vector<GraphEntry>& graph_entries);
    * @param total_time the total time taken by the program, in seconds.
    * @param hot an 8-bit colour, 0-255. The more time spent in this node, the hotter the colour will be.
    * @param cool an 8-bit colour, 0-255.
+   * @param show_percentage_time whether to show the time as a percentage of the runtime (true) or in seconds (false).
    * @return a string containing graphviz markup for nodes and edges.
    */
-std::string get_graph_markup(std::vector<GraphEntry>& graph_entries, double total_time, int hot[3], int cool[3]);
+std::string get_graph_markup(std::vector<GraphEntry>& graph_entries, double total_time, int hot[3], int cool[3],
+                            bool show_percentage_time);
 
   /*!
    * @brief This populates a vector containing a GraphEntry for each profiler node. This is an intermediate data
@@ -149,10 +162,11 @@ void make_dotgraph_vec(std::shared_ptr<Node<Counter>> root, double total_time,
    * @param cool an 8-bit colour, 0-255.
    * @param threshold a value between 0 and 1, a ratio of the program's runtime. If the program spends less than this
    * value in a given function, the box will not be drawn.
+   * @param show_percentage_time whether to show the time as a percentage of the runtime (true) or in seconds (false).
    * @return graphviz markup for the profile.
    */
 std::string make_dotgraph(std::shared_ptr<Node<Counter>> root, double total_time, int hot[3], int cool[3],
-                            double threshold);
+                            double threshold, bool show_percentage_time);
 
 } // namespace dotgraph
 } // namespace profiler

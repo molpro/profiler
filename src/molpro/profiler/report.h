@@ -59,9 +59,9 @@ void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool
 void report_root_process(const Profiler& prof, std::ostream& out, MPI_Comm communicator, int root_process,
                          bool cumulative = true, SortBy sort_by = SortBy::wall);
 void get_dotgraph(const Profiler& prof, MPI_Comm communicator, int root_process, int hot[3], int cool[3],
-                  double threshold, std::string dotgraph);
+                  double threshold, std::string dotgraph, bool get_percentage_time);
 #endif
-std::string get_dotgraph(const Profiler& prof, int hot[3], int cool[3], double threshold);
+std::string get_dotgraph(const Profiler& prof, int hot[3], int cool[3], double threshold, bool get_percentage_time);
 
 namespace detail {
 //! Utility for storing a node as a path from root to that node and corresponding Counter
@@ -189,6 +189,8 @@ void format_paths(std::list<std::string>& path_names, bool append);
    * @return the frequency, as a std::string, with units of Hz.
    */
 std::string frequency(size_t n_op, double time);
+
+std::string seconds(double time);
 
 void write_timing(std::ostream& out, double time, size_t n_op);
 

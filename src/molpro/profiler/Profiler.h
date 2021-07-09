@@ -167,11 +167,13 @@ public:
    * @param sort_by whether to sort by wall clock time, calls, frequency, etc. Currently unused!
    * @param heat_adjust currently unused, will eventually be used to establish non-linear mappings between ratio and
    * colour.
+   * @param get_percentage_time whether to show the time as a percentage of the runtime (true) or in seconds (false).
    * @return a string containing the dotgraph. Using this string is optional as the dotgraph is already written to path.
    */
   std::string dotgraph(std::string path, double threshold = 0.01, bool cumulative=true, int hot[3] = hot_default,
                       int cool[3] = cool_default, SortBy sort_by = profiler::SortBy::none,
-                      std::vector<std::pair<double,double>> heat_adjust = default_heat_adjust);
+                      std::vector<std::pair<double,double>> heat_adjust = default_heat_adjust,
+                      bool get_percentage_time = true);
 
 #ifdef MOLPRO_PROFILER_MPI
   std::string str(MPI_Comm communicator, bool cumulative = true,
@@ -192,12 +194,14 @@ public:
    * @param sort_by whether to sort by wall clock time, calls, frequency, etc. Currently unused!
    * @param heat_adjust currently unused, will eventually be used to establish non-linear mappings between ratio and
    * colour.
+   * @param get_percentage_time whether to show the time as a percentage of the runtime (true) or in seconds (false).
    * @return a string containing the dotgraph. Using this string is optional as the dotgraph is already written to path.
    */
   std::string dotgraph(std::string path, MPI_Comm communicator, int root_process, double threshold = 0.01,
                       int hot[3] = hot_default, int cool[3] = cool_default, bool cumulative=true,
                       SortBy sort_by = profiler::SortBy::none,
-                      std::vector<std::pair<double,double>> heat_adjust = default_heat_adjust);
+                      std::vector<std::pair<double,double>> heat_adjust = default_heat_adjust,
+                      bool get_percentage_time = true);
 #endif
 
   friend std::ostream& operator<<(std::ostream& os, const Profiler& obj);

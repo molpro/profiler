@@ -99,13 +99,13 @@ std::string Profiler::str(bool cumulative, SortBy sort_by) const {
 
 std::string Profiler::dotgraph(std::string path, double threshold, bool cumulative,
                                 int hot[3], int cool[3], SortBy sort_by,
-                                std::vector<std::pair<double,double>> heat_adjust){
+                                std::vector<std::pair<double,double>> heat_adjust, bool get_percentage_time){
   if (sort_by != profiler::SortBy::none){
     throw std::runtime_error("Sorting dotgraphs is not yet implemented");
   }
   std::ofstream outfile(path);
   std::string dotgraph;
-  dotgraph = get_dotgraph(*this, hot, cool, threshold);
+  dotgraph = get_dotgraph(*this, hot, cool, threshold, get_percentage_time);
   outfile << dotgraph;
   outfile.close();
   return dotgraph;
@@ -120,13 +120,13 @@ std::string Profiler::str(MPI_Comm communicator, bool cumulative, SortBy sort_by
 
 std::string Profiler::dotgraph(std::string path, MPI_Comm communicator, int root_process, double threshold,
                                 int hot[3], int cool[3], bool cumulative, SortBy sort_by,
-                                std::vector<std::pair<double,double>> heat_adjust){
+                                std::vector<std::pair<double,double>> heat_adjust, bool get_percentage_time){
   if (sort_by != profiler::SortBy::none){
     throw std::runtime_error("Sorting dotgraphs is not yet implemented");
   }
   std::string dotgraph;
   std::ofstream outfile(path);
-  get_dotgraph(*this, communicator, root_process, hot, cool, threshold, dotgraph);
+  get_dotgraph(*this, communicator, root_process, hot, cool, threshold, dotgraph, get_percentage_time);
   outfile << dotgraph;
   outfile.close();
   return dotgraph;

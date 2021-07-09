@@ -198,7 +198,7 @@ TEST_F(TreePath_Fixture, report__from_node) {
   ASSERT_EQ(out2.str(), out.str());
 }
 
-TEST_F(TreePath_Fixture, output_dot){
+TEST(graphviz, output_dot){
   const bool with_wall = true, with_cpu = false;
   auto root = Node<Counter>::make_root("All", Counter(1, 0, 10, 0, with_wall, with_cpu));
   auto a = Node<Counter>::add_child("A", Counter(1, 0, 6, 0, with_wall, with_cpu), root);
@@ -212,14 +212,14 @@ TEST_F(TreePath_Fixture, output_dot){
   for (double i = 0; i<0.1; i+=0.001){
     std::cout << molpro::profiler::dotgraph::blend_colours(i, hot, cool) << "\n";
   }
-  molpro::profiler::dotgraph::make_dotgraph(root, 10.0, hot, cool, 0.000);
-  std::string dotgraph = get_dotgraph(prof, hot, cool, 0.00001);
-  //std::cout << dotgraph;
+  molpro::profiler::dotgraph::make_dotgraph(root, 10.0, hot, cool, 0.000, true);
+  //std::string dotgraph = get_dotgraph(prof, hot, cool, 0.00001, false);
+  // std::cout << dotgraph;
   // TODO: currently there is no way to validate this dotgraph without introducing an external dependency on dot
   // TODO: test conversion to intermediate data structure, merging, and change this to a different type of test
 }
 
-TEST_F(TreePath_Fixture, merge){
+TEST(graphviz, merge){
   const bool with_wall = true, with_cpu = false;
   auto root = Node<Counter>::make_root("All", Counter(1, 0, 10, 0, with_wall, with_cpu));
   auto a = Node<Counter>::add_child("A", Counter(1, 0, 6, 0, with_wall, with_cpu), root);
@@ -242,7 +242,22 @@ TEST_F(TreePath_Fixture, merge){
   }
 }
 
-TEST_F(TreePath_Fixture, cull_orphans){
+TEST(graphviz, frequency){
+  const bool with_wall = true, with_cpu = false;
+  auto root = Node<Counter>::make_root("All", Counter(1, 0, 10, 0, with_wall, with_cpu));
+  auto a = Node<Counter>::add_child("A", Counter(1, 0, 6, 0, with_wall, with_cpu), root);
+  auto b = Node<Counter>::add_child("B", Counter(1, 0, 4, 0, with_wall, with_cpu), root);
+  auto c = Node<Counter>::add_child("C", Counter(1, 500, 6, 0, with_wall, with_cpu), a);
+  auto d = Node<Counter>::add_child("C", Counter(1, 500, 4, 0, with_wall, with_cpu), b);
+  std::vector<molpro::profiler::dotgraph::GraphEntry> graph_entries;
+  molpro::profiler::dotgraph::make_dotgraph_vec(root, 10, graph_entries);
+  molpro::profiler::dotgraph::merge_vec(graph_entries);
+  int hot[3] = {255,0,0};
+  int cool[3] = {0,0,255};
+  ASSERT_EQ(molpro::profiler::detail::frequency(graph_entries[4].operations, graph_entries[4].runtime), " (100 Hz)");
+}
+
+TEST(graphviz, cull_orphans){
   const bool with_wall = true, with_cpu = false;
   auto root = Node<Counter>::make_root("All", Counter(1, 0, 10, 0, with_wall, with_cpu));
   auto a = Node<Counter>::add_child("A", Counter(1, 0, 6, 0, with_wall, with_cpu), root);
@@ -257,8 +272,8 @@ TEST_F(TreePath_Fixture, cull_orphans){
   molpro::profiler::dotgraph::destroy_orphans(graph_entries);
   int hot[3] = {255,0,0};
   int cool[3] = {0,0,255};
-  //std::cout << molpro::profiler::dotgraph::get_graph_markup(graph_entries, 10, hot, cool) << "\n";
-  ASSERT_EQ(graph_entries.size(), 4);
+  //std::cout << molpro::profiler::dotgraph::get_graph_markup(graph_entries, 10, hot, cool, true) << "\n";
+  ASSERT_EQ(graph_entries.size(), 8); // 5 nodes and 3 edges
 }
 
 TEST(report_detail, format_paths__cumulative) {

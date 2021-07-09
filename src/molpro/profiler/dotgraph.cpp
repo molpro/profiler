@@ -23,11 +23,22 @@ std::string blend_colours(double ratio, int hot_colour[3], int cool_colour[3]){
   return ss.str();
 }
 
+std::string print_time(double time, double total_time, bool show_percentage_time){
+  std::stringstream ss;
+  if (show_percentage_time){
+    ss << (time/total_time)*100 << "%";
+  } else {
+    ss << molpro::profiler::detail::seconds(time);
+  }
+  return ss.str();
+}
+
 std::string make_box(std::string name, double time, double total_time, size_t call_count, size_t opcount,
-                      int hot[3], int cool[3]){
+                      int hot[3], int cool[3], bool show_percentage_time){
   std::stringstream ss;
   ss << "\"" << name << "\"" << " [" << "color=\"" << blend_colours(time/total_time, hot, cool) <<
-  "\", fontcolor=\"#ffffff\", label=\"" << name << "\\n" << (time/total_time)*100 << "%\\n" << call_count << "x";
+  "\", fontcolor=\"#ffffff\", label=\"" << name << "\\n" << print_time(time, total_time, show_percentage_time) 
+  << "\\n" << call_count << "x";
   if (opcount > 0){
     ss << "\\n" << molpro::profiler::detail::frequency(opcount, time) << "";
   }
@@ -36,25 +47,25 @@ std::string make_box(std::string name, double time, double total_time, size_t ca
 }
 
 std::string make_arrow(std::string name_from, std::string name_to, double time, double total_time, size_t call_count,
-                        int hot[3], int cool[3]){
+                        int hot[3], int cool[3], bool show_percentage_time){
   std::stringstream ss;
   ss << "\"" << name_from << "\" -> \"" << name_to << "\" [color=\"" << blend_colours(time/total_time, hot, cool)
-  << "\", fontcolor=\"" << blend_colours(time/total_time, hot, cool) << "\", label=\"" << (time/total_time)*100
-  << "%\\n" << call_count << "x\"];\n";
+  << "\", fontcolor=\"" << blend_colours(time/total_time, hot, cool) << "\", label=\"" <<
+  print_time(time, total_time, show_percentage_time) << "\\n" << call_count << "x\"];\n";
   return ss.str();
 }
 
 std::string get_graph_markup(std::vector<GraphEntry>& graph_entries, double total_time, int hot[3],
-                              int cool[3]){
+                              int cool[3], bool show_percentage_time){
   std::stringstream ss;
   for(int i = 0; i<graph_entries.size(); i++) {
     if (graph_entries[i].entry_type == node){
       ss << make_box(graph_entries[i].name, graph_entries[i].runtime, total_time, graph_entries[i].calls,
-                graph_entries[i].operations, hot, cool);
+                graph_entries[i].operations, hot, cool, show_percentage_time);
     }
     if (graph_entries[i].entry_type == edge){
       ss << make_arrow(graph_entries[i].name, graph_entries[i].name_to, graph_entries[i].runtime, total_time,
-                        graph_entries[i].calls, hot, cool);
+                        graph_entries[i].calls, hot, cool, show_percentage_time);
     }
   }
   return ss.str();
@@ -159,13 +170,13 @@ GraphEntry::GraphEntry(EntryType entry_type, std::string name, double runtime, i
 // this does everything
 
 std::string make_dotgraph(std::shared_ptr<Node<Counter>> root, double total_time, int hot[3], int cool[3],
-                            double threshold){
+                            double threshold, bool show_percentage_time){
   std::vector<GraphEntry> graph_entries;
   make_dotgraph_vec(root, total_time, graph_entries); // create data structure
   merge_vec(graph_entries); // merge together calls to the same function with different parents
   apply_threshold(graph_entries, threshold, total_time); // cull nodes that run for less than the threshold ratio
   destroy_orphans(graph_entries); // cull any node with no parents
-  std::string graph_contents = get_graph_markup(graph_entries, total_time, hot, cool);
+  std::string graph_contents = get_graph_markup(graph_entries, total_time, hot, cool, show_percentage_time);
   std::stringstream ss;
   // write header info
   ss << "digraph {\n\n";
