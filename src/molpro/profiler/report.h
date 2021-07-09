@@ -8,6 +8,7 @@
 #include <molpro/profiler/Node.h>
 #include <molpro/profiler/Profiler.h>
 #include <molpro/profiler/SortBy.h>
+#include <molpro/profiler/dotgraph.h>
 
 #include <list>
 #include <memory>
@@ -57,7 +58,10 @@ void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool
 //! Reports collective content of Profiler but writing on the root process only
 void report_root_process(const Profiler& prof, std::ostream& out, MPI_Comm communicator, int root_process,
                          bool cumulative = true, SortBy sort_by = SortBy::wall);
+void get_dotgraph(const Profiler& prof, MPI_Comm communicator, int root_process, int hot[3], int cool[3],
+                  double threshold, std::string dotgraph, bool get_percentage_time);
 #endif
+std::string get_dotgraph(const Profiler& prof, int hot[3], int cool[3], double threshold, bool get_percentage_time);
 
 namespace detail {
 //! Utility for storing a node as a path from root to that node and corresponding Counter
@@ -125,6 +129,10 @@ struct AccessCalls {
 struct AccessOperations {
   double operator()(const TreePath& t) { return t.counter.get_operation_count(); }
 };
+struct None {
+  double operator()(const TreePath& t) { return 0; }
+  double operator()() {return 0;}
+};
 
 /*!
  * @brief convert path to a formatted string
@@ -154,6 +162,16 @@ inline std::string format_single_path(const std::list<std::string>& path, bool c
 }
 
 /*!
+ * @brief Sorts the children of a node
+ *
+ * @param root the node in the graph to be sorted. Will only sort that node's children.
+ * @param cumulative whether to sort cumulatively or not.
+ */
+template <class CompareTreePaths>
+std::map<TreePath, std::shared_ptr<Node<Counter>>, CompareTreePaths> sort_children(
+  const std::shared_ptr<Node<Counter>>& root, bool cumulative);
+
+/*!
  * @brief Format paths for output
  *
  * Appends or prepends blank lines to each path if cumulative is true or not, respectively.
@@ -163,6 +181,16 @@ inline std::string format_single_path(const std::list<std::string>& path, bool c
  * @param append whether to append or prepend blank lines
  */
 void format_paths(std::list<std::string>& path_names, bool append);
+
+  /*!
+   * @brief Get the frequency of an operation as a string with units of Hz.
+   * @param n_op the number of operations as counted by the profiler (e.g counter.get_call_count())
+   * @param time time taken in seconds.
+   * @return the frequency, as a std::string, with units of Hz.
+   */
+std::string frequency(size_t n_op, double time);
+
+std::string seconds(double time);
 
 void write_timing(std::ostream& out, double time, size_t n_op);
 
