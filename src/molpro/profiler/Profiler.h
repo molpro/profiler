@@ -173,7 +173,7 @@ public:
   std::string dotgraph(std::string path, double threshold = 0.01, bool cumulative=true, int hot[3] = hot_default,
                       int cool[3] = cool_default, SortBy sort_by = profiler::SortBy::none,
                       std::vector<std::pair<double,double>> heat_adjust = default_heat_adjust,
-                      bool get_percentage_time = true);
+                      bool get_percentage_time = false);
 
 #ifdef MOLPRO_PROFILER_MPI
   std::string str(MPI_Comm communicator, bool cumulative = true,
@@ -201,7 +201,7 @@ public:
                       int hot[3] = hot_default, int cool[3] = cool_default, bool cumulative=true,
                       SortBy sort_by = profiler::SortBy::none,
                       std::vector<std::pair<double,double>> heat_adjust = default_heat_adjust,
-                      bool get_percentage_time = true);
+                      bool get_percentage_time = false);
 #endif
 
   friend std::ostream& operator<<(std::ostream& os, const Profiler& obj);
