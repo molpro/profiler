@@ -315,14 +315,14 @@ void get_dotgraph(const Profiler& prof, MPI_Comm communicator, int root_process,
                                       threshold, get_percentage_time);
   }
 }
+#endif
 
 std::string get_dotgraph(const Profiler& prof, int hot[3], int cool[3], double threshold, bool get_percentage_time){
   return dotgraph::make_dotgraph(prof.root, prof.root->counter.get_wall().cumulative_time(), hot, cool, threshold,
                                   get_percentage_time);
 }
-    
 
-#endif
+
 
 } // namespace profiler
 } // namespace molpro
