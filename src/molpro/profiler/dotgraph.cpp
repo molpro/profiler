@@ -58,7 +58,7 @@ std::string make_arrow(std::string name_from, std::string name_to, double time, 
 std::string get_graph_markup(std::vector<GraphEntry>& graph_entries, double total_time, int hot[3],
                               int cool[3], bool show_percentage_time){
   std::stringstream ss;
-  for(int i = 0; i<graph_entries.size(); i++) {
+  for(size_t i = 0; i<graph_entries.size(); i++) {
     if (graph_entries[i].entry_type == node){
       ss << make_box(graph_entries[i].name, graph_entries[i].runtime, total_time, graph_entries[i].calls,
                 graph_entries[i].operations, hot, cool, show_percentage_time);
@@ -106,7 +106,7 @@ void merge_vec(std::vector<GraphEntry>& graph_entries){
   int size = graph_entries.size();
   for(int i = 0; i<size; i++) {
     bool name_in_names = false;
-    for (int j = 0; j != names.size(); j++){
+    for (size_t j = 0; j != names.size(); j++){
       if (graph_entries[i].name == names[j].first && graph_entries[i].entry_type == node){
         // combine vectors
         combine_graph_entries(graph_entries[i], graph_entries[names[j].second]);
@@ -139,7 +139,7 @@ void apply_threshold(std::vector<GraphEntry>& graph_entries, double threshold, d
 bool has_parent(GraphEntry& child, std::vector<GraphEntry>& graph_entries){
   std::string parent = child.name;
   bool has_parent = false;
-  for (int i = 0; i<graph_entries.size(); i++){
+  for (size_t i = 0; i<graph_entries.size(); i++){
     if (graph_entries[i].entry_type == edge && graph_entries[i].name_to == parent){
       has_parent = true;
       break;
