@@ -36,8 +36,8 @@ struct ElapsedTime {
 };
 
 void delay() {
-  int delay = 2000;
 #ifdef MOLPRO_PROFILER_MPI
+  int delay = 2000;
   int rank = 0;
   MPI_Barrier(MPI_COMM_WORLD);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
   {
     molpro::Profiler tp{"test tree profiler: depth = 1, rank = " + std::to_string(rank)};
     auto et = ElapsedTime(repeat);
-    for (auto i = 0; i < repeat; i++) {
+    for (size_t i = 0; i < repeat; i++) {
       tp.push("test");
     }
     et.stop();
@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
   {
     molpro::Profiler tp{"test tree profiler: depth = 1, rank = " + std::to_string(rank)};
     auto et = ElapsedTime(repeat);
-    for (auto i = 0; i < repeat / 10000; i++) {
+    for (size_t i = 0; i < repeat / 10000; i++) {
       auto p1 = tp.push("test1");
       for (auto ii = 0; ii < 10; ii++) {
         auto p2 = tp.push("test2");
@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
   {
     molpro::Profiler p{"tree profiler: operations , rank = " + std::to_string(rank)};
     auto et = ElapsedTime(repeat);
-    for (auto i = 0; i < repeat; i++) {
+    for (size_t i = 0; i < repeat; i++) {
       auto proxy = p.push("test");
       proxy += 7;
     }
@@ -128,11 +128,9 @@ int main(int argc, char* argv[]) {
 
   std::cout << repeat << " instances of 2*gettimeofday()" << std::endl;
   auto start = std::chrono::system_clock::now();
-  auto wall = (double)0;
-  for (auto i = 0; i < repeat * 2; i++) {
+  for (size_t i = 0; i < repeat * 2; i++) {
     struct timeval time;
-    if (!gettimeofday(&time, NULL))
-      wall = (double)time.tv_sec + (double)time.tv_usec * .000001;
+    gettimeofday(&time, NULL);
   }
   std::cout << "Elapsed time: " << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count()
             << std::endl;
@@ -142,7 +140,7 @@ int main(int argc, char* argv[]) {
   std::cout << repeat << " instances of 2*chrono::system_clock::now()" << std::endl;
   start = std::chrono::system_clock::now();
   auto result = std::chrono::system_clock::now();
-  for (auto i = 0; i < repeat; i++) {
+  for (size_t i = 0; i < repeat; i++) {
     result += std::chrono::system_clock::now() - std::chrono::system_clock::now();
   }
   std::cout << "Elapsed time: " << (std::chrono::duration<double>(std::chrono::system_clock::now() - start)).count()
