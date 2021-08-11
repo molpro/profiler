@@ -129,7 +129,7 @@ TEST(Profiler, Proxy_post_increment) {
 
 namespace {
 void construct_stack(Profiler& p, int n) {
-  for (size_t i = 0; i < n; ++i)
+  for (int i = 0; i < n; ++i)
     p.start("level " + std::to_string(i));
 }
 
