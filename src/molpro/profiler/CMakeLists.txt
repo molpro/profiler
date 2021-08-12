@@ -1,5 +1,5 @@
 LibraryManager_Append(${PROJECT_NAME}
-        SOURCES Profiler.cpp Timer.cpp Counter.cpp report.cpp dotgraph.cpp
+        SOURCES Profiler.cpp Timer.cpp Counter.cpp report.cpp dotgraph.cpp mpi.h
         PUBLIC_HEADER Profiler.h Timer.h Counter.h report.h Node.h WeakSingleton.h SortBy.h dotgraph.h
         )
 if (TARGET MPI::MPI_CXX)

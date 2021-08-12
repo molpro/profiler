@@ -5,8 +5,9 @@
 #include "molpro/profiler/report.h"
 
 #include <algorithm>
-#include <sstream>
 #include <limits>
+#include <sstream>
+#include "mpi.h"
 
 namespace molpro {
 namespace profiler {
@@ -92,23 +93,31 @@ size_t Profiler::Proxy::operator++(int) {
 }
 
 std::string Profiler::str(bool cumulative, SortBy sort_by) const {
+#ifdef MOLPRO_PROFILER_MPI
+  return str(comm_global(), cumulative, sort_by);
+#else
   std::stringstream out;
   report(*this, out, cumulative, sort_by);
   return out.str();
+#endif
 }
 
-std::string Profiler::dotgraph(std::string path, double threshold, bool cumulative,
-                                int hot[3], int cool[3], SortBy sort_by,
-                                std::vector<std::pair<double,double>> heat_adjust, bool get_percentage_time){
-  if (sort_by != profiler::SortBy::none){
+std::string Profiler::dotgraph(std::string path, double threshold, bool cumulative, int hot[3], int cool[3],
+                               SortBy sort_by, std::vector<std::pair<double, double>> heat_adjust,
+                               bool get_percentage_time) {
+#ifdef MOLPRO_PROFILER_MPI
+  return dotgraph(path, comm_global(), 0, threshold, cumulative, hot, cool, sort_by, heat_adjust, get_percentage_time);
+#else
+  if (sort_by != profiler::SortBy::none) {
     throw std::runtime_error("Sorting dotgraphs is not yet implemented");
   }
   std::ofstream outfile(path);
   std::string dotgraph;
   dotgraph = get_dotgraph(*this, hot, cool, threshold, get_percentage_time);
-  outfile << dotgraph;
-  outfile.close();
+  if (not path.empty())
+    std::ofstream(path) << dotgraph;
   return dotgraph;
+#endif
 }
 
 #ifdef MOLPRO_PROFILER_MPI
@@ -119,16 +128,15 @@ std::string Profiler::str(MPI_Comm communicator, bool cumulative, SortBy sort_by
 }
 
 std::string Profiler::dotgraph(std::string path, MPI_Comm communicator, int root_process, double threshold,
-                                int hot[3], int cool[3], bool cumulative, SortBy sort_by,
-                                std::vector<std::pair<double,double>> heat_adjust, bool get_percentage_time){
-  if (sort_by != profiler::SortBy::none){
+                               bool cumulative, int hot[3], int cool[3], SortBy sort_by,
+                               std::vector<std::pair<double, double>> heat_adjust, bool get_percentage_time) {
+  if (sort_by != profiler::SortBy::none) {
     throw std::runtime_error("Sorting dotgraphs is not yet implemented");
   }
   std::string dotgraph;
-  std::ofstream outfile(path);
   get_dotgraph(*this, communicator, root_process, hot, cool, threshold, dotgraph, get_percentage_time);
-  outfile << dotgraph;
-  outfile.close();
+  if (rank_global() == 0 and not path.empty())
+    std::ofstream(path) << dotgraph;
   return dotgraph;
 }
 #endif
