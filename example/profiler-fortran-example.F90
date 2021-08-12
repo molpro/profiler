@@ -39,7 +39,7 @@ PROGRAM mainf
     call p%stop('a', 100)
     call p%print(6)
     call p%print(6, cumulative = .false.)
-    call p%destroy()
+    call p%destroy() ! This has to be called only if p is declared in the main program, because in that case the final subroutine of Profiler is not invoked
 #ifdef HAVE_MPI_H
   call MPI_Finalize()
   !call MPI_FINALIZE(ierr)
