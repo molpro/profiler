@@ -5,6 +5,7 @@
 #endif
 #include <chrono>
 #include <iostream>
+#include <stdlib.h>
 #include <thread>
 using molpro::Profiler;
 
@@ -41,6 +42,12 @@ int main(int argc, char *argv[]) {
     std::cout << *p1;
     std::cout << *p2;
 #endif
+    for (const auto &p : {p1, p2}) {
+      auto gv = p->description() + ".gv";
+      p->dotgraph(gv);
+      gv = p->description() + ".noncumulative.gv";
+      p->dotgraph(gv, 0.01, false);
+    }
   }
 #ifdef HAVE_MPI_H
   MPI_Finalize();

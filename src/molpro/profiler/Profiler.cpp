@@ -4,10 +4,11 @@
 #include "molpro/profiler/WeakSingleton.h"
 #include "molpro/profiler/report.h"
 
+#include "mpi.h"
 #include <algorithm>
 #include <limits>
 #include <sstream>
-#include "mpi.h"
+#include <regex>
 
 namespace molpro {
 namespace profiler {
@@ -101,6 +102,15 @@ std::string Profiler::str(bool cumulative, SortBy sort_by) const {
   return out.str();
 #endif
 }
+namespace detail {
+void write_dotgraph(std::string path, const std::string& dotgraph) {
+  if (path.empty()) return;
+  path=std::regex_replace(path,std::regex{"[ :;]"},"-");
+    std::ofstream(path) << dotgraph;
+  if (system((std::string{"dot -T pdf -O \""} + path + "\" 2>/dev/null > /dev/null").c_str()) != 0)
+    ;
+}
+} // namespace detail
 
 std::string Profiler::dotgraph(std::string path, double threshold, bool cumulative, int hot[3], int cool[3],
                                SortBy sort_by, std::vector<std::pair<double, double>> heat_adjust,
@@ -111,11 +121,8 @@ std::string Profiler::dotgraph(std::string path, double threshold, bool cumulati
   if (sort_by != profiler::SortBy::none) {
     throw std::runtime_error("Sorting dotgraphs is not yet implemented");
   }
-  std::ofstream outfile(path);
-  std::string dotgraph;
-  dotgraph = get_dotgraph(*this, hot, cool, threshold, get_percentage_time);
-  if (not path.empty())
-    std::ofstream(path) << dotgraph;
+  auto dotgraph = get_dotgraph(*this, hot, cool, threshold, get_percentage_time);
+  detail::write_dotgraph(path, dotgraph);
   return dotgraph;
 #endif
 }
@@ -133,10 +140,9 @@ std::string Profiler::dotgraph(std::string path, MPI_Comm communicator, int root
   if (sort_by != profiler::SortBy::none) {
     throw std::runtime_error("Sorting dotgraphs is not yet implemented");
   }
-  std::string dotgraph;
-  get_dotgraph(*this, communicator, root_process, hot, cool, threshold, dotgraph, get_percentage_time);
-  if (rank_global() == 0 and not path.empty())
-    std::ofstream(path) << dotgraph;
+  auto dotgraph = get_dotgraph(*this, communicator, root_process, hot, cool, threshold, get_percentage_time);
+  if (rank_global() == root_process)
+    detail::write_dotgraph(path, dotgraph);
   return dotgraph;
 }
 #endif

@@ -58,8 +58,8 @@ void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool
 //! Reports collective content of Profiler but writing on the root process only
 void report_root_process(const Profiler& prof, std::ostream& out, MPI_Comm communicator, int root_process,
                          bool cumulative = true, SortBy sort_by = SortBy::wall);
-void get_dotgraph(const Profiler& prof, MPI_Comm communicator, int root_process, int hot[3], int cool[3],
-                  double threshold, std::string dotgraph, bool get_percentage_time);
+std::string get_dotgraph(const Profiler& prof, MPI_Comm communicator, int root_process, int* hot, int* cool,
+                         double threshold, bool get_percentage_time);
 #endif
 std::string get_dotgraph(const Profiler& prof, int hot[3], int cool[3], double threshold, bool get_percentage_time);
 
