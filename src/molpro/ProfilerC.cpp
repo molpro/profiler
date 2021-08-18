@@ -111,4 +111,10 @@ char* profilerStr(void* profiler, int verbosity, int cumulative, int precision) 
 void profilerStrSubroutine(void* profiler, char* result, int maxResult, int verbosity, int cumulative, int precision) {
   strncpy(result, profilerStr(profiler, verbosity, cumulative, precision), maxResult - 1);
 }
+void profilerDotgraph(void* profiler, const char* path, double threshold, int cumulative) {
+  auto obj = static_cast<Profiler*>(profiler);
+  auto prof_info = get_prof(obj);
+  std::string gv{path};
+  obj->dotgraph(gv, threshold, cumulative != 0);
+}
 }

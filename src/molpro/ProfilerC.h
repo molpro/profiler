@@ -19,6 +19,7 @@ void profilerDeclare(void* profiler, char* name);
 void profilerStop(void* profiler, char* name, long operations = 0);
 char* profilerStr(void* profiler, int verbosity, int cumulative, int precision);
 void profilerStrSubroutine(void* profiler, char* result, int maxResult, int verbosity, int cumulative, int precision);
+void profilerDotgraph(void* profiler, const char* path, double threshold, int cumulative);
 #ifdef __cplusplus
 }
 #endif

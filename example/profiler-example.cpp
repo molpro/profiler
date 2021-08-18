@@ -1,8 +1,8 @@
 #include <cmath>
 #include <ctime>
 #include <iostream>
-#include <molpro/ProfilerC.h>
 #include <molpro/Profiler.h>
+#include <molpro/ProfilerC.h>
 #include <sys/time.h>
 #ifdef HAVE_MPI_H
 #include "mpi.h"
@@ -89,6 +89,10 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << profiler << std::endl;
+    auto gv = std::string{argv[0]} + ".gv";
+    profiler.dotgraph(gv);
+    gv = std::string{argv[0]} + ".noncumulative.gv";
+    profiler.dotgraph(gv, 0.01, false);
   }
 
   {

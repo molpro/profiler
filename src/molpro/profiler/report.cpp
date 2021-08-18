@@ -70,10 +70,10 @@ std::string format_path_not_cumulative(const std::list<std::string>& path) {
 }
 
 template <class CompareTreePaths>
-std::map<TreePath, std::shared_ptr<Node<Counter>>, CompareTreePaths> sort_children(
-  const std::shared_ptr<Node<Counter>>& root, bool cumulative) {
+std::map<TreePath, std::shared_ptr<Node<Counter>>, CompareTreePaths>
+sort_children(const std::shared_ptr<Node<Counter>>& root, bool cumulative) {
   auto children = std::map<TreePath, std::shared_ptr<Node<Counter>>, CompareTreePaths>{};
-  for (auto it_child = root->children.rbegin(); it_child != root->children.rend(); ++it_child){
+  for (auto it_child = root->children.rbegin(); it_child != root->children.rend(); ++it_child) {
     children.emplace(TreePath(it_child->second, cumulative), it_child->second);
   }
   return children;
@@ -81,15 +81,15 @@ std::map<TreePath, std::shared_ptr<Node<Counter>>, CompareTreePaths> sort_childr
 
 // explicit instantiation of sort_children
 template std::map<TreePath, std::shared_ptr<Node<Counter>>, Compare<AccessWall>>
-  sort_children<Compare<AccessWall>>(const std::shared_ptr<Node<Counter>>& root, bool cumulative);
+sort_children<Compare<AccessWall>>(const std::shared_ptr<Node<Counter>>& root, bool cumulative);
 template std::map<TreePath, std::shared_ptr<Node<Counter>>, Compare<AccessCPU>>
-  sort_children<Compare<AccessCPU>>(const std::shared_ptr<Node<Counter>>& root, bool cumulative);
+sort_children<Compare<AccessCPU>>(const std::shared_ptr<Node<Counter>>& root, bool cumulative);
 template std::map<TreePath, std::shared_ptr<Node<Counter>>, Compare<AccessCalls>>
-  sort_children<Compare<AccessCalls>>(const std::shared_ptr<Node<Counter>>& root, bool cumulative);
+sort_children<Compare<AccessCalls>>(const std::shared_ptr<Node<Counter>>& root, bool cumulative);
 template std::map<TreePath, std::shared_ptr<Node<Counter>>, Compare<AccessOperations>>
-  sort_children<Compare<AccessOperations>>(const std::shared_ptr<Node<Counter>>& root, bool cumulative);
+sort_children<Compare<AccessOperations>>(const std::shared_ptr<Node<Counter>>& root, bool cumulative);
 template std::map<TreePath, std::shared_ptr<Node<Counter>>, Compare<None>>
-  sort_children<Compare<None>>(const std::shared_ptr<Node<Counter>>& root, bool cumulative);
+sort_children<Compare<None>>(const std::shared_ptr<Node<Counter>>& root, bool cumulative);
 
 std::list<TreePath> TreePath::convert_tree_to_paths(const std::shared_ptr<Node<Counter>>& root, bool cumulative,
                                                     SortBy sort_by) {
@@ -104,8 +104,7 @@ std::list<TreePath> TreePath::convert_tree_to_paths(const std::shared_ptr<Node<C
     return TreePath::convert_tree_to_paths<Compare<AccessOperations>>(root, path, cumulative);
   } else if (sort_by == SortBy::none) {
     return TreePath::convert_tree_to_paths<Compare<None>>(root, path, cumulative);
-  }
-   else {
+  } else {
     assert(false);
   }
   return std::list<TreePath>();
@@ -142,7 +141,7 @@ void format_paths(std::list<std::string>& path_names, bool append) {
   }
 }
 
-std::string frequency(size_t n_op, double time){
+std::string frequency(size_t n_op, double time) {
   std::stringstream ss;
   const std::string prefixes{"yzafpnum kMGTPEZY"};
   const int prefix_base = prefixes.find(" ");
@@ -155,7 +154,7 @@ std::string frequency(size_t n_op, double time){
   return ss.str();
 }
 
-std::string seconds(double time){
+std::string seconds(double time) {
   std::stringstream out;
   const std::string prefixes{"yzafpnum kMGTPEZY"};
   const int prefix_base = prefixes.find(" ");
@@ -299,8 +298,8 @@ void report_root_process(const Profiler& prof, std::ostream& out, MPI_Comm commu
   }
 }
 
-void get_dotgraph(const Profiler& prof, MPI_Comm communicator, int root_process, int hot[3], int cool[3],
-                  double threshold, std::string dotgraph, bool get_percentage_time){
+std::string get_dotgraph(const Profiler& prof, MPI_Comm communicator, int root_process, int* hot, int* cool,
+                         double threshold, bool get_percentage_time) {
   int rank, n_loc, n_root;
   MPI_Comm_rank(communicator, &rank);
   n_loc = prof.root->count_nodes();
@@ -310,19 +309,16 @@ void get_dotgraph(const Profiler& prof, MPI_Comm communicator, int root_process,
   if (n_root != n_loc)
     MPI_Abort(communicator, 0); // Profiler trees are not compatible
   auto root_sync = detail::synchronised_tree(prof.root, nullptr, communicator, root_process);
-  if (rank == root_process) {
-    dotgraph = dotgraph::make_dotgraph(prof.root, prof.root->counter.get_wall().cumulative_time(), hot, cool,
-                                      threshold, get_percentage_time);
-  }
+  return rank == root_process ? dotgraph::make_dotgraph(prof.root, prof.root->counter.get_wall().cumulative_time(), hot,
+                                                        cool, threshold, get_percentage_time)
+                              : "";
 }
 #endif
 
-std::string get_dotgraph(const Profiler& prof, int hot[3], int cool[3], double threshold, bool get_percentage_time){
+std::string get_dotgraph(const Profiler& prof, int hot[3], int cool[3], double threshold, bool get_percentage_time) {
   return dotgraph::make_dotgraph(prof.root, prof.root->counter.get_wall().cumulative_time(), hot, cool, threshold,
-                                  get_percentage_time);
+                                 get_percentage_time);
 }
-
-
 
 } // namespace profiler
 } // namespace molpro
