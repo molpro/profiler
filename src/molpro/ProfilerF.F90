@@ -44,6 +44,7 @@ MODULE ProfilerF
         PROCEDURE :: active => ProfilerActiveF !< Set the maximum depth at which recording is done
         PROCEDURE :: print => ProfilerPrintF !< \public Print a representation of the object.
         PROCEDURE :: destroy => ProfilerDestroyF !< \public Destroys stored profiler
+        PROCEDURE :: dotgraph => ProfilerDotgraphF !< \public Destroys stored profiler
         FINAL :: destructor
     END TYPE Profiler
     INTERFACE Profiler
@@ -120,6 +121,14 @@ MODULE ProfilerF
             USE iso_c_binding
             TYPE(c_ptr), INTENT(in), VALUE :: handle
         END SUBROUTINE ProfilerDestroyC
+        !> \private
+        SUBROUTINE profilerDotgraphC(handle, path, threshold, cumulative) BIND (C, name='profilerDotgraph')
+            USE iso_c_binding
+            TYPE(c_ptr), INTENT(in), VALUE :: handle
+            CHARACTER(kind = c_char, len = 1), DIMENSION(*), INTENT(in) :: path
+            REAL(KIND = c_double), INTENT(in), VALUE :: threshold
+            INTEGER (kind = c_int), INTENT(in), value :: cumulative
+        END SUBROUTINE ProfilerDotgraphC
 
     END INTERFACE
 
@@ -246,6 +255,26 @@ CONTAINS
         END DO
         WRITE (unit, '(65535A)') result(:MIN(length, SIZE(result)) - 1)
     END SUBROUTINE ProfilerPrintF
+
+    SUBROUTINE ProfilerDotgraphF(this, path, threshold, cumulative)
+        CLASS(Profiler), INTENT(in) :: this !< Profiler object
+        CHARACTER(len=*), INTENT(in) :: path !< file name for resulting dotgraph
+        LOGICAL, INTENT(in), OPTIONAL :: cumulative !< Whether local or cumulative resources are printed
+        DOUBLE PRECISION, INTENT(in), OPTIONAL :: threshold !< cutoff threshold
+        INTEGER(kind = c_int) :: cumulative_
+        CHARACTER (len = 1, kind = c_char), DIMENSION(1025) :: path_
+        REAL(kind=c_double) threshold_
+        INTEGER :: i
+        cumulative_ = 1; if (present(cumulative)) then; if (.not. cumulative) cumulative_ = 0;
+        endif
+        threshold_ = 1; if (present(threshold)) threshold_ = real(threshold,kind=c_double)
+        DO i=1,min(len_trim(path),size(path_)-1)
+          path_(i) = path(i:i)
+        END DO
+        path_(min(len_trim(path)+1,size(path_))) = C_NULL_CHAR
+        CALL profilerDotgraphC(this%handle, path_, threshold_, cumulative_)
+        END SUBROUTINE ProfilerDotgraphF
+
     !> \public Begin timing a code segment.
     !! Should be called through type-bound interface \c start.
     SUBROUTINE ProfilerDestroyF(this)

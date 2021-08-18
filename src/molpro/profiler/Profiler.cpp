@@ -7,8 +7,8 @@
 #include "mpi.h"
 #include <algorithm>
 #include <limits>
-#include <sstream>
 #include <regex>
+#include <sstream>
 
 namespace molpro {
 namespace profiler {
@@ -104,9 +104,10 @@ std::string Profiler::str(bool cumulative, SortBy sort_by) const {
 }
 namespace detail {
 void write_dotgraph(std::string path, const std::string& dotgraph) {
-  if (path.empty()) return;
-  path=std::regex_replace(path,std::regex{"[ :;]"},"-");
-    std::ofstream(path) << dotgraph;
+  if (path.empty())
+    return;
+  path = std::regex_replace(path, std::regex{"[ :;]"}, "-");
+  std::ofstream(path) << dotgraph;
   if (system((std::string{"dot -T pdf -O \""} + path + "\" 2>/dev/null > /dev/null").c_str()) != 0)
     ;
 }
