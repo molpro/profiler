@@ -44,7 +44,7 @@ MODULE ProfilerF
         PROCEDURE :: active => ProfilerActiveF !< Set the maximum depth at which recording is done
         PROCEDURE :: print => ProfilerPrintF !< \public Print a representation of the object.
         PROCEDURE :: destroy => ProfilerDestroyF !< \public Destroys stored profiler
-        PROCEDURE :: dotgraph => ProfilerDotgraphF !< \public Destroys stored profiler
+        PROCEDURE :: dotgraph => ProfilerDotgraphF !< \public Export a graphviz dot file
         FINAL :: destructor
     END TYPE Profiler
     INTERFACE Profiler
