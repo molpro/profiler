@@ -1,13 +1,4 @@
-CMakeLists.txt.user
-*.o
-*.mod
-CMakeCache.txt
-CMakeFiles/
-Doxyfile
-Makefile
-*.cbp
-*.exe
-cmake_install.cmake
-html/
-latex/
 .idea
+cmake-build*/
+build*/
+dependencies/*/

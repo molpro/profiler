@@ -1,0 +1,29 @@
+image: ${CI_REGISTRY}/molpro/${CI_PROJECT_NAME}
+cache:
+  key: ${CI_PROJECT_NAME}
+  paths:
+    - public
+build:
+  script:
+    - TOP=$PWD
+    - procs=$(lscpu -p | egrep -v '^#' | wc -l ) || procs=$(sysctl -n hw.physicalcpu) || procs=1; echo $procs processors available
+    - cd $TOP; BUILD=build ; mkdir -p $BUILD && cd $BUILD && pwd && cmake $TOP -DFORTRAN=ON -DMPI=ON;  cmake --build . ;  ctest -V -j $procs
+
+pages:
+  stage: deploy
+  only:
+    - tags
+  script:
+    - PUBLIC=$PWD/public
+    - mkdir -p $PUBLIC
+    - BUILD=$PWD/cmake-build
+    - PROJECT_NAME=Profiler
+    - mkdir -p $BUILD && cd $BUILD && time cmake -DFORTRAN=1 -DMPI=1 $OLDPWD && time cmake --build . --target ${PROJECT_NAME}-doc -j
+    - mkdir -p $BUILD/docs/$PROJECT_NAME/html/DoxygenTagFiles && cp $BUILD/docs/$PROJECT_NAME/$PROJECT_NAME.tag $BUILD/docs/$PROJECT_NAME/html/DoxygenTagFiles
+    - . $BUILD/project_version.sh ; rsync -a --delete $BUILD/docs/*/html/ $PUBLIC/${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    - rm -f  $PUBLIC/${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}/${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    - cd $PUBLIC; rm -f latest; ln -s ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR} latest ; rm -f ./index.html; cd ..;
+    - echo '<head><meta http-equiv="refresh" content="0; URL=latest"></head>' > $PUBLIC/index.html
+  artifacts:
+    paths:
+      - public
