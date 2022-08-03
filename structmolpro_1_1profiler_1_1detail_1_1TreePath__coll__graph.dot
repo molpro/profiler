@@ -1,0 +1,11 @@
+digraph "molpro::profiler::detail::TreePath"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="molpro::profiler::detail\l::TreePath",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip="Utility for storing a node as a path from root to that node and corresponding Counter."];
+  Node2 -> Node1 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" counter" ,fontname="Helvetica"];
+  Node2 [label="molpro::profiler::Counter",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classmolpro_1_1profiler_1_1Counter.html",tooltip="Resource counter used for storing operation count, call count, timing information."];
+  Node3 -> Node2 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" cpu\nwall" ,fontname="Helvetica"];
+  Node3 [label="molpro::profiler::Timer",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classmolpro_1_1profiler_1_1Timer.html",tooltip="Measures cpu or wall time. Can be constructed as a dummy that is always stopped."];
+}
