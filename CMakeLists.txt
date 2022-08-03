@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 3.14)
-project(Profiler CXX)
+project(profiler CXX)
 
 include(FetchContent)
 FetchContent_Declare(
         LibraryManager
-        GIT_REPOSITORY https://gitlab.com/molpro/librarymanager.git
-        GIT_TAG fef21c35ac00abea4d810ee8c8dbc34dcf8fa2e8
+        GIT_REPOSITORY https://github.com/molpro/library-manager.git
+        GIT_TAG 0.11.3
 )
 FetchContent_Declare(
         dependency_manager
-        GIT_REPOSITORY https://gitlab.com/dependencymanager/dependency-manager.git
-        GIT_TAG 0.1.5
+        GIT_REPOSITORY https://github.com/molpro/dependency-manager.git
+        GIT_TAG 0.2.0
 )
 FetchContent_MakeAvailable(LibraryManager)
 

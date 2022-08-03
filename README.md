@@ -1,8 +1,8 @@
-Welcome to Profiler!
-====================
+Profiler
+========
 
 Full documentation can be found here 
-[https://molpro.gitlab.io/profiler/latest/](https://molpro.gitlab.io/profiler/latest/).
+[https://molpro.github.io/profiler](https://molpro.github.io/profiler).
 
 # Overview
 
@@ -133,16 +133,16 @@ The results of Profiler can be reported using `molpro::profiler::report()` funct
   Profiler can be added to an existing project that uses CMake by downloading it with FetchContent.
   If Fortran compilers or MPI are enabled during the CMake build than relevant Profiler functionality will be
   build automatically.
-  Simply link **molpro::Profiler** target to your library.
+  Simply link **molpro::profiler** target to your library.
   
-  Profiler uses [DependencyManager](https://gitlab.com/dependencymanager/dependency-manager)
+  Profiler uses [DependencyManager](https://github.com/molpro/dependency-manager)
   and hosts its doxygen tag files. 
   You can link your doxygen generated documentation with Profiler using 
-  [DependencyManager_Doc](https://dependencymanager.gitlab.io/dependency-manager/dependency_manager_docs.html).
+  [DependencyManager_Doc](https://molpro.github.io/dependency-manager/dependency_manager_docs.html).
 
-# List of Contributors
+# Contributors
 
-Prof. Peter J. Knowles
+Peter J. Knowles
 
 Marat Sibaev
 
@@ -150,7 +150,7 @@ Iakov Polyak
 
 Rob Welch
 
-# License
+# Licence
 
 MIT License
 Copyright (c) 2020 Peter James Knowles
