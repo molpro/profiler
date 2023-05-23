@@ -37,19 +37,17 @@ MODULE ProfilerF
     INTEGER(kind = mpicomm_kind), PRIVATE, SAVE :: s_mpicomm_compute=-9999999
     TYPE :: Profiler
         PRIVATE
-        TYPE(c_ptr) :: handle !< C pointer to the corresponding C++ object
+        TYPE(c_ptr) :: handle = c_null_ptr !< C pointer to the corresponding C++ object
     CONTAINS
         PROCEDURE :: start => ProfilerStartF !< Begin timing a code segment
         PROCEDURE :: stop => ProfilerStopF !< End timing a code segment
         PROCEDURE :: active => ProfilerActiveF !< Set the maximum depth at which recording is done
         PROCEDURE :: print => ProfilerPrintF !< \public Print a representation of the object.
+        PROCEDURE :: construct => ProfilerConstructF !< \public Constructs stored profiler
         PROCEDURE :: destroy => ProfilerDestroyF !< \public Destroys stored profiler
         PROCEDURE :: dotgraph => ProfilerDotgraphF !< \public Export a graphviz dot file
         FINAL :: destructor
     END TYPE Profiler
-    INTERFACE Profiler
-        MODULE PROCEDURE ProfilerNewF
-    END INTERFACE Profiler
 
     INTERFACE
         !FUNCTION mpicomm_global() BIND(C)
@@ -147,9 +145,9 @@ CONTAINS
     !! A large value means that data will always be accumulated; zero means that calls to start and stop do nothing.
     !! \param comm The MPI communicator over which statistics should be aggregated.
     !! \param cpu Whether to poll CPU time
-    FUNCTION ProfilerNewF(name, sort, level, comm, cpu)
+    SUBROUTINE ProfilerConstructF(ProfilerNewF, name, sort, level, comm, cpu)
         USE iso_c_binding
-        TYPE(Profiler) :: ProfilerNewF
+        CLASS(Profiler) :: ProfilerNewF
         CHARACTER(len = *), INTENT(in) :: name !< Title of this object
         INTEGER, INTENT(in), OPTIONAL :: sort, level
         INTEGER(KIND=mpicomm_kind), INTENT(in), OPTIONAL :: comm !< MPI communicator
@@ -198,7 +196,7 @@ CONTAINS
     ENDIF
 #endif
         END IF
-    END FUNCTION ProfilerNewF
+    END SUBROUTINE ProfilerConstructF
     !> \public Begin timing a code segment.
     !! Should be called through type-bound interface \c start.
     SUBROUTINE ProfilerStartF(this, name)
@@ -285,7 +283,7 @@ CONTAINS
     SUBROUTINE destructor(this)
         TYPE(Profiler), INTENT(in) :: this !< Profiler object
         !write(*,*) "Implicit profiler destructor called"
-        CALL ProfilerDestroyC(this%handle)
+        if (c_associated(this%handle)) CALL ProfilerDestroyC(this%handle)
     END SUBROUTINE destructor
 END MODULE ProfilerF
 
@@ -304,7 +302,7 @@ SUBROUTINE profiler_module_test(printlevel)
  DOUBLE PRECISION, POINTER, DIMENSION(:) :: x
 #endif
     INTEGER :: i, kk
-    p = Profiler('Fortran')
+    call p%construct('Fortran')
     !call p%active(2)
     call worker
     call p%start('subtask')

@@ -27,7 +27,7 @@ PROGRAM mainf
     CALL profiler_module_test(level)
 
     !p = Profiler('testing',1,0,MPI_COMM_WORLD)
-    p = Profiler('testing', 1, 0)
+    call p%construct('testing', 1, 0)
     call p%active(99, stopPrint = 0)
     call execute_command_line('sleep 1')
     call p%start('a')
@@ -60,7 +60,7 @@ PROGRAM mainf
     call p%print(6, cumulative = .false.)
     call p%dotgraph('profiler-fortran-example.gv')
     call p%destroy() ! This has to be called only if p is declared in the main program, because in that case the final subroutine of Profiler is not invoked
-    pcpu = Profiler('wall+cpu', 1, 0, cpu=.true.)
+    call pcpu%construct('wall+cpu', 1, 0, cpu=.true.)
     call pcpu%active(99, stopPrint = 0)
     call pcpu%start('many wall+cpu')
     do i=1,repeat

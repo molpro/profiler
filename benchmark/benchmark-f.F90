@@ -23,7 +23,7 @@ program test
     IF (command_argument_count() > 0) CALL get_command_argument(1, buff)
     READ(buff, '(I8)') repeat
     print *, repeat, ' instances'
-    p = Profiler('test', 1, 0)
+    call p%construct('test', 1, 0)
     call p%active(2)
     call etime(values0,time0)
  do i=1,repeat

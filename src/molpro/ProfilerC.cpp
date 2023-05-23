@@ -87,8 +87,8 @@ void profilerStart(void* profiler, char* name) {
 }
 void profilerStop(void* profiler, char* name, long operations) {
   auto obj = static_cast<Profiler*>(profiler);
-  obj->stop();
   *obj += operations;
+  obj->stop();
 }
 char* profilerStr(void* profiler, int verbosity, int cumulative, int precision) {
   auto obj = static_cast<Profiler*>(profiler);
