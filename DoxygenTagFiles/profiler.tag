@@ -621,7 +621,7 @@
       <arglist>(std::ostream &amp;os, const Profiler &amp;obj)</arglist>
     </member>
   </compound>
-  <compound kind="interface">
+  <compound kind="struct">
     <name>profilerf::profiler</name>
     <filename>structprofilerf_1_1profiler.html</filename>
     <member kind="function">
@@ -654,6 +654,13 @@
     </member>
     <member kind="function">
       <type>PROCEDURE</type>
+      <name>construct</name>
+      <anchorfile>structprofilerf_1_1profiler.html</anchorfile>
+      <anchor>a9edb852f88825c21e6f285d5189c094c</anchor>
+      <arglist>=&gt; profilerconstructf</arglist>
+    </member>
+    <member kind="function">
+      <type>PROCEDURE</type>
       <name>destroy</name>
       <anchorfile>structprofilerf_1_1profiler.html</anchorfile>
       <anchor>a776c8a7adb921fb73699ec5141af37dd</anchor>
@@ -672,13 +679,6 @@
       <anchorfile>structprofilerf_1_1profiler.html</anchorfile>
       <anchor>a75d48c3b53ca9ea23b63ee2666c562ca</anchor>
       <arglist></arglist>
-    </member>
-    <member kind="function">
-      <type>type(profiler) function</type>
-      <name>profilernewf</name>
-      <anchorfile>structprofilerf_1_1profiler.html</anchorfile>
-      <anchor>a884ba4d385ef346cc3da0e44f7159e5e</anchor>
-      <arglist>(name, sort, level, comm, cpu)</arglist>
     </member>
     <member kind="variable">
       <type>type(c_ptr)</type>
@@ -1307,13 +1307,13 @@
   <compound kind="namespace">
     <name>profilerf</name>
     <filename>namespaceprofilerf.html</filename>
-    <class kind="interface">profilerf::profiler</class>
+    <class kind="type">profilerf::profiler</class>
     <member kind="function">
-      <type>type(profiler) function</type>
-      <name>profilernewf</name>
+      <type>subroutine</type>
+      <name>profilerconstructf</name>
       <anchorfile>namespaceprofilerf.html</anchorfile>
-      <anchor>a4305fc2421b258688fbf25f9990eef45</anchor>
-      <arglist>(name, sort, level, comm, cpu)</arglist>
+      <anchor>a2832ed9a4fc5863903121fa11759e031</anchor>
+      <arglist>(ProfilerNewF, name, sort, level, comm, cpu)</arglist>
     </member>
     <member kind="function">
       <type>subroutine</type>

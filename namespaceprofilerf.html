@@ -106,14 +106,14 @@ $(document).ready(function(){initNavTree('namespaceprofilerf.html',''); initResi
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Data Types</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structprofilerf_1_1profiler.html">profiler</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">type &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structprofilerf_1_1profiler.html">profiler</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
-<tr class="memitem:a4305fc2421b258688fbf25f9990eef45"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structprofilerf_1_1profiler.html">profiler</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceprofilerf.html#a4305fc2421b258688fbf25f9990eef45">profilernewf</a> (name, sort, level, comm, cpu)</td></tr>
-<tr class="memdesc:a4305fc2421b258688fbf25f9990eef45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new instance. Should be called through object construction.  <a href="namespaceprofilerf.html#a4305fc2421b258688fbf25f9990eef45">More...</a><br /></td></tr>
-<tr class="separator:a4305fc2421b258688fbf25f9990eef45"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2832ed9a4fc5863903121fa11759e031"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceprofilerf.html#a2832ed9a4fc5863903121fa11759e031">profilerconstructf</a> (ProfilerNewF, name, sort, level, comm, cpu)</td></tr>
+<tr class="memdesc:a2832ed9a4fc5863903121fa11759e031"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new instance. Should be called through object construction.  <a href="namespaceprofilerf.html#a2832ed9a4fc5863903121fa11759e031">More...</a><br /></td></tr>
+<tr class="separator:a2832ed9a4fc5863903121fa11759e031"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a21bb07e910aa5210f417a96b52860dfa"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceprofilerf.html#a21bb07e910aa5210f417a96b52860dfa">profilerstartf</a> (this, name)</td></tr>
 <tr class="memdesc:a21bb07e910aa5210f417a96b52860dfa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Begin timing a code segment. Should be called through type-bound interface <code>start</code>.  <a href="namespaceprofilerf.html#a21bb07e910aa5210f417a96b52860dfa">More...</a><br /></td></tr>
 <tr class="separator:a21bb07e910aa5210f417a96b52860dfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -235,6 +235,73 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="a2832ed9a4fc5863903121fa11759e031"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2832ed9a4fc5863903121fa11759e031">&#9670;&nbsp;</a></span>profilerconstructf()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine profilerf::profilerconstructf </td>
+          <td>(</td>
+          <td class="paramtype">class(<a class="el" href="structprofilerf_1_1profiler.html">profiler</a>)&#160;</td>
+          <td class="paramname"><em>ProfilerNewF</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">character(len = *), intent(in)&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in), optional&#160;</td>
+          <td class="paramname"><em>sort</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in), optional&#160;</td>
+          <td class="paramname"><em>level</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=<a class="el" href="namespaceprofilerf.html#ae2af48b1d9953f76238633b906291c04">mpicomm_kind</a>), intent(in), optional&#160;</td>
+          <td class="paramname"><em>comm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">logical, intent(in), optional&#160;</td>
+          <td class="paramname"><em>cpu</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Construct a new instance. Should be called through object construction. </p>
+<dl class="section warning"><dt>Warning</dt><dd>If using anything other than the default MPI communicator MPI_COMM_WORLD, for example from use of GA or PPIDD, then you must pass the communicator explicitly. </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir"></td><td class="paramname">name</td><td>the title of this object. </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">sort</td><td>Criterion for sorting printed result table. </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">level</td><td>A large value means that data will always be accumulated; zero means that calls to start and stop do nothing. </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">comm</td><td>The MPI communicator over which statistics should be aggregated. </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">cpu</td><td>Whether to poll CPU time </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Title of this object </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">comm</td><td>MPI communicator </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a86f8942d3cef5b0770394e166a5a3176"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a86f8942d3cef5b0770394e166a5a3176">&#9670;&nbsp;</a></span>profilerdestroyf()</h2>
 
@@ -304,67 +371,6 @@ Variables</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>file name for resulting dotgraph</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">cumulative</td><td>Whether local or cumulative resources are printed</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">threshold</td><td>cutoff threshold </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a4305fc2421b258688fbf25f9990eef45"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4305fc2421b258688fbf25f9990eef45">&#9670;&nbsp;</a></span>profilernewf()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">type(<a class="el" href="structprofilerf_1_1profiler.html">profiler</a>) function profilerf::profilernewf </td>
-          <td>(</td>
-          <td class="paramtype">character(len = *), intent(in)&#160;</td>
-          <td class="paramname"><em>name</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer, intent(in), optional&#160;</td>
-          <td class="paramname"><em>sort</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer, intent(in), optional&#160;</td>
-          <td class="paramname"><em>level</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(kind=<a class="el" href="namespaceprofilerf.html#ae2af48b1d9953f76238633b906291c04">mpicomm_kind</a>), intent(in), optional&#160;</td>
-          <td class="paramname"><em>comm</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">logical, intent(in), optional&#160;</td>
-          <td class="paramname"><em>cpu</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Construct a new instance. Should be called through object construction. </p>
-<dl class="section warning"><dt>Warning</dt><dd>If using anything other than the default MPI communicator MPI_COMM_WORLD, for example from use of GA or PPIDD, then you must pass the communicator explicitly. </dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir"></td><td class="paramname">name</td><td>the title of this object. </td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">sort</td><td>Criterion for sorting printed result table. </td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">level</td><td>A large value means that data will always be accumulated; zero means that calls to start and stop do nothing. </td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">comm</td><td>The MPI communicator over which statistics should be aggregated. </td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">cpu</td><td>Whether to poll CPU time </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Title of this object </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">comm</td><td>MPI communicator </td></tr>
   </table>
   </dd>
 </dl>
