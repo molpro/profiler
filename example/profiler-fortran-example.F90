@@ -74,7 +74,7 @@ PROGRAM mainf
     end do
     call pcpu%stop('many timing_molpro', repeat)
     call pcpu%start('many walcl')
-    do i=1,repeat
+    do i=1,repeat/100
         a=wallcl()
     end do
     call pcpu%stop('many walcl', repeat)
