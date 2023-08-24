@@ -310,7 +310,7 @@ SUBROUTINE profiler_module_test(printlevel)
     a = 2d0
     do kk = 1, 3
         call p%start('subsubtask')
-        a = a + sqrt(1 / a) ! stop the compiler optimising away
+        a = a + sqrt(1 / a+0.1d0) ! stop the compiler optimising away
         call worker
         call p%stop('subsubtask')
     end do
