@@ -8,6 +8,7 @@
 
 namespace molpro {
 namespace profiler {
+  std::shared_ptr<Profiler> s_saver;
 
 // FIXME improve description
 /*!
@@ -39,9 +40,9 @@ struct WeakSingleton {
   //! Access the last registered object
   static std::shared_ptr<Object> single() {
     if (m_register.empty() or not std::get<1>(m_register.back()).lock()) { // default zero-depth instance
-      auto saver = new std::shared_ptr<Profiler>; *saver = Profiler::single("default");
-      (*saver)->set_max_depth(0);
-      return *saver;
+      auto result = Profiler::single("default");
+      result->set_max_depth(0);
+      return result;
     }
     assert(!m_register.empty() && "First must make a call to single(key, ...) to create an object");
     std::shared_ptr<Object> result = std::get<1>(m_register.back()).lock();
