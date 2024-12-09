@@ -1,3 +1,3 @@
 FROM ubuntu:jammy-20220531
 RUN apt update
-RUN apt install -y cmake git g++ gfortran doxygen bash rsync curl mpich ccache
+RUN apt install -y cmake git g++ gfortran doxygen bash rsync curl mpich ccache valgrind
