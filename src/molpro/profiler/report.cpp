@@ -274,11 +274,13 @@ void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool
   if (rank == 0)
     n_root = n_loc;
   MPI_Bcast(&n_root, 1, MPI_INT, 0, communicator);
-  if (n_root != n_loc)
-    MPI_Abort(communicator, 0); // Profiler trees are not compatible
-  auto root_sync = detail::synchronised_tree(prof.root, nullptr, communicator, -1);
-  auto paths = detail::TreePath::convert_tree_to_paths(root_sync, cumulative, sort_by);
-  detail::write_report(*prof.root, prof.description(), paths, out, cumulative);
+  if (n_root != n_loc) {
+    out << "Profiler trees are not compatible between MPI ranks; report cannot be made." << std::endl;
+  } else {
+    auto root_sync = detail::synchronised_tree(prof.root, nullptr, communicator, -1);
+    auto paths = detail::TreePath::convert_tree_to_paths(root_sync, cumulative, sort_by);
+    detail::write_report(*prof.root, prof.description(), paths, out, cumulative);
+  }
 }
 
 void report_root_process(const Profiler& prof, std::ostream& out, MPI_Comm communicator, int root_process,
@@ -290,11 +292,13 @@ void report_root_process(const Profiler& prof, std::ostream& out, MPI_Comm commu
     n_root = n_loc;
   MPI_Bcast(&n_root, 1, MPI_INT, 0, communicator);
   if (n_root != n_loc)
-    MPI_Abort(communicator, 0); // Profiler trees are not compatible
-  auto root_sync = detail::synchronised_tree(prof.root, nullptr, communicator, root_process);
-  if (rank == root_process) {
-    auto paths = detail::TreePath::convert_tree_to_paths(root_sync, cumulative, sort_by);
-    detail::write_report(*prof.root, prof.description(), paths, out, cumulative);
+    out << "Profiler trees are not compatible between MPI ranks; report cannot be made." << std::endl;
+  else {
+    auto root_sync = detail::synchronised_tree(prof.root, nullptr, communicator, root_process);
+    if (rank == root_process) {
+      auto paths = detail::TreePath::convert_tree_to_paths(root_sync, cumulative, sort_by);
+      detail::write_report(*prof.root, prof.description(), paths, out, cumulative);
+    }
   }
 }
 
