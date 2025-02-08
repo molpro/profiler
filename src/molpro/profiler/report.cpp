@@ -287,7 +287,7 @@ void report_root_process(const Profiler& prof, std::ostream& out, MPI_Comm commu
     }
   }
   auto root_sync = detail::synchronised_tree(prof.root, nullptr, communicator, root_process);
-  if (rank == root_process) {
+  if (root_process < 0 || rank == root_process) {
     auto paths = detail::TreePath::convert_tree_to_paths(root_sync, cumulative, sort_by);
     detail::write_report(*prof.root, prof.description(), paths, out, cumulative);
   }

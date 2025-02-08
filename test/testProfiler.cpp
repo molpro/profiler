@@ -196,7 +196,7 @@ TEST(Profiler, single__two_profilers) {
 TEST(Profiler, str) {
   Profiler p("test");
   auto s = p.str();
-  ASSERT_FALSE(s.empty());
+  ASSERT_FALSE(s.empty()) << s;
 }
 
 TEST(Profiler, ostream_operator) {
