@@ -12,3 +12,8 @@ if (FORTRAN)
     LibraryManager_Append(${PROJECT_NAME} SOURCES ProfilerF.F90)
 endif ()
 
+if (TARGET ppidd::ppidd)
+    message(STATUS "molpro::Profiler with PPIDD")
+    target_link_libraries(${PROJECT_NAME} PUBLIC ppidd::ppidd)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE HAVE_PPIDD_H)
+endif ()
