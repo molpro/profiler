@@ -1,8 +1,10 @@
 var searchData=
 [
-  ['timer_133',['Timer',['../classmolpro_1_1profiler_1_1Timer.html',1,'molpro::profiler::Timer'],['../classmolpro_1_1profiler_1_1Timer.html#a9d9f382f87bd64d9189e5ce3965399ea',1,'molpro::profiler::Timer::Timer(Type type, bool is_dummy)'],['../classmolpro_1_1profiler_1_1Timer.html#a2b0c4272fe373b7abaee902b338adb02',1,'molpro::profiler::Timer::Timer(double cumulative_time, Type type, bool is_dummy)']]],
-  ['total_5foperation_5fcount_134',['total_operation_count',['../namespacemolpro_1_1profiler_1_1detail.html#aad8e9f89503715763086231dc2797cf3',1,'molpro::profiler::detail']]],
-  ['treepath_135',['TreePath',['../structmolpro_1_1profiler_1_1detail_1_1TreePath.html',1,'molpro::profiler::detail::TreePath'],['../structmolpro_1_1profiler_1_1detail_1_1TreePath.html#ada8d4bacd52b41d790896b4bd460b255',1,'molpro::profiler::detail::TreePath::TreePath()']]],
-  ['type_136',['Type',['../classmolpro_1_1profiler_1_1Timer.html#afba52e6cbab6bd528476f2f43d98fda8',1,'molpro::profiler::Timer']]],
-  ['type_137',['type',['../classmolpro_1_1profiler_1_1Timer.html#ab61998075350f0b424f3c0abcb49437c',1,'molpro::profiler::Timer']]]
+  ['walk_133',['walk',['../classmolpro_1_1profiler_1_1Node.html#a19f49c5027c223af3e229c50c592b261',1,'molpro::profiler::Node::walk(ForwardIt start_name, ForwardIt end_name)'],['../classmolpro_1_1profiler_1_1Node.html#a0c14484f400e493fc13b14d96c06c12f',1,'molpro::profiler::Node::walk(const std::list&lt; std::string &gt; &amp;path_to_node)']]],
+  ['walk_5fup_134',['walk_up',['../classmolpro_1_1profiler_1_1Node.html#ad21e99b5ef2e90fa9fd461c0489a0114',1,'molpro::profiler::Node']]],
+  ['wall_135',['wall',['../classmolpro_1_1profiler_1_1Timer.html#afba52e6cbab6bd528476f2f43d98fda8aba4095fd99d7a4aa7c3ce9a377a7d6ce',1,'molpro::profiler::Timer::wall()'],['../classmolpro_1_1profiler_1_1Counter.html#a99620a5bacd3e931858d4656c50aecf7',1,'molpro::profiler::Counter::wall()'],['../namespacemolpro_1_1profiler.html#ae9e00894b27b784dadfc76b56d63a602a2d86bdac01a3315b95794ffa7360edc3',1,'molpro::profiler::wall()']]],
+  ['weaksingleton_136',['WeakSingleton',['../structmolpro_1_1profiler_1_1WeakSingleton.html',1,'molpro::profiler']]],
+  ['write_5fdotgraph_137',['write_dotgraph',['../namespacemolpro_1_1profiler_1_1detail.html#a181c763040422c59d6a4363c52dc50ff',1,'molpro::profiler::detail']]],
+  ['write_5freport_138',['write_report',['../namespacemolpro_1_1profiler_1_1detail.html#a4215518e44648acb4ea0d4bed1de3e5d',1,'molpro::profiler::detail']]],
+  ['write_5ftiming_139',['write_timing',['../namespacemolpro_1_1profiler_1_1detail.html#a6ddb1fe00da5f79b9535edb00cd0c44f',1,'molpro::profiler::detail']]]
 ];

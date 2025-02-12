@@ -154,26 +154,17 @@ Functions</h2></td></tr>
 <tr class="memitem:a95116b9c056810080c206e1315c57597"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolpro_1_1profiler.html#a95116b9c056810080c206e1315c57597">report</a> (const <a class="el" href="classmolpro_1_1profiler_1_1Profiler.html">Profiler</a> &amp;prof, std::ostream &amp;out, bool cumulative=true, <a class="el" href="namespacemolpro_1_1profiler.html#ae9e00894b27b784dadfc76b56d63a602">SortBy</a> sort_by=<a class="el" href="namespacemolpro_1_1profiler.html#ae9e00894b27b784dadfc76b56d63a602a2d86bdac01a3315b95794ffa7360edc3">SortBy::wall</a>)</td></tr>
 <tr class="memdesc:a95116b9c056810080c206e1315c57597"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reports content of <a class="el" href="classmolpro_1_1profiler_1_1Profiler.html" title="Instrumental profiler for timing sections of code.">Profiler</a>.  <a href="namespacemolpro_1_1profiler.html#a95116b9c056810080c206e1315c57597">More...</a><br /></td></tr>
 <tr class="separator:a95116b9c056810080c206e1315c57597"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a095eee337b8943511fbc51236cb21709"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolpro_1_1profiler.html#a095eee337b8943511fbc51236cb21709">report</a> (const <a class="el" href="classmolpro_1_1profiler_1_1Profiler.html">Profiler</a> &amp;prof, std::ostream &amp;out, MPI_Comm communicator, bool cumulative=true, <a class="el" href="namespacemolpro_1_1profiler.html#ae9e00894b27b784dadfc76b56d63a602">SortBy</a> sort_by=<a class="el" href="namespacemolpro_1_1profiler.html#ae9e00894b27b784dadfc76b56d63a602a2d86bdac01a3315b95794ffa7360edc3">SortBy::wall</a>)</td></tr>
+<tr class="separator:a095eee337b8943511fbc51236cb21709"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade25b229c6cf09ed8f722c9cfb04c786"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolpro_1_1profiler.html#ade25b229c6cf09ed8f722c9cfb04c786">report_root_process</a> (const <a class="el" href="classmolpro_1_1profiler_1_1Profiler.html">Profiler</a> &amp;prof, std::ostream &amp;out, MPI_Comm communicator, int root_process, bool cumulative=true, <a class="el" href="namespacemolpro_1_1profiler.html#ae9e00894b27b784dadfc76b56d63a602">SortBy</a> sort_by=<a class="el" href="namespacemolpro_1_1profiler.html#ae9e00894b27b784dadfc76b56d63a602a2d86bdac01a3315b95794ffa7360edc3">SortBy::wall</a>)</td></tr>
+<tr class="memdesc:ade25b229c6cf09ed8f722c9cfb04c786"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reports collective content of <a class="el" href="classmolpro_1_1profiler_1_1Profiler.html" title="Instrumental profiler for timing sections of code.">Profiler</a> but writing on the root process only.  <a href="namespacemolpro_1_1profiler.html#ade25b229c6cf09ed8f722c9cfb04c786">More...</a><br /></td></tr>
+<tr class="separator:ade25b229c6cf09ed8f722c9cfb04c786"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fe39ec6a2fce8a0556fb7f93256c5a5"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolpro_1_1profiler.html#a0fe39ec6a2fce8a0556fb7f93256c5a5">get_dotgraph</a> (const <a class="el" href="classmolpro_1_1profiler_1_1Profiler.html">Profiler</a> &amp;prof, MPI_Comm communicator, int root_process, int *hot, int *cool, double threshold, bool get_percentage_time)</td></tr>
+<tr class="separator:a0fe39ec6a2fce8a0556fb7f93256c5a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae3e6f4ce4f648798374f80e9b3bc9de3"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolpro_1_1profiler.html#ae3e6f4ce4f648798374f80e9b3bc9de3">get_dotgraph</a> (const <a class="el" href="classmolpro_1_1profiler_1_1Profiler.html">Profiler</a> &amp;prof, int hot[3], int cool[3], double threshold, bool get_percentage_time)</td></tr>
 <tr class="separator:ae3e6f4ce4f648798374f80e9b3bc9de3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a14b9a5bef664e269695fc781a7243194"><td class="memItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolpro_1_1profiler.html#a14b9a5bef664e269695fc781a7243194">operator&lt;&lt;</a> (std::ostream &amp;os, const <a class="el" href="classmolpro_1_1profiler_1_1Profiler.html">Profiler</a> &amp;obj)</td></tr>
 <tr class="separator:a14b9a5bef664e269695fc781a7243194"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a33e5fcf11ef48517c70045c34eb845bc"><td class="memItemLeft" align="right" valign="top">MPI_Comm&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolpro_1_1profiler.html#a33e5fcf11ef48517c70045c34eb845bc">comm_self</a> ()</td></tr>
-<tr class="memdesc:a33e5fcf11ef48517c70045c34eb845bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return MPI_COMM_SELF in an MPI program, or an appropriate dummy if not.  <a href="namespacemolpro_1_1profiler.html#a33e5fcf11ef48517c70045c34eb845bc">More...</a><br /></td></tr>
-<tr class="separator:a33e5fcf11ef48517c70045c34eb845bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4d67b0e0440a02ee2e44f62c44704eb6"><td class="memItemLeft" align="right" valign="top">MPI_Comm&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolpro_1_1profiler.html#a4d67b0e0440a02ee2e44f62c44704eb6">comm_global</a> ()</td></tr>
-<tr class="memdesc:a4d67b0e0440a02ee2e44f62c44704eb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the MPI communicator containing all processes available for participation in computation. If MPI support has been compiled (either <a class="el" href="mpi_8h_source.html">mpi.h</a> has already been included, or HAVE_MPI_H has been defined) but not yet initialised, MPI will be initialised, and then MPI_COMM_WORLD is selected. Otherwise, in the case of a program compiled with PPIDD, and for which PPIDD has already been initialised, this will be the PPIDD worker communicator. Otherwise, in the case of a program compiled with GA, and for which GA has already been initialised, this will be the GA worker communicator. Otherwise, if MPI support has is active, MPI_COMM_WORLD is selected. Otherwise (completely serial code), a place-holder is chosen.  <a href="namespacemolpro_1_1profiler.html#a4d67b0e0440a02ee2e44f62c44704eb6">More...</a><br /></td></tr>
-<tr class="separator:a4d67b0e0440a02ee2e44f62c44704eb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9b51b64942c4a95951e0b462e7f95f02"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolpro_1_1profiler.html#a9b51b64942c4a95951e0b462e7f95f02">size_global</a> ()</td></tr>
-<tr class="separator:a9b51b64942c4a95951e0b462e7f95f02"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a12ec6404997c63364ce0f8385e2d359c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolpro_1_1profiler.html#a12ec6404997c63364ce0f8385e2d359c">rank_global</a> ()</td></tr>
-<tr class="separator:a12ec6404997c63364ce0f8385e2d359c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a65334f2187f52342168b35a4a39e276c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolpro_1_1profiler.html#a65334f2187f52342168b35a4a39e276c">init</a> ()</td></tr>
-<tr class="memdesc:a65334f2187f52342168b35a4a39e276c"><td class="mdescLeft">&#160;</td><td class="mdescRight">In MPI environment initialize; otherwise do nothing. Intended to support MPI-agnostic programs.  <a href="namespacemolpro_1_1profiler.html#a65334f2187f52342168b35a4a39e276c">More...</a><br /></td></tr>
-<tr class="separator:a65334f2187f52342168b35a4a39e276c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f84b251e1aa8ee01afc7a3bf638ec80"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemolpro_1_1profiler.html#a0f84b251e1aa8ee01afc7a3bf638ec80">finalize</a> ()</td></tr>
-<tr class="memdesc:a0f84b251e1aa8ee01afc7a3bf638ec80"><td class="mdescLeft">&#160;</td><td class="mdescRight">In MPI environment finalize; otherwise do nothing.  <a href="namespacemolpro_1_1profiler.html#a0f84b251e1aa8ee01afc7a3bf638ec80">More...</a><br /></td></tr>
-<tr class="separator:a0f84b251e1aa8ee01afc7a3bf638ec80"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -211,83 +202,8 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a4d67b0e0440a02ee2e44f62c44704eb6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4d67b0e0440a02ee2e44f62c44704eb6">&#9670;&nbsp;</a></span>comm_global()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">MPI_Comm molpro::profiler::comm_global </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Return the MPI communicator containing all processes available for participation in computation. If MPI support has been compiled (either <a class="el" href="mpi_8h_source.html">mpi.h</a> has already been included, or HAVE_MPI_H has been defined) but not yet initialised, MPI will be initialised, and then MPI_COMM_WORLD is selected. Otherwise, in the case of a program compiled with PPIDD, and for which PPIDD has already been initialised, this will be the PPIDD worker communicator. Otherwise, in the case of a program compiled with GA, and for which GA has already been initialised, this will be the GA worker communicator. Otherwise, if MPI support has is active, MPI_COMM_WORLD is selected. Otherwise (completely serial code), a place-holder is chosen. </p>
-<dl class="section return"><dt>Returns</dt><dd>The global communicator </dd></dl>
-
-</div>
-</div>
-<a id="a33e5fcf11ef48517c70045c34eb845bc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a33e5fcf11ef48517c70045c34eb845bc">&#9670;&nbsp;</a></span>comm_self()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">MPI_Comm molpro::profiler::comm_self </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Return MPI_COMM_SELF in an MPI program, or an appropriate dummy if not. </p>
-<dl class="section return"><dt>Returns</dt><dd>MPI_COMM_SELF if MPI initialised, MPI_COMM_NULL otherwise, or 0 if MP I support not compiled </dd></dl>
-
-</div>
-</div>
-<a id="a0f84b251e1aa8ee01afc7a3bf638ec80"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0f84b251e1aa8ee01afc7a3bf638ec80">&#9670;&nbsp;</a></span>finalize()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int molpro::profiler::finalize </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>In MPI environment finalize; otherwise do nothing. </p>
-
-</div>
-</div>
 <a id="ae3e6f4ce4f648798374f80e9b3bc9de3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae3e6f4ce4f648798374f80e9b3bc9de3">&#9670;&nbsp;</a></span>get_dotgraph()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3e6f4ce4f648798374f80e9b3bc9de3">&#9670;&nbsp;</a></span>get_dotgraph() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -332,22 +248,61 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a65334f2187f52342168b35a4a39e276c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a65334f2187f52342168b35a4a39e276c">&#9670;&nbsp;</a></span>init()</h2>
+<a id="a0fe39ec6a2fce8a0556fb7f93256c5a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0fe39ec6a2fce8a0556fb7f93256c5a5">&#9670;&nbsp;</a></span>get_dotgraph() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int molpro::profiler::init </td>
+          <td class="memname">std::string molpro::profiler::get_dotgraph </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="classmolpro_1_1profiler_1_1Profiler.html">Profiler</a> &amp;&#160;</td>
+          <td class="paramname"><em>prof</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">MPI_Comm&#160;</td>
+          <td class="paramname"><em>communicator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>root_process</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>hot</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>cool</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>threshold</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>get_percentage_time</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>In MPI environment initialize; otherwise do nothing. Intended to support MPI-agnostic programs. </p>
 
 </div>
 </div>
@@ -379,33 +334,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a12ec6404997c63364ce0f8385e2d359c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a12ec6404997c63364ce0f8385e2d359c">&#9670;&nbsp;</a></span>rank_global()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int molpro::profiler::rank_global </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="a95116b9c056810080c206e1315c57597"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a95116b9c056810080c206e1315c57597">&#9670;&nbsp;</a></span>report() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a95116b9c056810080c206e1315c57597">&#9670;&nbsp;</a></span>report() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -455,8 +385,54 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="a095eee337b8943511fbc51236cb21709"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a095eee337b8943511fbc51236cb21709">&#9670;&nbsp;</a></span>report() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void molpro::profiler::report </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classmolpro_1_1profiler_1_1Profiler.html">Profiler</a> &amp;&#160;</td>
+          <td class="paramname"><em>prof</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::ostream &amp;&#160;</td>
+          <td class="paramname"><em>out</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">MPI_Comm&#160;</td>
+          <td class="paramname"><em>communicator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>cumulative</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacemolpro_1_1profiler.html#ae9e00894b27b784dadfc76b56d63a602">SortBy</a>&#160;</td>
+          <td class="paramname"><em>sort_by</em> = <code><a class="el" href="namespacemolpro_1_1profiler.html#ae9e00894b27b784dadfc76b56d63a602a2d86bdac01a3315b95794ffa7360edc3">SortBy::wall</a></code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="ac11f7b0c852f3f13febeb7abcf47e76c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac11f7b0c852f3f13febeb7abcf47e76c">&#9670;&nbsp;</a></span>report() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ac11f7b0c852f3f13febeb7abcf47e76c">&#9670;&nbsp;</a></span>report() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -520,28 +496,57 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a9b51b64942c4a95951e0b462e7f95f02"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9b51b64942c4a95951e0b462e7f95f02">&#9670;&nbsp;</a></span>size_global()</h2>
+<a id="ade25b229c6cf09ed8f722c9cfb04c786"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade25b229c6cf09ed8f722c9cfb04c786">&#9670;&nbsp;</a></span>report_root_process()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">int molpro::profiler::size_global </td>
+          <td class="memname">void molpro::profiler::report_root_process </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="classmolpro_1_1profiler_1_1Profiler.html">Profiler</a> &amp;&#160;</td>
+          <td class="paramname"><em>prof</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">std::ostream &amp;&#160;</td>
+          <td class="paramname"><em>out</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">MPI_Comm&#160;</td>
+          <td class="paramname"><em>communicator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>root_process</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>cumulative</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacemolpro_1_1profiler.html#ae9e00894b27b784dadfc76b56d63a602">SortBy</a>&#160;</td>
+          <td class="paramname"><em>sort_by</em> = <code><a class="el" href="namespacemolpro_1_1profiler.html#ae9e00894b27b784dadfc76b56d63a602a2d86bdac01a3315b95794ffa7360edc3">SortBy::wall</a></code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Reports collective content of <a class="el" href="classmolpro_1_1profiler_1_1Profiler.html" title="Instrumental profiler for timing sections of code.">Profiler</a> but writing on the root process only. </p>
 
 </div>
 </div>
