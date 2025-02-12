@@ -1,8 +1,9 @@
 #ifndef PROFILER_SRC_MOLPRO_PROFILER_TREE_REPORT_H
 #define PROFILER_SRC_MOLPRO_PROFILER_TREE_REPORT_H
 #ifdef MOLPRO_PROFILER_MPI
-#include <mpi.h>
+// #include <mpi.h>
 #endif
+#include <molpro/mpi.h>
 
 #include <molpro/profiler/Counter.h>
 #include <molpro/profiler/Node.h>
@@ -52,7 +53,7 @@ void report(const std::shared_ptr<Node<Counter>>& root, const std::string& descr
  */
 void report(const Profiler& prof, std::ostream& out, bool cumulative = true, SortBy sort_by = SortBy::wall);
 
-#ifdef MOLPRO_PROFILER_MPI
+// #ifdef MOLPRO_PROFILER_MPI
 void report(const Profiler& prof, std::ostream& out, MPI_Comm communicator, bool cumulative = true,
             SortBy sort_by = SortBy::wall);
 //! Reports collective content of Profiler but writing on the root process only
@@ -60,7 +61,7 @@ void report_root_process(const Profiler& prof, std::ostream& out, MPI_Comm commu
                          bool cumulative = true, SortBy sort_by = SortBy::wall);
 std::string get_dotgraph(const Profiler& prof, MPI_Comm communicator, int root_process, int* hot, int* cool,
                          double threshold, bool get_percentage_time);
-#endif
+// #endif
 std::string get_dotgraph(const Profiler& prof, int hot[3], int cool[3], double threshold, bool get_percentage_time);
 
 namespace detail {

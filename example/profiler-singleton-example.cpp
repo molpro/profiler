@@ -10,7 +10,8 @@
 using molpro::Profiler;
 
 void sleep_milliseconds(const std::string &name, int repeats) {
-  auto p = Profiler::single()->push(name);
+  auto profiler = Profiler::single();
+  auto p = profiler->push(name);
   for (int i = 0; i < repeats; ++i) {
     std::this_thread::sleep_for(std::chrono::milliseconds{1});
   }

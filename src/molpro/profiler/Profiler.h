@@ -1,8 +1,9 @@
 #ifndef PROFILER_SRC_MOLPRO_PROFILER_PROFILER_H
 #define PROFILER_SRC_MOLPRO_PROFILER_PROFILER_H
 #ifdef MOLPRO_PROFILER_MPI
-#include <mpi.h>
+// #include <mpi.h>
 #endif
+#include <molpro/mpi.h>
 
 #include <molpro/profiler/SortBy.h>
 
