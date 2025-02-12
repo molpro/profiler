@@ -4,8 +4,7 @@
 #include "molpro/profiler/WeakSingleton.h"
 #include "molpro/profiler/report.h"
 
-#include "mpi.h"
-#include <algorithm>
+#include <molpro/mpi.h>
 #include <limits>
 #include <regex>
 #include <sstream>
@@ -95,7 +94,7 @@ size_t Profiler::Proxy::operator++(int) {
 
 std::string Profiler::str(bool cumulative, SortBy sort_by) const {
 #ifdef MOLPRO_PROFILER_MPI
-  return str(comm_global(), cumulative, sort_by);
+  return str(mpi::comm_global(), cumulative, sort_by);
 #else
   std::stringstream out;
   report(*this, out, cumulative, sort_by);
@@ -117,7 +116,7 @@ std::string Profiler::dotgraph(std::string path, double threshold, bool cumulati
                                SortBy sort_by, std::vector<std::pair<double, double>> heat_adjust,
                                bool get_percentage_time) {
 #ifdef MOLPRO_PROFILER_MPI
-  return dotgraph(path, comm_global(), 0, threshold, cumulative, hot, cool, sort_by, heat_adjust, get_percentage_time);
+  return dotgraph(path, mpi::comm_global(), 0, threshold, cumulative, hot, cool, sort_by, heat_adjust, get_percentage_time);
 #else
   if (sort_by != profiler::SortBy::none) {
     throw std::runtime_error("Sorting dotgraphs is not yet implemented");
@@ -142,7 +141,7 @@ std::string Profiler::dotgraph(std::string path, MPI_Comm communicator, int root
     throw std::runtime_error("Sorting dotgraphs is not yet implemented");
   }
   auto dotgraph = get_dotgraph(*this, communicator, root_process, hot, cool, threshold, get_percentage_time);
-  if (rank_global() == root_process)
+  if (mpi::rank_global() == root_process)
     detail::write_dotgraph(path, dotgraph);
   return dotgraph;
 }
