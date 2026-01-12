@@ -96,19 +96,19 @@ int main(int argc, char* argv[]) {
   }
 
   {
-    void* profilerC = profilerNewSerialA((char*)"C", 0);
+    void* profilerC = profilerNewSerialA((const char*)"C", 0);
     auto a = (double)0;
-    profilerStart(profilerC, (char*)"sqrt");
+    profilerStart(profilerC, (const char*)"sqrt");
     for (size_t i = 0; i < repeat; i++)
       a *= std::sqrt(a + i) / std::sqrt(a + i + 1);
-    profilerStop(profilerC, (char*)"sqrt", 2 * repeat);
-    profilerStart(profilerC, (char*)"exp");
+    profilerStop(profilerC, (const char*)"sqrt", 2 * repeat);
+    profilerStart(profilerC, (const char*)"exp");
     for (size_t i = 0; i < repeat; i++)
       a *= std::exp(a + (double)1 / i) / std::exp(a + (double)1 / i + 1);
-    profilerStop(profilerC, (char*)"exp", 2 * repeat);
+    profilerStop(profilerC, (const char*)"exp", 2 * repeat);
     for (size_t i = 0; i < 1000000; i++) {
-      profilerStart(profilerC, (char*)"profiler");
-      profilerStop(profilerC, (char*)"profiler", 1);
+      profilerStart(profilerC, (const char*)"profiler");
+      profilerStop(profilerC, (const char*)"profiler", 1);
     }
     std::cout << profilerStr(profilerC, 0, 0, 3) << std::endl;
     profilerDestroy(profilerC);

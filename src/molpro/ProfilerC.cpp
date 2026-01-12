@@ -59,12 +59,12 @@ void* profilerNewMPIB(char* name, int sort, int level, int64_t comm, int cpu) {
   return p.get();
 }
 #endif
-void* profilerNewSerialA(char* name, int cpu) {
+void* profilerNewSerialA(const char* name, int cpu) {
   auto p = Profiler::single(std::string(name), true, cpu != 0);
   register_prof({p});
   return p.get();
 }
-void* profilerNewSerialB(char* name, int sort, int level, int cpu) {
+void* profilerNewSerialB(const char* name, int sort, int level, int cpu) {
   auto sortBy = sort_orders[sort];
   auto p = Profiler::single(std::string(name), true, cpu != 0);
   if (level != -1)
@@ -81,11 +81,11 @@ void profilerActive(void* profiler, int level, int stopPrint) {
   auto obj = static_cast<Profiler*>(profiler);
   obj->set_max_depth(level);
 }
-void profilerStart(void* profiler, char* name) {
+void profilerStart(void* profiler, const char* name) {
   auto obj = static_cast<Profiler*>(profiler);
   obj->start(std::string(name));
 }
-void profilerStop(void* profiler, char* name, long operations) {
+void profilerStop(void* profiler, const char* name, long operations) {
   auto obj = static_cast<Profiler*>(profiler);
   *obj += operations;
   obj->stop();

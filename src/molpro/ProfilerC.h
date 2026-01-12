@@ -9,14 +9,14 @@ extern "C" {
 void* profilerNewMPIA(char* name, int64_t comm, int cpu);
 void* profilerNewMPIB(char* name, int sort, int level, int64_t comm, int cpu);
 #endif
-void* profilerNewSerialB(char* name, int sort, int level, int cpu);
-void* profilerNewSerialA(char* name, int cpu);
+void* profilerNewSerialB(const char* name, int sort, int level, int cpu);
+void* profilerNewSerialA(const char* name, int cpu);
 void profilerDestroy(void* profiler);
 void profilerReset(void* profiler, char* name);
 void profilerActive(void* profiler, int level, int stopPrint);
-void profilerStart(void* profiler, char* name);
+void profilerStart(void* profiler, const char* name);
 void profilerDeclare(void* profiler, char* name);
-void profilerStop(void* profiler, char* name, long operations = 0);
+void profilerStop(void* profiler, const char* name, long operations = 0);
 char* profilerStr(void* profiler, int verbosity, int cumulative, int precision);
 void profilerStrSubroutine(void* profiler, char* result, int maxResult, int verbosity, int cumulative, int precision);
 void profilerDotgraph(void* profiler, const char* path, double threshold, int cumulative);
