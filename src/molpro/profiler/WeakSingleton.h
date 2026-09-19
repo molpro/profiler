@@ -8,7 +8,6 @@
 
 namespace molpro {
 namespace profiler {
-  std::shared_ptr<Profiler> s_saver;
 
 // FIXME improve description
 /*!
@@ -26,50 +25,70 @@ struct WeakSingleton {
   template <typename... T>
   static std::shared_ptr<Object> single(const std::string& key, T&&... constructor_args) {
     std::shared_ptr<Object> result = nullptr;
-    auto it =
-        std::find_if(begin(m_register), end(m_register), [&key](const key_t& el) { return std::get<0>(el) == key; });
-    if (it != m_register.end())
+    auto& reg = registry();
+    auto it = std::find_if(begin(reg), end(reg), [&key](const key_t& el) { return std::get<0>(el) == key; });
+    if (it != reg.end())
       result = std::get<1>(*it).lock();
     if (!result) {
       result = std::make_shared<Object>(std::forward<T>(constructor_args)...);
-      m_register.emplace_back(key_t{key, result, result.get()});
+      reg.emplace_back(key_t{key, result, result.get()});
     }
     return result;
   }
 
   //! Access the last registered object
   static std::shared_ptr<Object> single() {
-    if (m_register.empty() or not std::get<1>(m_register.back()).lock()) { // default zero-depth instance
+    auto& reg = registry();
+    if (reg.empty() or not std::get<1>(reg.back()).lock()) { // default zero-depth instance
       auto result = Profiler::single("default");
       result->set_max_depth(0);
+      // Profiler::Proxy stores only a Profiler&, not a shared_ptr, so unless something keeps this
+      // default instance alive, it is destroyed as soon as every shared_ptr returned from this call
+      // goes out of scope -- leaving Proxy::~Proxy() to call stop() on a dangling reference
+      // (use-after-free). default_instance_saver() is a function-local static, so it is guaranteed
+      // to be constructed after -- and therefore destroyed before -- registry(), which this branch
+      // always calls first: ~Profiler()'s call to erase() below then always runs while the registry
+      // is still alive.
+      default_instance_saver() = result;
       return result;
     }
-    assert(!m_register.empty() && "First must make a call to single(key, ...) to create an object");
-    std::shared_ptr<Object> result = std::get<1>(m_register.back()).lock();
+    assert(!reg.empty() && "First must make a call to single(key, ...) to create an object");
+    std::shared_ptr<Object> result = std::get<1>(reg.back()).lock();
     assert(result && "The last registered object was deallocated");
     return result;
   }
 
   //! Remove object from the register. This should be called in the destructor of class that exposes this pattern
   static void erase(Object* obj) {
-    auto it =
-        std::find_if(begin(m_register), end(m_register), [obj](const key_t& el) { return std::get<2>(el) == obj; });
-    if (it != m_register.end())
-      m_register.erase(it);
+    auto& reg = registry();
+    auto it = std::find_if(begin(reg), end(reg), [obj](const key_t& el) { return std::get<2>(el) == obj; });
+    if (it != reg.end())
+      reg.erase(it);
   }
 
   //! Remove object registered under the name key.
   static void erase(const std::string& key) {
-    auto it =
-        std::find_if(begin(m_register), end(m_register), [&key](const key_t& el) { return std::get<0>(el) == key; });
-    if (it != m_register.end())
-      m_register.erase(it);
+    auto& reg = registry();
+    auto it = std::find_if(begin(reg), end(reg), [&key](const key_t& el) { return std::get<0>(el) == key; });
+    if (it != reg.end())
+      reg.erase(it);
   }
 
   //! Remove all registered objects
-  static void clear() { m_register.clear(); }
+  static void clear() { registry().clear(); }
 
-  static std::list<key_t> m_register; //!< stores all objects created by a call to single
+  //! Stores all objects created by a call to single(). A function-local static (construct-on-first-use)
+  //! so that its destruction order relative to default_instance_saver() is well-defined: see single().
+  static std::list<key_t>& registry() {
+    static std::list<key_t> reg;
+    return reg;
+  }
+
+  //! Keeps the zero-depth "default" instance created by single() alive; see the comment there.
+  static std::shared_ptr<Object>& default_instance_saver() {
+    static std::shared_ptr<Object> saver;
+    return saver;
+  }
 };
 
 } // namespace profiler

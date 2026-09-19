@@ -20,9 +20,6 @@ Profiler::Profiler(std::string description_, const bool with_wall, const bool wi
   root->counter.start();
 }
 
-template <>
-std::list<WeakSingleton<Profiler>::key_t> WeakSingleton<Profiler>::m_register = {};
-
 std::shared_ptr<Profiler> Profiler::single(const std::string& description_, bool with_wall, bool with_cpu) {
   return WeakSingleton<Profiler>::single(description_, description_, with_wall, with_cpu);
 }
