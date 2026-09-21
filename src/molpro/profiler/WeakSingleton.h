@@ -42,13 +42,8 @@ struct WeakSingleton {
     if (reg.empty() or not std::get<1>(reg.back()).lock()) { // default zero-depth instance
       auto result = Profiler::single("default");
       result->set_max_depth(0);
-      // Profiler::Proxy stores only a Profiler&, not a shared_ptr, so unless something keeps this
-      // default instance alive, it is destroyed as soon as every shared_ptr returned from this call
-      // goes out of scope -- leaving Proxy::~Proxy() to call stop() on a dangling reference
-      // (use-after-free). default_instance_saver() is a function-local static, so it is guaranteed
-      // to be constructed after -- and therefore destroyed before -- registry(), which this branch
-      // always calls first: ~Profiler()'s call to erase() below then always runs while the registry
-      // is still alive.
+      // It is our job to keep the default instance alive by always retaining a shared_ptr
+      // to it. This way, callers don't have to manage the default instance's lifetime.
       default_instance_saver() = result;
       return result;
     }
