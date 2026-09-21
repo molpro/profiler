@@ -39,7 +39,8 @@ struct WeakSingleton {
   //! Access the last registered object
   static std::shared_ptr<Object> single() {
     auto& reg = registry();
-    if (reg.empty() or not std::get<1>(reg.back()).lock()) { // default zero-depth instance
+    std::shared_ptr<Object> instance = reg.empty() ? nullptr : std::get<1>(reg.back()).lock();
+    if (not instance) { // default zero-depth instance
       auto result = Profiler::single("default");
       result->set_max_depth(0);
       // It is our job to keep the default instance alive by always retaining a shared_ptr
@@ -47,10 +48,7 @@ struct WeakSingleton {
       default_instance_saver() = result;
       return result;
     }
-    assert(!reg.empty() && "First must make a call to single(key, ...) to create an object");
-    std::shared_ptr<Object> result = std::get<1>(reg.back()).lock();
-    assert(result && "The last registered object was deallocated");
-    return result;
+    return instance;
   }
 
   //! Remove object from the register. This should be called in the destructor of class that exposes this pattern
