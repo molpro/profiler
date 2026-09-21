@@ -1,10 +1,14 @@
 #ifndef PROFILER_SRC_MOLPRO_PROFILER_TREE_SINGLE_H
 #define PROFILER_SRC_MOLPRO_PROFILER_TREE_SINGLE_H
+
+#include "Profiler.h"
+
 #include <algorithm>
 #include <cassert>
 #include <list>
 #include <memory>
 #include <string>
+#include <mutex>
 
 namespace molpro {
 namespace profiler {
@@ -24,6 +28,7 @@ struct WeakSingleton {
    */
   template <typename... T>
   static std::shared_ptr<Object> single(const std::string& key, T&&... constructor_args) {
+    std::lock_guard<decltype(WeakSingleton::s_reg_lock)> lock(s_reg_lock);
     std::shared_ptr<Object> result = nullptr;
     auto& reg = registry();
     auto it = std::find_if(begin(reg), end(reg), [&key](const key_t& el) { return std::get<0>(el) == key; });
@@ -38,6 +43,7 @@ struct WeakSingleton {
 
   //! Access the last registered object
   static std::shared_ptr<Object> single() {
+    std::lock_guard<decltype(WeakSingleton::s_reg_lock)> lock(s_reg_lock);
     auto& reg = registry();
     std::shared_ptr<Object> instance = reg.empty() ? nullptr : std::get<1>(reg.back()).lock();
     if (not instance) { // default zero-depth instance
@@ -53,6 +59,7 @@ struct WeakSingleton {
 
   //! Remove object from the register. This should be called in the destructor of class that exposes this pattern
   static void erase(Object* obj) {
+    std::lock_guard<decltype(WeakSingleton::s_reg_lock)> lock(s_reg_lock);
     auto& reg = registry();
     auto it = std::find_if(begin(reg), end(reg), [obj](const key_t& el) { return std::get<2>(el) == obj; });
     if (it != reg.end())
@@ -61,6 +68,7 @@ struct WeakSingleton {
 
   //! Remove object registered under the name key.
   static void erase(const std::string& key) {
+    std::lock_guard<decltype(WeakSingleton::s_reg_lock)> lock(s_reg_lock);
     auto& reg = registry();
     auto it = std::find_if(begin(reg), end(reg), [&key](const key_t& el) { return std::get<0>(el) == key; });
     if (it != reg.end())
@@ -68,7 +76,13 @@ struct WeakSingleton {
   }
 
   //! Remove all registered objects
-  static void clear() { registry().clear(); }
+  static void clear() {
+    std::lock_guard<decltype(WeakSingleton::s_reg_lock)> lock(s_reg_lock);
+    registry().clear();
+  }
+
+private:
+  static std::recursive_mutex s_reg_lock;
 
   //! Stores all objects created by a call to single(). A function-local static (construct-on-first-use)
   //! so that its destruction order relative to default_instance_saver() is well-defined: see single().
@@ -83,6 +97,10 @@ struct WeakSingleton {
     return saver;
   }
 };
+
+template <class Object>
+std::recursive_mutex WeakSingleton<Object>::s_reg_lock;
+
 
 } // namespace profiler
 } // namespace molpro
