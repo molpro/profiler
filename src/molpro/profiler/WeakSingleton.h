@@ -8,7 +8,7 @@
 
 namespace molpro {
 namespace profiler {
-  std::shared_ptr<Profiler> s_saver;
+  inline std::shared_ptr<Profiler> s_saver;
 
 // FIXME improve description
 /*!
@@ -42,6 +42,11 @@ struct WeakSingleton {
     if (m_register.empty() or not std::get<1>(m_register.back()).lock()) { // default zero-depth instance
       auto result = Profiler::single("default");
       result->set_max_depth(0);
+      // Nothing else holds a strong reference to this fallback instance, so keep it
+      // alive here; otherwise it is destroyed as soon as the caller's temporary
+      // shared_ptr goes out of scope, leaving any long-lived Profiler& bound to it
+      // dangling.
+      s_saver = result;
       return result;
     }
     assert(!m_register.empty() && "First must make a call to single(key, ...) to create an object");

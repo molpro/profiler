@@ -4,8 +4,10 @@
 #include <molpro/profiler/Counter.h>
 #include <molpro/profiler/Node.h>
 #include <molpro/profiler/Profiler.h>
+#include <molpro/profiler/WeakSingleton.h>
 
 using molpro::profiler::Profiler;
+using molpro::profiler::WeakSingleton;
 
 TEST(Profiler, constructor) {
   const auto description = "test";
@@ -191,6 +193,20 @@ TEST(Profiler, single__two_profilers) {
     auto prof_single = Profiler::single();
     ASSERT_EQ(prof_single, prof2);
   }
+}
+
+TEST(Profiler, single_default_instance_kept_alive) {
+  // When nothing has ever registered a named Profiler (or all such instances have expired),
+  // single() falls back to creating and returning a "default" instance. Nothing but the
+  // library itself can hold a reference to that fallback instance, so the library must keep
+  // it alive internally; otherwise the shared_ptr returned here is the last owner, and it is
+  // destroyed as soon as the caller's temporary is discarded -- e.g. a caller that stores only
+  // `Profiler& ref = *Profiler::single();`, as molpro/iterative-solver's benchmark does, would
+  // be left with a dangling reference.
+  WeakSingleton<Profiler>::clear();
+  std::weak_ptr<Profiler> weak = Profiler::single();
+  ASSERT_FALSE(weak.expired()) << "the default Profiler instance from single() must not be destroyed while "
+                                   "nothing else holds a reference to it";
 }
 
 TEST(Profiler, str) {
