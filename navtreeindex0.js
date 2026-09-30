@@ -115,7 +115,6 @@ var NAVTREEINDEX0 =
 "structmolpro_1_1profiler_1_1Profiler_1_1Proxy.html#ae135f9250485e847d060b51bf628790f":[7,0,0,3,0,2],
 "structmolpro_1_1profiler_1_1Profiler_1_1Proxy.html#af736944486dafc9a533f823ba656e957":[7,0,0,3,0,5],
 "structmolpro_1_1profiler_1_1WeakSingleton.html":[7,0,0,7],
-"structmolpro_1_1profiler_1_1WeakSingleton.html#a4783e755ed855e3d60bdb9033b22b4f3":[7,0,0,7,1],
 "structmolpro_1_1profiler_1_1WeakSingleton.html#a914ac8e10632f06314f5bf81e4845a58":[7,0,0,7,0],
 "structmolpro_1_1profiler_1_1detail_1_1AccessCPU.html":[7,0,0,0,3],
 "structmolpro_1_1profiler_1_1detail_1_1AccessCPU.html#a5bd501ceac97b99963f876daefdc8226":[7,0,0,0,3,0],
